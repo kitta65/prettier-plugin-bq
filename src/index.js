@@ -21,7 +21,7 @@ const parsers = {
   },
 };
 
-function printToml(path, options, print) {
+function printSQL(path, options, print) {
   const node = path.getValue();
 
   if (Array.isArray(node)) {
@@ -29,14 +29,33 @@ function printToml(path, options, print) {
   }
 
   switch (node.type) {
+    case "select":
+      return printAllClause(node);
     default:
       return "";
   }
 }
 
+const printAllClause = (node) => {
+  const res = [];
+  if (node.with) {
+    res.push(printWithClause(node));
+  }
+  res.push(printSelectClause(node));
+  return concat(res);
+};
+
+const printWithClause = (node) => {
+  return "with";
+};
+
+const printSelectClause = (node) => {
+  return "select * from xxx";
+};
+
 const printers = {
   "sql-ast": {
-    print: printToml,
+    print: printSQL,
   },
 };
 
