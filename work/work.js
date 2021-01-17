@@ -1,5 +1,4 @@
 // you have to run node with `--experimental-repl-await` option
-
 const { Parser } = require("node-sql-parser");
 const parser = new Parser();
 const prettier = require("prettier");
@@ -14,9 +13,9 @@ const read = (path) => {
 const format = (code) => {
   const res = prettier.format(code, {
     parser: "sql-parse",
-    plugins: [".."],
+    plugins: ["."],
   });
-  return res
+  return res;
 };
 
 const sql = await read("../sample.sql");
@@ -24,10 +23,14 @@ console.log(sql);
 
 // check parser
 const ast = parser.astify(sql);
-console.log(ast)
-parser.astify(`select 1;`)
-parser.astify(`select 1;`)[0]
-parser.astify(`update tb set id = null where id < 100`)
+ast
+ast.with
+ast.with[0]
+ast.columns[0]
+ast.orderby
+parser.astify(`select 1;`);
+parser.astify(`select 1;`)[0];
+parser.astify(`update tb set id = null where id < 100`);
 
 parser.sqlify(ast);
 

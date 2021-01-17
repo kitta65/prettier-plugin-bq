@@ -27,30 +27,63 @@ function printSQL(path, options, print) {
   if (Array.isArray(node)) {
     return concat(path.map(print));
   }
-
+  if ("expr" in node || "stmt" in node) {
+    return path.call(print, "expr");
+  }
   switch (node.type) {
     case "select":
-      return printAllClause(node);
+      return printSelectStatement(path, options, print);
+    case "column_ref":
+      return printColumnRef(path, options, print);
     default:
       return "";
   }
 }
 
-const printAllClause = (node) => {
+const printSelectStatement = (path, options, print) => {
+  const node = path.getValue();
   const res = [];
   if (node.with) {
-    res.push(printWithClause(node));
+    res.push(printWithClause(path, options, print));
   }
-  res.push(printSelectClause(node));
+  res.push(printSelectClause(path, options, print));
+  res.push(";");
   return concat(res);
 };
 
-const printWithClause = (node) => {
-  return "with";
+const printWithElement = (path, options, print) => {
+  const node = path.getValue()
+  return node.name;
 };
 
-const printSelectClause = (node) => {
-  return "select * from xxx";
+const printWithClause = (path, options, print) => {
+  const node = path.getValue();
+  return concat([
+    "WITH",
+    hardline,
+    indent(
+      concat(
+        path.map((p) => {
+          return printWithElement(p, options, print);
+        }, "with")
+      )
+    ),
+  ]);
+};
+
+const printSelectClause = (path, options, print) => {
+  const node = path.getValue();
+  return concat([
+    "SELECT",
+    hardline,
+    indent(concat(path.map(print, "columns"))),
+    hardline,
+  ]);
+};
+
+const printColumnRef = (path, options, print) => {
+  const node = path.getValue();
+  return concat([node.table, ".", node.column, ",", hardline]);
 };
 
 const printers = {
