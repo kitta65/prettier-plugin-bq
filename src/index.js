@@ -27,8 +27,10 @@ function printSQL(path, options, print) {
   if (Array.isArray(node)) {
     return concat(path.map(print));
   }
-  if ("expr" in node || "stmt" in node) {
+  if ("expr" in node) {
     return path.call(print, "expr");
+  } else if ("ast" in node) {
+    return "ast"//path.call(print, "ast")
   }
   switch (node.type) {
     case "select":
@@ -36,7 +38,7 @@ function printSQL(path, options, print) {
     case "column_ref":
       return printColumnRef(path, options, print);
     default:
-      return "";
+      return "default";
   }
 }
 
@@ -52,8 +54,8 @@ const printSelectStatement = (path, options, print) => {
 };
 
 const printWithElement = (path, options, print) => {
-  const node = path.getValue()
-  return node.name;
+  const node = path.getValue();
+  return concat([node.name, " AS (" , path.call(print, "stmt"), ")"]);
 };
 
 const printWithClause = (path, options, print) => {
