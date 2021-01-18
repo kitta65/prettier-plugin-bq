@@ -51,8 +51,11 @@ const printSelectStatement = (path, options, print) => {
   res.push(printSelectClause(path, options, print));
   res.push(printFromClause(path, options, print));
   //res.push(concat([hardline, ";"]));
-  if (!node.union) return concat(res)
-  return join(concat([hardline, node.union.toUpperCase()]), [concat(res), path.call(print, "_next")]);
+  if (!node.union) return concat(res);
+  return join(concat([hardline, node.union.toUpperCase()]), [
+    concat(res),
+    path.call(print, "_next"),
+  ]);
 };
 
 const printWithClause = (path, options, print) => {
@@ -105,18 +108,24 @@ const printColumnRef = (path, options, print) => {
 
 const printFromClause = (path, options, print) => {
   const node = path.getValue();
-  const _printTable = (table) => {
+  const _printTable = (path, options, print) => {
+    const node = path.getValue();
     let res = [hardline];
-    if (table.join) res.push(`${table.join} `)
-    if (table.db) res.push(`${table.db}.`);
-    res.push(table.table);
-    if (table.as) res.push(`AS ${table.as}`);
-    res = concat(res)
-    return res
+    if (node.join) res.push(`${node.join} `);
+    if (node.db) res.push(`${node.db}.`);
+    res.push(node.node);
+    if (node.as) res.push(`AS ${node.as}`);
+    res = concat(res);
+    return res;
     //if (!table.on) return res
     //return concat([res, indent(concat([hardline, "on", res.operator]))])
+
   };
-  return concat([hardline, "FROM", indent(concat(node.from.map(_printTable)))]);
+  return concat([
+    hardline,
+    "FROM",
+    indent(path.map((p) => _printTable(p), "from")),
+  ]);
 };
 
 const printers = {
