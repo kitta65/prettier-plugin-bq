@@ -106,15 +106,12 @@ const printColumnRef = (path, options, print) => {
 const printFromClause = (path, options, print) => {
   const node = path.getValue();
   const _printTable = (table) => {
-    let res = [];
-    if (table.join) res.push(table.join)
-    if (table.db) res.push(table.db);
+    let res = [hardline];
+    if (table.join) res.push(`${table.join} `)
+    if (table.db) res.push(`${table.db}.`);
     res.push(table.table);
-    if (table.as) {
-      res.push("AS");
-      res.push(table.as);
-    }
-    res = concat([hardline, join(" ", res)])
+    if (table.as) res.push(`AS ${table.as}`);
+    res = concat(res)
     return res
     //if (!table.on) return res
     //return concat([res, indent(concat([hardline, "on", res.operator]))])
