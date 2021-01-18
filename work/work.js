@@ -23,8 +23,9 @@ console.log(sql);
 
 // check parser
 const ast = parser.astify(sql);
-ast
-ast.from
+ast.orderby
+ast.limit
+ast.columns
 ast.from[1]
 ast.with
 ast.with[0].stmt

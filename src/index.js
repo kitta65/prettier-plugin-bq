@@ -27,9 +27,8 @@ function printSQL(path, options, print) {
   if (Array.isArray(node)) {
     return concat(path.map(print));
   }
-  if ("expr" in node) {
-    return path.call(print, "expr");
-  } else if ("ast" in node) {
+  if ("ast" in node) {
+    //for with clause
     return path.call(print, "ast");
   }
   switch (node.type) {
@@ -39,6 +38,8 @@ function printSQL(path, options, print) {
       return printColumnRef(path, options, print);
     case "binary_expr":
       return printBinaryExpr(path, options, print);
+    case "ASC":
+      return "ASC";
     default:
       return node.value.toString();
   }
@@ -50,8 +51,9 @@ const printSelectStatement = (path, options, print) => {
   if (node.with) res.push(printWithClause(path, options, print));
   res.push(printSelectClause(path, options, print));
   res.push(printFromClause(path, options, print));
-  if (node.where) res.push(printWhereClause(path, options, print))
-  if (node.limit) res.push(printLimitClause(path, options, print))
+  if (node.where) res.push(printWhereClause(path, options, print));
+  if (node.orderby) res.push(printOrderByClause(path, options, print));
+  if (node.limit) res.push(printLimitClause(path, options, print));
   if (!node.union) return concat(res);
   return join(concat([hardline, node.union.toUpperCase()]), [
     concat(res),
@@ -91,10 +93,16 @@ const printWithClause = (path, options, print) => {
 
 const printSelectClause = (path, options, print) => {
   const node = path.getValue();
+  const distinct = node.distinct ? " DISTINCT" : "";
   const res = concat([
     hardline,
-    "SELECT",
-    indent(concat([hardline, join(concat([hardline, ","]), path.map(print, "columns"))])),
+    `SELECT${distinct}`,
+    indent(
+      concat([
+        hardline,
+        join(concat([hardline, ","]), path.map(p => p.call(print, "expr"), "columns")),
+      ])
+    ),
   ]);
   return res;
 };
@@ -140,14 +148,27 @@ const printBinaryExpr = (path, options, print) => {
 };
 
 const printWhereClause = (path, options, print) => {
-  const node = path.getValue()
-  return concat([hardline, "WHERE", indent(concat([hardline, path.call(print, "where")]))])
-}
+  const node = path.getValue();
+  return concat([
+    hardline,
+    "WHERE",
+    indent(concat([hardline, path.call(print, "where")])),
+  ]);
+};
 
 const printLimitClause = (path, options, print) => {
-  const node = path.getValue()
-  return concat([hardline, "LIMIT ", path.call((p) => p.call(print, "value"), "limit")])
-}
+  const node = path.getValue();
+  return concat([
+    hardline,
+    "LIMIT ",
+    path.call((p) => p.call(print, "value"), "limit"),
+  ]);
+};
+
+const printOrderByClause = (path, options, print) => {
+  const node = path.getValue();
+  return concat([hardline, "ORDER BY ", join(", ", path.map(p => p.call(print, "expr"), "orderby"))]);
+};
 
 const printers = {
   "sql-ast": {
