@@ -37,6 +37,8 @@ function printSQL(path, options, print) {
       return printSelectStatement(path, options, print);
     case "column_ref":
       return printColumnRef(path, options, print);
+    case "binary_expr":
+      return printBinaryExpr(path, options, print);
     default:
       return "default";
   }
@@ -50,12 +52,12 @@ const printSelectStatement = (path, options, print) => {
   }
   res.push(printSelectClause(path, options, print));
   res.push(printFromClause(path, options, print));
-  //res.push(concat([hardline, ";"]));
   if (!node.union) return concat(res);
   return join(concat([hardline, node.union.toUpperCase()]), [
     concat(res),
     path.call(print, "_next"),
   ]);
+  //res.push(concat([hardline, ";"]));
 };
 
 const printWithClause = (path, options, print) => {
@@ -92,7 +94,7 @@ const printSelectClause = (path, options, print) => {
   const res = concat([
     hardline,
     "SELECT",
-    indent(join(",", path.map(print, "columns"))),
+    indent(concat([hardline, join(concat([hardline, ","]), path.map(print, "columns"))])),
   ]);
   return res;
 };
@@ -100,9 +102,9 @@ const printSelectClause = (path, options, print) => {
 const printColumnRef = (path, options, print) => {
   const node = path.getValue();
   if (node.table === null) {
-    return concat([hardline, node.column]);
+    return node.column;
   } else {
-    return concat([hardline, node.table, ".", node.column]);
+    return concat([node.table, ".", node.column]);
   }
 };
 
@@ -116,15 +118,24 @@ const printFromClause = (path, options, print) => {
     res.push(node.table);
     if (node.as) res.push(`AS ${node.as}`);
     res = concat(res);
-    return res;
-    //if (!table.on) return res
-    //return concat([res, indent(concat([hardline, "on", res.operator]))])
-
+    if (!node.on) return res;
+    return concat([
+      res,
+      indent(concat([hardline, "ON ", path.call(print, "on")])),
+    ]);
   };
   return concat([
     hardline,
     "FROM",
     indent(concat(path.map((p) => _printTable(p, options, print), "from"))),
+  ]);
+};
+
+const printBinaryExpr = (path, options, print) => {
+  const node = path.getValue();
+  return join(` ${node.operator} `, [
+    path.call(print, "left"),
+    path.call(print, "right"),
   ]);
 };
 

@@ -24,6 +24,8 @@ console.log(sql);
 // check parser
 const ast = parser.astify(sql);
 ast
+ast.from
+ast.from[1]
 ast.with
 ast.with[0].stmt
 ast.with[0].stmt.ast
