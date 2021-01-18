@@ -4,6 +4,7 @@ const {
   doc: {
     builders: { concat, hardline, group, indent, softline, join, line },
   },
+  util,
 } = require("prettier");
 
 const languages = [
@@ -23,14 +24,13 @@ const parsers = {
 
 function printSQL(path, options, print) {
   const node = path.getValue();
-
   if (Array.isArray(node)) {
     return concat(path.map(print));
   }
   if ("expr" in node) {
     return path.call(print, "expr");
   } else if ("ast" in node) {
-    return "ast"//path.call(print, "ast")
+    return path.call(print, "ast");
   }
   switch (node.type) {
     case "select":
@@ -49,43 +49,62 @@ const printSelectStatement = (path, options, print) => {
     res.push(printWithClause(path, options, print));
   }
   res.push(printSelectClause(path, options, print));
-  res.push(";");
+  //res.push(concat([hardline, ";"]));
   return concat(res);
 };
 
-const printWithElement = (path, options, print) => {
-  const node = path.getValue();
-  return concat([node.name, " AS (" , path.call(print, "stmt"), ")"]);
-};
 
 const printWithClause = (path, options, print) => {
   const node = path.getValue();
+  const _printTempTable = (path, options, print) => {
+    const node = path.getValue();
+    return concat([
+      hardline,
+      node.name,
+      " AS (",
+      indent(path.call(print, "stmt")),
+      hardline,
+      ")",
+    ]);
+  };
   return concat([
     "WITH",
-    hardline,
-    indent(
-      concat(
-        path.map((p) => {
-          return printWithElement(p, options, print);
-        }, "with")
-      )
-    ),
+    concat([
+      indent(
+        join(
+          concat([hardline, ","]),
+          path.map((p) => {
+            return _printTempTable(p, options, print);
+          }, "with")
+        )
+      ),
+      hardline,
+    ]),
   ]);
 };
 
 const printSelectClause = (path, options, print) => {
   const node = path.getValue();
-  return concat([
+  const res =  concat([
+    hardline,
     "SELECT",
-    hardline,
     indent(concat(path.map(print, "columns"))),
-    hardline,
   ]);
+  return res
+  if ("union" in node) {
+    return join(node.union, [res, print.call(print, "_next")])
+  } else {
+    return res
+  }
 };
 
 const printColumnRef = (path, options, print) => {
   const node = path.getValue();
-  return concat([node.table, ".", node.column, ",", hardline]);
+  if (node.table === null) {
+    return concat([hardline, node.column, ","]);
+  } else {
+    return concat([hardline, node.table, ".", node.column, ","]);
+  }
 };
 
 const printers = {

@@ -25,7 +25,8 @@ console.log(sql);
 const ast = parser.astify(sql);
 ast
 ast.with
-ast.with[0]
+ast.with[0].stmt
+ast.with[0].stmt.ast
 ast.columns[0]
 ast.orderby
 parser.astify(`select 1;`);
@@ -35,4 +36,5 @@ parser.astify(`update tb set id = null where id < 100`);
 parser.sqlify(ast);
 
 // check prittier
-format(sql);
+format(sql)
+console.log(format(sql));
