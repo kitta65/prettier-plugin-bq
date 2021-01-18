@@ -110,13 +110,13 @@ const printFromClause = (path, options, print) => {
   const node = path.getValue();
   const _printTable = (path, options, print) => {
     const node = path.getValue();
-    //let res = [hardline];
-    //if (node.join) res.push(`${node.join} `);
-    //if (node.db) res.push(`${node.db}.`);
-    //res.push(node.node);
-    //if (node.as) res.push(`AS ${node.as}`);
-    //res = concat(res);
-    return "aaa";
+    let res = [hardline];
+    if (node.join) res.push(`${node.join} `);
+    if (node.db) res.push(`${node.db}.`);
+    res.push(node.table);
+    if (node.as) res.push(`AS ${node.as}`);
+    res = concat(res);
+    return res;
     //if (!table.on) return res
     //return concat([res, indent(concat([hardline, "on", res.operator]))])
 
