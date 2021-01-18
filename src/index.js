@@ -40,18 +40,18 @@ function printSQL(path, options, print) {
     case "binary_expr":
       return printBinaryExpr(path, options, print);
     default:
-      return "default";
+      return node.value.toString();
   }
 }
 
 const printSelectStatement = (path, options, print) => {
   const node = path.getValue();
   const res = [];
-  if (node.with) {
-    res.push(printWithClause(path, options, print));
-  }
+  if (node.with) res.push(printWithClause(path, options, print));
   res.push(printSelectClause(path, options, print));
   res.push(printFromClause(path, options, print));
+  if (node.where) res.push(printWhereClause(path, options, print))
+  if (node.limit) res.push(printLimitClause(path, options, print))
   if (!node.union) return concat(res);
   return join(concat([hardline, node.union.toUpperCase()]), [
     concat(res),
@@ -138,6 +138,16 @@ const printBinaryExpr = (path, options, print) => {
     path.call(print, "right"),
   ]);
 };
+
+const printWhereClause = (path, options, print) => {
+  const node = path.getValue()
+  return concat([hardline, "WHERE", indent(concat([hardline, path.call(print, "where")]))])
+}
+
+const printLimitClause = (path, options, print) => {
+  const node = path.getValue()
+  return concat([hardline, "LIMIT ", path.call((p) => p.call(print, "value"), "limit")])
+}
 
 const printers = {
   "sql-ast": {
