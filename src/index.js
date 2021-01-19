@@ -66,13 +66,13 @@ const printSelectStatement = (path, options, print) => {
 
 const printWithClause = (path, options, print) => {
   const node = path.getValue();
-  if (!node.with) return ""
+  if (!node.with) return "";
   const _printTempTable = (path, options, print) => {
-  const node = path.getValue();
+    const node = path.getValue();
     return concat([
       hardline,
       `${node.name} AS (`,
-      indent(path.call(p => p.call(print, "ast"), "stmt")),
+      indent(path.call((p) => p.call(print, "ast"), "stmt")),
       hardline,
       ")",
     ]);
@@ -113,7 +113,7 @@ const printSelectClause = (path, options, print) => {
 
 const printColumnRef = (path, options, print) => {
   const node = path.getValue();
-  const table = node.table ? `${node.table}.` : ""
+  const table = node.table ? `${node.table}.` : "";
   return `${table}${node.column}`;
 };
 
@@ -121,20 +121,30 @@ const printFromClause = (path, options, print) => {
   const node = path.getValue();
   const _printTable = (path, options, print) => {
     const node = path.getValue();
+    // subquery
     if ("expr" in node) {
-      return concat([hardline, "(", indent(path.call((p) => p.call(print, "ast"), "expr")), hardline, ")"]);
+      return concat([
+        hardline,
+        "(",
+        indent(path.call((p) => p.call(print, "ast"), "expr")),
+        hardline,
+        ")",
+      ]);
     }
-    let res = [hardline];
-    if (node.join) res.push(`${node.join} `);
-    if (node.db) res.push(`${node.db}.`);
-    res.push(node.table);
-    if (node.as) res.push(`AS ${node.as}`);
-    res = concat(res);
-    if (!node.on) return res;
-    return concat([
-      res,
-      indent(concat([hardline, "ON ", path.call(print, "on")])),
-    ]);
+    // ordinary table
+    const join = node.join ? `${node.join} ` : "";
+    const db = node.db ? `${node.db}.` : "";
+    const table = node.table;
+    const alias = node.as ? ` AS ${node.as}` : "";
+    const res = concat([hardline, join, db, table, alias]);
+    if (!node.on) {
+      return res;
+    } else {
+      return concat([
+        res,
+        indent(concat([hardline, `ON ${path.call(print, "on")}`])),
+      ]);
+    }
   };
   return concat([
     hardline,
