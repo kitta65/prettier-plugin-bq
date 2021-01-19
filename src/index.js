@@ -27,10 +27,6 @@ function printSQL(path, options, print) {
   if (Array.isArray(node)) {
     return concat(path.map(print));
   }
-  if ("ast" in node) {
-    //for with clause
-    return path.call(print, "ast");
-  }
   switch (node.type) {
     case "select":
       return printSelectStatement(path, options, print);
@@ -70,13 +66,13 @@ const printSelectStatement = (path, options, print) => {
 
 const printWithClause = (path, options, print) => {
   const node = path.getValue();
+  if (!node.with) return ""
   const _printTempTable = (path, options, print) => {
-    const node = path.getValue();
+  const node = path.getValue();
     return concat([
       hardline,
-      node.name,
-      " AS (",
-      indent(path.call(print, "stmt")),
+      `${node.name} AS (`,
+      indent(path.call(p => p.call(print, "ast"), "stmt")),
       hardline,
       ")",
     ]);
@@ -106,7 +102,10 @@ const printSelectClause = (path, options, print) => {
     indent(
       concat([
         hardline,
-        join(concat([hardline, ","]), path.map(p => p.call(print, "expr"), "columns")),
+        join(
+          concat([hardline, ","]),
+          path.map((p) => p.call(print, "expr"), "columns")
+        ),
       ])
     ),
   ]);
@@ -119,7 +118,7 @@ const printColumnRef = (path, options, print) => {
     return node.column;
   } else {
     //return concat([node.table, ".", node.column]);
-    return `${node.table}.${node.column}`
+    return `${node.table}.${node.column}`;
   }
 };
 
@@ -127,6 +126,9 @@ const printFromClause = (path, options, print) => {
   const node = path.getValue();
   const _printTable = (path, options, print) => {
     const node = path.getValue();
+    if ("expr" in node) {
+      return concat([hardline, "(", indent(path.call((p) => p.call(print, "ast"), "expr")), hardline, ")"]);
+    }
     let res = [hardline];
     if (node.join) res.push(`${node.join} `);
     if (node.db) res.push(`${node.db}.`);
@@ -150,10 +152,16 @@ const printBinaryExpr = (path, options, print) => {
   // `=` `AND` `BETWEEN`...
   const node = path.getValue();
   if (Array.isArray(node.right)) {
-    return "single"
-    return `${node.operator} ${path.call(print, "left")} AND ${path.call(print, "right")}`
+    return "single";
+    return `${node.operator} ${path.call(print, "left")} AND ${path.call(
+      print,
+      "right"
+    )}`;
   } else {
-    return `${path.call(print, "left")} ${node.operator} ${path.call(print, "right")}`
+    return `${path.call(print, "left")} ${node.operator} ${path.call(
+      print,
+      "right"
+    )}`;
   }
 };
 
@@ -177,7 +185,11 @@ const printLimitClause = (path, options, print) => {
 
 const printOrderByClause = (path, options, print) => {
   const node = path.getValue();
-  return concat([hardline, "ORDER BY ", join(", ", path.map(print, "orderby"))]);
+  return concat([
+    hardline,
+    "ORDER BY ",
+    join(", ", path.map(print, "orderby")),
+  ]);
 };
 
 const printers = {
@@ -188,23 +200,23 @@ const printers = {
 
 const printAsc = (path, options, print) => {
   const node = path.getValue();
-  return path.call(print, "expr")
-}
+  return path.call(print, "expr");
+};
 
 const printDesc = (path, options, print) => {
   const node = path.getValue();
-  return `${path.call(print, "expr")} DESC`
-}
+  return `${path.call(print, "expr")} DESC`;
+};
 
 const printDate = (path, options, print) => {
   const node = path.getValue();
-  return `DATE '${node.value}'`
-}
+  return `DATE '${node.value}'`;
+};
 
 const printExprList = (path, options, print) => {
-  const node = path.getValue()
-  return "expr_list"
-}
+  const node = path.getValue();
+  return "expr_list";
+};
 
 module.exports = {
   languages,

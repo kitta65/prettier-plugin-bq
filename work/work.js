@@ -23,18 +23,7 @@ console.log(sql);
 
 // check parser
 const ast = parser.astify(sql);
-ast.orderby
-ast.limit
-ast.columns
-ast.from[1]
-ast.with
-ast.with[0].stmt
-ast.with[0].stmt.ast
-ast.columns[0]
-ast.orderby
-parser.astify(`select 1;`);
-parser.astify(`select 1;`)[0];
-parser.astify(`update tb set id = null where id < 100`);
+ast
 
 parser.sqlify(ast);
 
