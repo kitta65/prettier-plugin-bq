@@ -154,20 +154,12 @@ const printFromClause = (path, options, print) => {
 };
 
 const printBinaryExpr = (path, options, print) => {
-  // `=` `AND` `BETWEEN`...
   const node = path.getValue();
-  if (Array.isArray(node.right)) {
-    return "single";
-    return `${node.operator} ${path.call(print, "left")} AND ${path.call(
-      print,
-      "right"
-    )}`;
-  } else {
-    return `${path.call(print, "left")} ${node.operator} ${path.call(
-      print,
-      "right"
-    )}`;
-  }
+  return join(" ",
+    [path.call(print, "left"),
+    node.operator,
+    path.call(print, "right")]
+  );
 };
 
 const printWhereClause = (path, options, print) => {
@@ -197,12 +189,6 @@ const printOrderByClause = (path, options, print) => {
   ]);
 };
 
-const printers = {
-  "sql-ast": {
-    print: printSQL,
-  },
-};
-
 const printAsc = (path, options, print) => {
   const node = path.getValue();
   return path.call(print, "expr");
@@ -220,7 +206,13 @@ const printDate = (path, options, print) => {
 
 const printExprList = (path, options, print) => {
   const node = path.getValue();
-  return "expr_list";
+  return join(" AND ", path.map(print, "value"));
+};
+
+const printers = {
+  "sql-ast": {
+    print: printSQL,
+  },
 };
 
 module.exports = {
