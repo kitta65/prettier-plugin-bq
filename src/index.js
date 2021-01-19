@@ -37,13 +37,17 @@ function printSQL(path, options, print) {
     case "column_ref":
       return printColumnRef(path, options, print);
     case "binary_expr":
-      return printBinaryExpr(path, options, print);
+      return "binary"
+      //return printBinaryExpr(path, options, print);
     case "ASC":
       return printAsc(path, options, print);
     case "DESC":
       return printDesc(path, options, print);
     case "date":
       return printDate(path, options, print);
+    case "expr_list":
+      //return printExprList(path, options, print);
+      return "expr"
     default:
       return node.value.toString();
   }
@@ -144,11 +148,13 @@ const printFromClause = (path, options, print) => {
 };
 
 const printBinaryExpr = (path, options, print) => {
+  // `=` `AND` `BETWEEN`...
   const node = path.getValue();
-  return join(` ${node.operator} `, [
-    path.call(print, "left"),
-    path.call(print, "right"),
-  ]);
+  if (node.right.length === 1) {
+    return `${path.call(print, "left")} ${node.operator} ${path.call(print, "right")}`
+  } else if (node.right.length === 2) {
+    return `${node.operator} ${path.call(print, "left")} AND ${path.call(print, "right")}`
+  }
 };
 
 const printWhereClause = (path, options, print) => {
@@ -193,6 +199,11 @@ const printDesc = (path, options, print) => {
 const printDate = (path, options, print) => {
   const node = path.getValue();
   return `DATE '${node.value}'`
+}
+
+const printExprList = (path, options, print) => {
+  const node = path.getValue()
+  return "expr_list"
 }
 
 module.exports = {
