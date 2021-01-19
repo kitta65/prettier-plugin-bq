@@ -39,7 +39,11 @@ function printSQL(path, options, print) {
     case "binary_expr":
       return printBinaryExpr(path, options, print);
     case "ASC":
-      return "ASC";
+      return printAsc(path, options, print);
+    case "DESC":
+      return printDesc(path, options, print);
+    case "date":
+      return printDate(path, options, print);
     default:
       return node.value.toString();
   }
@@ -167,7 +171,7 @@ const printLimitClause = (path, options, print) => {
 
 const printOrderByClause = (path, options, print) => {
   const node = path.getValue();
-  return concat([hardline, "ORDER BY ", join(", ", path.map(p => p.call(print, "expr"), "orderby"))]);
+  return concat([hardline, "ORDER BY ", join(", ", path.map(print, "orderby"))]);
 };
 
 const printers = {
@@ -175,6 +179,21 @@ const printers = {
     print: printSQL,
   },
 };
+
+const printAsc = (path, options, print) => {
+  const node = path.getValue();
+  return path.call(print, "expr")
+}
+
+const printDesc = (path, options, print) => {
+  const node = path.getValue();
+  return `${path.call(print, "expr")} DESC`
+}
+
+const printDate = (path, options, print) => {
+  const node = path.getValue();
+  return `DATE '${node.value}'`
+}
 
 module.exports = {
   languages,
