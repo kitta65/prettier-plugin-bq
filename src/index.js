@@ -37,8 +37,8 @@ function printSQL(path, options, print) {
     case "column_ref":
       return printColumnRef(path, options, print);
     case "binary_expr":
-      return "binary"
-      //return printBinaryExpr(path, options, print);
+      //return "binary"
+      return printBinaryExpr(path, options, print);
     case "ASC":
       return printAsc(path, options, print);
     case "DESC":
@@ -150,10 +150,11 @@ const printFromClause = (path, options, print) => {
 const printBinaryExpr = (path, options, print) => {
   // `=` `AND` `BETWEEN`...
   const node = path.getValue();
-  if (node.right.length === 1) {
-    return `${path.call(print, "left")} ${node.operator} ${path.call(print, "right")}`
-  } else if (node.right.length === 2) {
+  if (Array.isArray(node.right)) {
+    return "single"
     return `${node.operator} ${path.call(print, "left")} AND ${path.call(print, "right")}`
+  } else {
+    return `${path.call(print, "left")} ${node.operator} ${path.call(print, "right")}`
   }
 };
 
