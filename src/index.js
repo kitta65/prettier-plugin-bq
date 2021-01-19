@@ -155,15 +155,16 @@ const printFromClause = (path, options, print) => {
 
 const printBinaryExpr = (path, options, print) => {
   const node = path.getValue();
-  return join(" ",
-    [path.call(print, "left"),
+  return join(" ", [
+    path.call(print, "left"),
     node.operator,
-    path.call(print, "right")]
-  );
+    path.call(print, "right"),
+  ]);
 };
 
 const printWhereClause = (path, options, print) => {
   const node = path.getValue();
+  if (!node.where) return "";
   return concat([
     hardline,
     "WHERE",
@@ -173,6 +174,7 @@ const printWhereClause = (path, options, print) => {
 
 const printLimitClause = (path, options, print) => {
   const node = path.getValue();
+  if (!node.limit) return "";
   return concat([
     hardline,
     "LIMIT ",
