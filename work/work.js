@@ -18,15 +18,13 @@ const format = (code) => {
   return res;
 };
 
-const sql = await read("../sample.sql");
-console.log(sql);
+const sql1 = await read("../sample.sql");
+const sql2 = await read("../sample2.sql");
 
 // check parser
-const ast = parser.astify(sql);
-ast
-
-parser.sqlify(ast);
+const ast1 = parser.astify(sql1);
+const ast2 = parser.astify(sql2);
 
 // check prittier
-format(sql)
-console.log(format(sql));
+console.log(format(sql1));
+console.log(format(sql2));

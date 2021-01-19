@@ -50,17 +50,22 @@ function printSQL(path, options, print) {
 const printSelectStatement = (path, options, print) => {
   const node = path.getValue();
   const res = [];
-  if (node.with) res.push(printWithClause(path, options, print));
+  res.push(printWithClause(path, options, print));
   res.push(printSelectClause(path, options, print));
   res.push(printFromClause(path, options, print));
-  if (node.where) res.push(printWhereClause(path, options, print));
-  if (node.orderby) res.push(printOrderByClause(path, options, print));
-  if (node.limit) res.push(printLimitClause(path, options, print));
-  if (!node.union) return concat(res);
-  return join(concat([hardline, node.union.toUpperCase()]), [
-    concat(res),
-    path.call(print, "_next"),
-  ]);
+  res.push(printWhereClause(path, options, print));
+  res.push(printOrderByClause(path, options, print));
+  res.push(printLimitClause(path, options, print));
+  if (!node.union) {
+    return concat(res);
+  } else {
+    return concat([
+      concat(res),
+      hardline,
+      node.union.toUpperCase(),
+      path.call(print, "_next"),
+    ]);
+  }
   //res.push(concat([hardline, ";"]));
 };
 
@@ -142,7 +147,7 @@ const printFromClause = (path, options, print) => {
     } else {
       return concat([
         res,
-        indent(concat([hardline, `ON ${path.call(print, "on")}`])),
+        indent(concat([hardline, "ON ", path.call(print, "on")])),
       ]);
     }
   };
@@ -184,6 +189,7 @@ const printLimitClause = (path, options, print) => {
 
 const printOrderByClause = (path, options, print) => {
   const node = path.getValue();
+  if (!node.orderby) return "";
   return concat([
     hardline,
     "ORDER BY ",
@@ -197,8 +203,7 @@ const printAsc = (path, options, print) => {
 };
 
 const printDesc = (path, options, print) => {
-  const node = path.getValue();
-  return `${path.call(print, "expr")} DESC`;
+  return `${printAsc(path, options, print)} DESC`;
 };
 
 const printDate = (path, options, print) => {
