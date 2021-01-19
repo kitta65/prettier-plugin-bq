@@ -37,7 +37,6 @@ function printSQL(path, options, print) {
     case "column_ref":
       return printColumnRef(path, options, print);
     case "binary_expr":
-      //return "binary"
       return printBinaryExpr(path, options, print);
     case "ASC":
       return printAsc(path, options, print);
@@ -46,8 +45,7 @@ function printSQL(path, options, print) {
     case "date":
       return printDate(path, options, print);
     case "expr_list":
-      //return printExprList(path, options, print);
-      return "expr"
+      return printExprList(path, options, print);
     default:
       return node.value.toString();
   }
@@ -120,7 +118,8 @@ const printColumnRef = (path, options, print) => {
   if (node.table === null) {
     return node.column;
   } else {
-    return concat([node.table, ".", node.column]);
+    //return concat([node.table, ".", node.column]);
+    return `${node.table}.${node.column}`
   }
 };
 
