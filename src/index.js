@@ -96,7 +96,7 @@ const printWithClause = (path, options, print) => {
 const printSelectClause = (path, options, print) => {
   const node = path.getValue();
   const distinct = node.distinct ? " DISTINCT" : "";
-  const res = concat([
+  return concat([
     hardline,
     `SELECT${distinct}`,
     indent(
@@ -109,17 +109,12 @@ const printSelectClause = (path, options, print) => {
       ])
     ),
   ]);
-  return res;
 };
 
 const printColumnRef = (path, options, print) => {
   const node = path.getValue();
-  if (node.table === null) {
-    return node.column;
-  } else {
-    //return concat([node.table, ".", node.column]);
-    return `${node.table}.${node.column}`;
-  }
+  const table = node.table ? `${node.table}.` : ""
+  return `${table}${node.column}`;
 };
 
 const printFromClause = (path, options, print) => {
