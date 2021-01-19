@@ -22,6 +22,8 @@ const parsers = {
   },
 };
 
+let currentDepth = 0; // it may not be the best approach
+
 function printSQL(path, options, print) {
   const node = path.getValue();
   if (Array.isArray(node)) {
@@ -48,8 +50,10 @@ function printSQL(path, options, print) {
 }
 
 const printSelectStatement = (path, options, print) => {
+  currentDepth++;
   const node = path.getValue();
-  const res = [];
+  let res = [];
+  res.push(currentDepth === 1 ? "" : hardline);
   res.push(printWithClause(path, options, print));
   res.push(printSelectClause(path, options, print));
   res.push(printFromClause(path, options, print));
@@ -57,16 +61,17 @@ const printSelectStatement = (path, options, print) => {
   res.push(printOrderByClause(path, options, print));
   res.push(printLimitClause(path, options, print));
   if (!node.union) {
-    return concat(res);
+    res = concat(res);
   } else {
-    return concat([
+    res = concat([
       concat(res),
       hardline,
       node.union.toUpperCase(),
       path.call(print, "_next"),
     ]);
   }
-  //res.push(concat([hardline, ";"]));
+  currentDepth--;
+  return currentDepth === 0 ? concat([res, hardline, ";"]) : res;
 };
 
 const printWithClause = (path, options, print) => {
@@ -83,6 +88,7 @@ const printWithClause = (path, options, print) => {
     ]);
   };
   return concat([
+    // hardline is not needed since `with` is the 1st clause
     "WITH",
     concat([
       indent(
@@ -94,6 +100,7 @@ const printWithClause = (path, options, print) => {
         )
       ),
       hardline,
+      hardline, // blank line
     ]),
   ]);
 };
@@ -102,7 +109,7 @@ const printSelectClause = (path, options, print) => {
   const node = path.getValue();
   const distinct = node.distinct ? " DISTINCT" : "";
   return concat([
-    hardline,
+    // hardline is not needed since `select` is essential clause
     `SELECT${distinct}`,
     indent(
       concat([
