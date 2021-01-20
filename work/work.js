@@ -33,5 +33,10 @@ console.log(format(sql2));
 ast1.with[0].stmt.ast.columns
 ast1.orderby
 ast1.having.left
-ast2.from[0]
+ast2.from
 
+let a, b
+a = {a:"aaa", b:"bbb"}
+b = {chile:a}
+b
+b = {...a, c: "ccc"}

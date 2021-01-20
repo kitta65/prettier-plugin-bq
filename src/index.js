@@ -51,7 +51,7 @@ function printSQL(path, options, print) {
     case "string":
       return `'${node.value}'`;
     default:
-      return node.value.toString();
+      return concat([node.value.toString(), node.as ? ` AS ${node.as}` : ""]);
   }
 }
 
@@ -116,6 +116,7 @@ const printWithClause = (path, options, print) => {
 const printSelectClause = (path, options, print) => {
   const node = path.getValue();
   const distinct = node.distinct ? " DISTINCT" : "";
+  node.columns.map((x) => (x.expr.as = x.as));
   return concat([
     // hardline is not needed since `select` is essential clause
     `SELECT${distinct}`,
@@ -142,13 +143,14 @@ const printFromClause = (path, options, print) => {
   const _printTable = (path, options, print) => {
     const node = path.getValue();
     // subquery
-    if ("expr" in node) {
+    if (node.expr) {
       return concat([
         hardline,
         "(",
         indent(path.call((p) => p.call(print, "ast"), "expr")),
         hardline,
         ")",
+        node.as ? ` AS ${node.as}` : "",
       ]);
     }
     // ordinary table
@@ -259,8 +261,8 @@ const printAggrFunc = (path, options, print) => {
 
 const printFunc = (path, options, print) => {
   const node = path.getValue();
-  return concat([node.name.toUpperCase(),"(", path.call(print, "args") ,")" ])
-}
+  return concat([node.name.toUpperCase(), "(", path.call(print, "args"), ")"]);
+};
 
 const printers = {
   "sql-ast": {
