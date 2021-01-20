@@ -45,7 +45,7 @@ function printSQL(path, options, print) {
     case "expr_list":
       return printExprList(path, options, print);
     case "aggr_func":
-      return "aggr_func"; //printExprList(path, options, print);
+      return printAggrFunc(path, options, print);
     default:
       return node.value.toString();
   }
@@ -230,13 +230,27 @@ const printExprList = (path, options, print) => {
 const printGroupByClause = (path, options, print) => {
   const node = path.getValue();
   if (!node.groupby) return "";
-  return concat([hardline, "GROUP BY ", join(", ", path.map(print, "groupby"))]);
+  return concat([
+    hardline,
+    "GROUP BY ",
+    join(", ", path.map(print, "groupby")),
+  ]);
 };
 
 const printHavingClause = (path, options, print) => {
   const node = path.getValue();
   if (!node.having) return "";
   return concat([hardline, "HAVING ", path.call(print, "having")]);
+};
+
+const printAggrFunc = (path, options, print) => {
+  const node = path.getValue();
+  return concat([
+    node.name,
+    "(",
+    path.call((p) => p.call(print, "expr"), "args"),
+    ")",
+  ]);
 };
 
 const printers = {
