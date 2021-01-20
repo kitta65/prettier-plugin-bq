@@ -28,3 +28,10 @@ const ast2 = parser.astify(sql2);
 // check prittier
 console.log(format(sql1));
 console.log(format(sql2));
+
+// expr
+ast1.with[0].stmt.ast.columns
+ast1.orderby
+ast1.having.left
+ast2.from[0]
+

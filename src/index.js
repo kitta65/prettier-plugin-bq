@@ -46,6 +46,10 @@ function printSQL(path, options, print) {
       return printExprList(path, options, print);
     case "aggr_func":
       return printAggrFunc(path, options, print);
+    case "function":
+      return printFunc(path, options, print);
+    case "string":
+      return `'${node.value}'`;
     default:
       return node.value.toString();
   }
@@ -252,6 +256,11 @@ const printAggrFunc = (path, options, print) => {
     ")",
   ]);
 };
+
+const printFunc = (path, options, print) => {
+  const node = path.getValue();
+  return concat([node.name.toUpperCase(),"(", path.call(print, "args") ,")" ])
+}
 
 const printers = {
   "sql-ast": {
