@@ -44,6 +44,8 @@ function printSQL(path, options, print) {
       return printDate(path, options, print);
     case "expr_list":
       return printExprList(path, options, print);
+    case "aggr_func":
+      return "aggr_func"; //printExprList(path, options, print);
     default:
       return node.value.toString();
   }
@@ -59,6 +61,8 @@ const printSelectStatement = (path, options, print) => {
   res.push(printFromClause(path, options, print));
   res.push(printWhereClause(path, options, print));
   res.push(printOrderByClause(path, options, print));
+  res.push(printGroupByClause(path, options, print));
+  res.push(printHavingClause(path, options, print));
   res.push(printLimitClause(path, options, print));
   if (!node.union) {
     res = concat(res);
@@ -221,6 +225,18 @@ const printDate = (path, options, print) => {
 const printExprList = (path, options, print) => {
   const node = path.getValue();
   return join(" AND ", path.map(print, "value"));
+};
+
+const printGroupByClause = (path, options, print) => {
+  const node = path.getValue();
+  if (!node.groupby) return "";
+  return concat([hardline, "GROUP BY ", join(", ", path.map(print, "groupby"))]);
+};
+
+const printHavingClause = (path, options, print) => {
+  const node = path.getValue();
+  if (!node.having) return "";
+  return concat([hardline, "HAVING ", path.call(print, "having")]);
 };
 
 const printers = {
