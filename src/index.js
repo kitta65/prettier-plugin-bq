@@ -36,6 +36,8 @@ function printSQL(path, options, print) {
       return printColumnRef(path, options, print);
     case "binary_expr":
       return printBinaryExpr(path, options, print);
+    case "unary_expr":
+      return printUnaryExpr(path, options, print);
     case "ASC":
       return printAsc(path, options, print);
     case "DESC":
@@ -48,6 +50,12 @@ function printSQL(path, options, print) {
       return printAggrFunc(path, options, print);
     case "function":
       return printFunc(path, options, print);
+    case "case":
+      return printCase(path, options, print);
+    case "when":
+      return printWhen(path, options, print);
+    case "else":
+      return printElse(path, options, print);
     case "string":
       return `'${node.value}'`;
     default:
@@ -116,6 +124,9 @@ const printWithClause = (path, options, print) => {
 const printSelectClause = (path, options, print) => {
   const node = path.getValue();
   const distinct = node.distinct ? " DISTINCT" : "";
+  // `*` is special pattern
+  if (node.columns === "*") return `SELECT${distinct} *`;
+  // other then `*`
   node.columns.map((x) => (x.expr.as = x.as));
   return concat([
     // hardline is not needed since `select` is essential clause
@@ -135,7 +146,8 @@ const printSelectClause = (path, options, print) => {
 const printColumnRef = (path, options, print) => {
   const node = path.getValue();
   const table = node.table ? `${node.table}.` : "";
-  return `${table}${node.column}`;
+  const as = node.as ? ` ${node.as}` : "";
+  return `${table}${node.column}${as}`;
 };
 
 const printFromClause = (path, options, print) => {
@@ -177,16 +189,35 @@ const printFromClause = (path, options, print) => {
 
 const printBinaryExpr = (path, options, print) => {
   const node = path.getValue();
-  return join(" ", [
-    path.call(print, "left"),
-    node.operator,
-    path.call(print, "right"),
-  ]);
+  // set parameters
+  node.left.inWhere = node.inWhere;
+  node.right.inWhere = node.inWhere;
+  node.right.inBetween = node.operator === "BETWEEN";
+  if (node.operator === "IN") {
+    return concat([
+      path.call(print, "left"),
+      `${node.operator}(`,
+      path.call(print, "right"),
+      ")",
+    ]);
+  } else {
+    // AND IN OR BETWEEN...
+    return concat([
+      node.parentheses ? "(" : "",
+      path.call(print, "left"),
+      node.inWhere && node.operator === "AND" ? hardline : " ",
+      node.operator,
+      " ",
+      path.call(print, "right"),
+      node.parentheses ? ")" : "",
+    ]);
+  }
 };
 
 const printWhereClause = (path, options, print) => {
   const node = path.getValue();
   if (!node.where) return "";
+  node.where.inWhere = true;
   return concat([
     hardline,
     "WHERE",
@@ -230,7 +261,11 @@ const printDate = (path, options, print) => {
 
 const printExprList = (path, options, print) => {
   const node = path.getValue();
-  return join(" AND ", path.map(print, "value"));
+  if (node.inBetween) {
+    return join(" AND ", path.map(print, "value"));
+  } else {
+    return join(", ", path.map(print, "value"));
+  }
 };
 
 const printGroupByClause = (path, options, print) => {
@@ -256,12 +291,82 @@ const printAggrFunc = (path, options, print) => {
     "(",
     path.call((p) => p.call(print, "expr"), "args"),
     ")",
+    node.as ? ` AS ${node.as}` : "",
   ]);
 };
 
 const printFunc = (path, options, print) => {
   const node = path.getValue();
-  return concat([node.name.toUpperCase(), "(", path.call(print, "args"), ")"]);
+  const _printOverClause = (path, options, print) => {
+    const overClause = [];
+    if (node.over.partitionby) {
+      overClause.push(
+        concat([
+          "PARTITION BY ",
+          path.call(
+            (p) => concat(p.map((q) => q.call(print, "expr"), "partitionby")),
+            "over"
+          ),
+        ])
+      );
+    }
+    if (node.over.orderby) {
+      overClause.push(
+        concat([
+          "ORDER BY ",
+          path.call(
+            (p) => concat(p.map((q) => q.call(print, "expr"), "orderby")),
+            "over"
+          ),
+        ])
+      );
+    }
+    return concat([" OVER (", join(" ", overClause), ")"]);
+  };
+  return concat([
+    node.name.toUpperCase(),
+    "(",
+    path.call(print, "args"),
+    ")",
+    node.over ? _printOverClause(path, options, print) : "",
+    node.as ? ` AS ${node.as}` : "",
+  ]);
+};
+
+const printCase = (path, options, print) => {
+  const node = path.getValue();
+  return concat([
+    "CASE",
+    node.expr ? ` ${node.expr}` : "",
+    indent(
+      concat([
+        concat(path.map(print, "args")),
+        " END",
+        node.as ? ` AS ${node.as}` : "",
+      ])
+    ),
+  ]);
+};
+
+const printWhen = (path, options, print) => {
+  const node = path.getValue();
+  return concat([
+    hardline,
+    "WHEN ",
+    path.call(print, "cond"),
+    " THEN ",
+    path.call(print, "result"),
+  ]);
+};
+
+const printElse = (path, options, print) => {
+  const node = path.getValue();
+  return concat([hardline, "ELSE ", path.call(print, "result")]);
+};
+
+const printUnaryExpr = (path, options, print) => {
+  const node = path.getValue();
+  return concat([node.operator, "(", path.call(print, "expr"), ")"]);
 };
 
 const printers = {
