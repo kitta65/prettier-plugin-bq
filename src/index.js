@@ -21,24 +21,39 @@ const parsers = {
   },
 };
 
-let currentDepth = 0; // it may not be the best approach
-
-function printSQL(path, options, print) {
-  const node = path.getValue()
+const printSQL = (path, options, print) => {
+  const node = path.getValue();
 
   if (Array.isArray(node)) {
-    return concat(path.map(print))
+    return concat(path.map(print));
   }
-
   switch (get_node_type(node)) {
+    case "select":
+      return printSelectStatement(path, options, print);
+    case "Node":
+      return path.call(print, "Node");
+    case "NodeVec":
+      return path.call(print, "NodeVec");
     default:
-      return ''
+      return node.token.literal;
   }
-}
+};
+
+const printSelectStatement = (path, options, print) => {
+  const node = path.getValue();
+  return concat(["SELECT", path.call(p => p.call(print, "exprs"), "children")]);
+};
+
+const printExpr = (path, options, print) => {
+  return "printExpr";
+};
 
 const get_node_type = (node) => {
-  return ''
-}
+  if ("Node" in node) return "Node"
+  if ("NodeVec" in node) return "NodeVec"
+  if (node.children.self.Node.token.literal.toLowerCase() === "select") return "select";
+  return "";
+};
 
 const printers = {
   "sql-ast": {

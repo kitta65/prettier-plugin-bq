@@ -1,6 +1,5 @@
 // you have to run node with `--experimental-repl-await` option
-const { Parser } = require("node-sql-parser");
-const parser = new Parser();
+const parser = require("@dr666m1/bq2cst");
 const prettier = require("prettier");
 
 const read = (path) => {
@@ -24,10 +23,21 @@ const sql3 = await read("../sql/sample_window.sql");
 const sql4 = await read("../sql/sample_complicated_where.sql");
 
 // check parser
-const ast1 = parser.astify(sql1);
-const ast2 = parser.astify(sql2);
-const ast3 = parser.astify(sql3);
-const ast4 = parser.astify(sql4);
+cst = parser.parse(`
+select -- end
+1;
+`);
+cst[0].children.exprs.NodeVec[0]
+Object.keys(cst[0].children).map((x) => {
+  console.log;
+  ("a");
+});
+{a: "aa"}.length
+Object.keys(cst[0].children.semicolon);
+const ast1 = parser.parse(sql1);
+const ast2 = parser.parse(sql2);
+const ast3 = parser.parse(sql3);
+const ast4 = parser.parse(sql4);
 
 // check prittier
 console.log(format(sql1));
@@ -36,16 +46,16 @@ console.log(format(sql3));
 console.log(format(sql4));
 
 // expr
-ast1.with[0].stmt.ast.columns
-ast1.orderby
-ast1.having.left
-ast2.from
+ast1.with[0].stmt.ast.columns;
+ast1.orderby;
+ast1.having.left;
+ast2.from;
 
 //expr_list
-ast1.columns[0].expr
-ast1.where
-let a, b
-a = {a:"aaa", b:"bbb"}
-b = {chile:a}
-b
-b = {...a, c: "ccc"}
+ast1.columns[0].expr;
+ast1.where;
+let a, b;
+a = { a: "aaa", b: "bbb" };
+b = { chile: a };
+b;
+b = { ...a, c: "ccc" };
