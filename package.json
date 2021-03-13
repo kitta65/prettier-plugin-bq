@@ -9,8 +9,9 @@
   "keywords": [],
   "author": "dr666m1 <skndr666m1@gmail.com>",
   "license": "MIT",
-  "devDependencies": {
-    "node-sql-parser": "3.1.0",
-    "prettier": "2.2.1"
+  "devDependencies": {},
+  "dependencies": {
+    "@dr666m1/bq2cst": "0.0.4",
+    "prettier": "^2.2.1"
   }
 }
