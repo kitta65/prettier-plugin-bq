@@ -40,6 +40,8 @@ const printSQL = (path, options, print) => {
   switch (guess_node_type(node)) {
     case "selectStatement":
       return printSelectStatement(path, options, print);
+    case "func":
+      return printFunc(path, options, print);
     case "Node":
       return path.call(print, "Node");
     case "NodeVec":
@@ -74,6 +76,10 @@ const printSelectStatement = (path, options, print) => {
     ),
     hardline,
   ]);
+};
+
+const printFunc = (node) => {
+  return "function!";
 };
 
 const printDefault = (node) => {
@@ -111,8 +117,12 @@ const printExpr = (path, options, print) => {
 const guess_node_type = (node) => {
   if ("Node" in node) return "Node";
   if ("NodeVec" in node) return "NodeVec";
-  if (node.children.self.Node.token.literal.toLowerCase() === "select")
+  if (node.children.self.Node.token.literal.toLowerCase() === "select") {
     return "selectStatement";
+  }
+  if (node.children && "func" in node.children) {
+    return "func";
+  }
   return "";
 };
 
