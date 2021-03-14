@@ -28,7 +28,7 @@ const printSQL = (path, options, print) => {
     return concat(path.map(print));
   }
   switch (get_node_type(node)) {
-    case "select":
+    case "selectStatement":
       return printSelectStatement(path, options, print);
     case "Node":
       return path.call(print, "Node");
@@ -46,28 +46,40 @@ const printSelectStatement = (path, options, print) => {
   } else {
     semicolon = "semicolon";
   }
-  return group(
-    concat([
-      "SELECT",
-      line,
-      path.call((p) => p.call(print, "exprs"), "children"),
-      semicolon,
-    ])
-  );
+  return concat([
+    group(
+      concat([
+        printDefault(node),
+        path.call((p) => p.call(print, "exprs"), "children"),
+        semicolon,
+      ])
+    ),
+    hardline,
+  ]);
 };
 
 const printDefault = (node) => {
-  if ("following_comments" in node) {
-    following_comments = concat("following_comments", hardline);
-  } else {
-    following_comments = "";
-  }
-  if ("leading_comments" in node) {
-    leading_comments = "leading_comments";
+  if ("leading_comments" in node.children) {
+    leading_comments = concat(
+      node.children.leading_comments.NodeVec.map((x) =>
+        concat([x.token.literal, hardline])
+      )
+    );
   } else {
     leading_comments = "";
   }
-  return concat([following_comments, node.token.literal, leading_comments]);
+  if ("following_comments" in node.children) {
+    following_comments = concat([
+      concat(node.children.following_comments.NodeVec.map((x) => x.token.literal)),
+      hardline,
+    ]);
+  } else {
+    following_comments = "";
+  }
+  return concat([
+    leading_comments,
+    join(" ", [node.children.self.Node.token.literal, following_comments]),
+  ]);
 };
 
 const printExpr = (path, options, print) => {
@@ -78,7 +90,7 @@ const get_node_type = (node) => {
   if ("Node" in node) return "Node";
   if ("NodeVec" in node) return "NodeVec";
   if (node.children.self.Node.token.literal.toLowerCase() === "select")
-    return "select";
+    return "selectStatement";
   return "";
 };
 
