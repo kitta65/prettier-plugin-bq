@@ -1,7 +1,16 @@
 const parser = require("@dr666m1/bq2cst");
 const {
   doc: {
-    builders: { concat, hardline, group, indent, softline, join, line },
+    builders: {
+      concat,
+      hardline,
+      group,
+      indent,
+      softline,
+      join,
+      line,
+      literalline,
+    },
   },
   util,
 } = require("prettier");
@@ -27,7 +36,8 @@ const printSQL = (path, options, print) => {
   if (Array.isArray(node)) {
     return concat(path.map(print));
   }
-  switch (get_node_type(node)) {
+
+  switch (guess_node_type(node)) {
     case "selectStatement":
       return printSelectStatement(path, options, print);
     case "Node":
@@ -44,13 +54,21 @@ const printSelectStatement = (path, options, print) => {
   if ("semicolon" in node.children) {
     semicolon = path.call((p) => p.call(print, "semicolon"), "children");
   } else {
-    semicolon = "semicolon";
+    semicolon = ";";
   }
   return concat([
     group(
       concat([
-        printDefault(node),
-        path.call((p) => p.call(print, "exprs"), "children"),
+        // select clause
+        indent(
+          concat([
+            printDefault(node), // first line is not indented
+            path.call((p) => p.call(print, "exprs"), "children"),
+          ])
+        ),
+        // from clause
+        // where clause
+        // limit clause
         semicolon,
       ])
     ),
@@ -59,18 +77,22 @@ const printSelectStatement = (path, options, print) => {
 };
 
 const printDefault = (node) => {
+  // leading_comments
   if ("leading_comments" in node.children) {
     leading_comments = concat(
       node.children.leading_comments.NodeVec.map((x) =>
-        concat([x.token.literal, hardline])
+        concat([x.token.literal, literalline])
       )
     );
   } else {
     leading_comments = "";
   }
+  // following_comments
   if ("following_comments" in node.children) {
     following_comments = concat([
-      concat(node.children.following_comments.NodeVec.map((x) => x.token.literal)),
+      concat(
+        node.children.following_comments.NodeVec.map((x) => x.token.literal)
+      ),
       hardline,
     ]);
   } else {
@@ -86,7 +108,7 @@ const printExpr = (path, options, print) => {
   return "printExpr";
 };
 
-const get_node_type = (node) => {
+const guess_node_type = (node) => {
   if ("Node" in node) return "Node";
   if ("NodeVec" in node) return "NodeVec";
   if (node.children.self.Node.token.literal.toLowerCase() === "select")
