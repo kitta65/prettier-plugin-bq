@@ -41,7 +41,33 @@ const printSQL = (path, options, print) => {
 
 const printSelectStatement = (path, options, print) => {
   const node = path.getValue();
-  return concat(["SELECT", path.call(p => p.call(print, "exprs"), "children")]);
+  if ("semicolon" in node.children) {
+    semicolon = path.call((p) => p.call(print, "semicolon"), "children");
+  } else {
+    semicolon = "semicolon";
+  }
+  return group(
+    concat([
+      "SELECT",
+      line,
+      path.call((p) => p.call(print, "exprs"), "children"),
+      semicolon,
+    ])
+  );
+};
+
+const printDefault = (node) => {
+  if ("following_comments" in node) {
+    following_comments = concat("following_comments", hardline);
+  } else {
+    following_comments = "";
+  }
+  if ("leading_comments" in node) {
+    leading_comments = "leading_comments";
+  } else {
+    leading_comments = "";
+  }
+  return concat([following_comments, node.token.literal, leading_comments]);
 };
 
 const printExpr = (path, options, print) => {
@@ -49,9 +75,10 @@ const printExpr = (path, options, print) => {
 };
 
 const get_node_type = (node) => {
-  if ("Node" in node) return "Node"
-  if ("NodeVec" in node) return "NodeVec"
-  if (node.children.self.Node.token.literal.toLowerCase() === "select") return "select";
+  if ("Node" in node) return "Node";
+  if ("NodeVec" in node) return "NodeVec";
+  if (node.children.self.Node.token.literal.toLowerCase() === "select")
+    return "select";
   return "";
 };
 
