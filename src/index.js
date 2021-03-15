@@ -47,12 +47,38 @@ const printSQL = (path, options, print) => {
     case "NodeVec":
       return path.call(print, "NodeVec");
     default:
-      return node.token.literal;
+      return printDefault(path, options, print);
   }
 };
 
 const printSelectStatement = (path, options, print) => {
   const node = path.getValue();
+  // leading_comments
+  let leading_comments;
+  if ("leading_comments" in node.children) {
+    leading_comments = concat(
+      node.children.leading_comments.NodeVec.map((x) =>
+        concat([x.token.literal, literalline])
+      )
+    );
+  } else {
+    leading_comments = "";
+  }
+  // following_comments
+  let following_comments;
+  if ("following_comments" in node.children) {
+    following_comments = concat([
+      concat(
+        node.children.following_comments.NodeVec.map((x) =>
+          concat([" ", x.token.literal])
+        )
+      ),
+      hardline,
+    ]);
+  } else {
+    following_comments = "";
+  }
+  let semicolon;
   if ("semicolon" in node.children) {
     semicolon = path.call((p) => p.call(print, "semicolon"), "children");
   } else {
@@ -64,8 +90,8 @@ const printSelectStatement = (path, options, print) => {
         // select clause
         indent(
           concat([
-            printDefault(node), // first line is not indented
-            path.call((p) => p.call(print, "exprs"), "children"),
+            concat([leading_comments, "SELECT", following_comments]), // first line is not indented
+            group(path.call((p) => p.call(print, "exprs"), "children")),
           ])
         ),
         // from clause
@@ -78,12 +104,15 @@ const printSelectStatement = (path, options, print) => {
   ]);
 };
 
-const printFunc = (node) => {
+const printFunc = (path, options, print) => {
+  //
   return "function!";
 };
 
-const printDefault = (node) => {
+const printDefault = (path, options, print) => {
+  const node = path.getValue();
   // leading_comments
+  let leading_comments;
   if ("leading_comments" in node.children) {
     leading_comments = concat(
       node.children.leading_comments.NodeVec.map((x) =>
@@ -94,19 +123,31 @@ const printDefault = (node) => {
     leading_comments = "";
   }
   // following_comments
+  let following_comments;
   if ("following_comments" in node.children) {
     following_comments = concat([
       concat(
-        node.children.following_comments.NodeVec.map((x) => x.token.literal)
+        node.children.following_comments.NodeVec.map((x) =>
+          concat([" ", x.token.literal])
+        )
       ),
       hardline,
     ]);
   } else {
     following_comments = "";
   }
+  // comma
+  let comma;
+  if ("comma" in node.children) {
+    comma = node.children.comma.Node.token.literal;
+  } else {
+    comma = "";
+  }
   return concat([
     leading_comments,
-    join(" ", [node.children.self.Node.token.literal, following_comments]),
+    node.children.self.Node.token.literal,
+    following_comments,
+    comma,
   ]);
 };
 
