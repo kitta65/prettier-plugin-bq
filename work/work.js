@@ -27,7 +27,7 @@ cst = parser.parse(`
 select -- end
 1,func(1);
 `);
-cst[0]
+cst[0].children.exprs.NodeVec[1]
 Object.keys(cst[0].children).map((x) => {
   console.log;
   ("a");
