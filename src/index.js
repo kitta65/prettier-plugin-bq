@@ -34,75 +34,22 @@ const printSQL = (path, options, print) => {
   const node = path.getValue();
 
   if (Array.isArray(node)) {
-    return join(line, path.map(print));
+    return concat(path.map(print));
   }
 
   switch (guess_node_type(node)) {
+    case "parent":
+      return path.call(print, "children");
     case "selectStatement":
       return printSelectStatement(path, options, print);
-    case "func":
-      return printFunc(path, options, print);
-    case "Node":
-      return path.call(print, "Node");
-    case "NodeVec":
-      return path.call(print, "NodeVec");
     default:
-      return printDefault(path, options, print);
+      return "default";
   }
 };
 
 const printSelectStatement = (path, options, print) => {
   const node = path.getValue();
-  // leading_comments
-  let leading_comments;
-  if ("leading_comments" in node.children) {
-    leading_comments = concat(
-      node.children.leading_comments.NodeVec.map((x) =>
-        concat([x.token.literal, literalline])
-      )
-    );
-  } else {
-    leading_comments = "";
-  }
-  // following_comments
-  let following_comments;
-  if ("following_comments" in node.children) {
-    following_comments = concat([
-      concat(
-        node.children.following_comments.NodeVec.map((x) =>
-          concat([" ", x.token.literal])
-        )
-      ),
-      hardline,
-    ]);
-  } else {
-    following_comments = line;
-  }
-  let semicolon;
-  if ("semicolon" in node.children) {
-    semicolon = path.call((p) => p.call(print, "semicolon"), "children");
-  } else {
-    semicolon = ";";
-  }
-  return concat([
-    group(
-      concat([
-        // select clause
-        indent(
-          concat([
-            concat([leading_comments, "SELECT", following_comments]), // first line is not indented
-            //line,
-            group(path.call((p) => p.call(print, "exprs"), "children")),
-          ])
-        ),
-        // from clause
-        // where clause
-        // limit clause
-        semicolon,
-      ])
-    ),
-    hardline,
-  ]);
+  return concat([concatCommentsToSelf(node)]);
 };
 
 const printFunc = (path, options, print) => {
@@ -123,62 +70,48 @@ const printFunc = (path, options, print) => {
   ]);
 };
 
-const printDefault = (path, options, print) => {
-  const node = path.getValue();
+const printExpr = (path, options, print) => {
+  return "printExpr";
+};
+
+const concatCommentsToSelf = (node) => {
   // leading_comments
   let leading_comments;
-  if ("leading_comments" in node.children) {
-    leading_comments = concat(
-      node.children.leading_comments.NodeVec.map((x) =>
+  if ("leading_comments" in node) {
+    leading_comments = concat([
+      node.leading_comments.NodeVec.map((x) =>
         concat([x.token.literal, literalline])
-      )
-    );
+      ),
+    ]);
   } else {
     leading_comments = "";
   }
   // following_comments
   let following_comments;
-  if ("following_comments" in node.children) {
-    following_comments = concat([
-      concat(
-        node.children.following_comments.NodeVec.map((x) =>
-          concat([" ", x.token.literal])
-        )
-      ),
-      hardline,
-    ]);
+  if ("following_comments" in node) {
+    following_comments = concat([concat(
+      node.following_comments.NodeVec.map((x) => concat([" ", x.token.literal]))
+    ), hardline]);
   } else {
     following_comments = "";
   }
-  // comma
-  let comma;
-  if ("comma" in node.children) {
-    comma = node.children.comma.Node.token.literal;
-  } else {
-    comma = "";
-  }
   return concat([
-    leading_comments,
-    node.token.literal,
-    following_comments,
-    comma,
+    group(
+      concat([
+        leading_comments,
+        node.self.Node.token.literal,
+        following_comments,
+      ])
+    ),
+    line,
   ]);
 };
 
-const printExpr = (path, options, print) => {
-  return "printExpr";
-};
-
 const guess_node_type = (node) => {
-  if ("Node" in node) return "Node";
-  if ("NodeVec" in node) return "NodeVec";
-  if (node.children && "func" in node.children) {
-    return "func";
-  }
-  if ("self" in node.children) {
-    if (node.children.self.Node.token.literal.toLowerCase() === "select") {
+  if ("children" in node) return "parent";
+  if ("Node" in node.self) {
+    if (node.self.Node.token.literal.toLowerCase() === "select")
       return "selectStatement";
-    }
   }
   return "";
 };
