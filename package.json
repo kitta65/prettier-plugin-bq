@@ -5,7 +5,7 @@
   "main": "src/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "sample": "mkdir -p ./result && cp ./sample/* ./result && ./node_modules/.bin/prettier --write --plugin . ./result"
+    "sample": "mkdir -p ./result && cp ./sql/* ./result && ./node_modules/.bin/prettier --write --plugin . ./result"
   },
   "keywords": [],
   "author": "dr666m1 <skndr666m1@gmail.com>",
