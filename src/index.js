@@ -59,7 +59,7 @@ const printSelectStatement = (path, options, print) => {
     // select clause
     group(
       concat([
-        concatCommentsToSelf(node),
+        printSelf(path, options, print),
         line,
         path.call((p) => concat(p.map(print, "NodeVec")), "exprs"),
       ])
@@ -69,9 +69,8 @@ const printSelectStatement = (path, options, print) => {
 };
 
 const printDefault = (path, options, print) => {
-  const node = path.getValue();
-  const children = node.children;
-  return concatCommentsToSelf(children);
+  //const node = path.getValue();
+  return path.call(printSelf, "children")
 };
 
 const printFunc = (path, options, print) => {
@@ -93,7 +92,8 @@ const printFunc = (path, options, print) => {
   //]);
 };
 
-const concatCommentsToSelf = (node) => {
+const printSelf = (path, options, print) => {
+  const node = path.getValue()
   // leading_comments
   let leading_comments;
   if ("leading_comments" in node) {
@@ -127,17 +127,9 @@ const concatCommentsToSelf = (node) => {
   } else {
     following_comments = "";
   }
-  // self
-  let self;
-  if (node.self) {
-    self = node.self.Node.token.literal;
-  } else {
-    self = JSON.stringify(node);
-  }
   return concat([
     leading_comments,
-    //node.self.Node.token.literal,
-    self,
+    node.self.Node.token.literal,
     following_comments,
   ]);
 };
