@@ -49,7 +49,7 @@ const printSQL = (path, options, print) => {
     case "error":
       return JSON.stringify(node);
     default:
-      return printDefault(path, options, print);
+      return path.call(printSelf, "children");
   }
 };
 
@@ -66,11 +66,6 @@ const printSelectStatement = (path, options, print) => {
     ),
     path.call((p) => p.call(print, "Node"), "semicolon"),
   ]);
-};
-
-const printDefault = (path, options, print) => {
-  //const node = path.getValue();
-  return path.call(printSelf, "children")
 };
 
 const printFunc = (path, options, print) => {
@@ -93,9 +88,9 @@ const printFunc = (path, options, print) => {
 };
 
 const printSelf = (path, options, print) => {
-  const node = path.getValue()
+  const node = path.getValue();
   // leading_comments
-  let leading_comments;
+  let leading_comments = "";
   if ("leading_comments" in node) {
     let preprocess;
     if (node.leading_comments.NodeVec[0].token.line !== 0) {
@@ -111,11 +106,9 @@ const printSelf = (path, options, print) => {
         )
       ),
     ]);
-  } else {
-    leading_comments = "";
   }
   // following_comments
-  let following_comments;
+  let following_comments = "";
   if ("following_comments" in node) {
     following_comments = lineSuffix(
       concat(
@@ -124,8 +117,6 @@ const printSelf = (path, options, print) => {
         )
       )
     );
-  } else {
-    following_comments = "";
   }
   return concat([
     leading_comments,
@@ -144,6 +135,8 @@ const guess_node_type = (node) => {
       ).length
     ) {
       return "parent"; // self and one more property
+    } else {
+      return ""; // default
     }
   } else {
     if ("func" in node) return "func";
@@ -153,7 +146,7 @@ const guess_node_type = (node) => {
       }
     }
   }
-  return "";
+  return "error";
 };
 
 const printers = {
