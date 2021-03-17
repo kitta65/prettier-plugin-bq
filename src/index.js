@@ -51,7 +51,8 @@ const printSQL = (path, options, print) => {
     case "error":
       return JSON.stringify(node);
     default:
-      return path.call(printSelf, "children");
+      //return "default";
+      return printSelf(path, options, print); // TODO
   }
 };
 
@@ -76,8 +77,13 @@ const printSelectStatement = (path, options, print) => {
 };
 
 const printFunc = (path, options, print) => {
-  return "func";
   const node = path.getValue();
+  return concat([
+    path.call((p) => p.call(print, "Node"), "func"),
+    printSelf(path, options, print),
+    path.call((p) => concat(p.map(print, "NodeVec")), "args"),
+    path.call((p) => p.call(print, "Node"), "rparen"),
+  ]);
   // comma
   //let comma;
   //if ("comma" in node.children) {
@@ -108,6 +114,11 @@ const printSelf = (path, options, print) => {
       ),
     ]);
   }
+  // comma
+  let comma = "";
+  if ("comma" in node) {
+    //comma = path.call((p) => p.call(print, "Node"), "comma"); // TODO
+  }
   // following_comments
   let following_comments = "";
   if ("following_comments" in node) {
@@ -128,23 +139,23 @@ const printSelf = (path, options, print) => {
 
 const guess_node_type = (node) => {
   if ("children" in node) {
-    const basicProperties = [
-      "self",
-      "as",
-      "comma",
-      "leading_comments",
-      "following_comments",
-    ];
-    if (
-      0 <
-      Object.keys(node.children).filter(
-        (x) => basicProperties.indexOf(x) === -1
-      ).length
-    ) {
-      return "parent"; // self and one more property
-    } else {
-      return ""; // default
-    }
+    //const basicProperties = [
+    //  "self",
+    //  "as",
+    //  "comma",
+    //  "leading_comments",
+    //  "following_comments",
+    //];
+    //if (
+    //  0 <
+    //  Object.keys(node.children).filter(
+    //    (x) => basicProperties.indexOf(x) === -1
+    //  ).length
+    //) {
+    return "parent";
+    //} else {
+    //  return ""; // default
+    //}
   } else {
     if ("func" in node) return "func";
     if ("Node" in node.self) {
@@ -152,6 +163,7 @@ const guess_node_type = (node) => {
         return "selectStatement";
       }
     }
+    return "";
   }
   return "error";
 };
