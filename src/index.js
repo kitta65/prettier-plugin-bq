@@ -10,6 +10,8 @@ const {
       join,
       line,
       literalline,
+      lineSuffix,
+      lineSuffixBoundary,
     },
   },
   util,
@@ -78,9 +80,18 @@ const concatCommentsToSelf = (node) => {
   // leading_comments
   let leading_comments;
   if ("leading_comments" in node) {
+    let preprocess;
+    if (node.leading_comments.NodeVec[0].token.line !== 0) {
+      preprocess = concat([lineSuffix(""), lineSuffixBoundary]);
+    } else {
+      preprocess = "";
+    }
     leading_comments = concat([
-      node.leading_comments.NodeVec.map((x) =>
-        concat([x.token.literal, literalline])
+      preprocess,
+      concat(
+        node.leading_comments.NodeVec.map((x) =>
+          concat([x.token.literal, literalline])
+        )
       ),
     ]);
   } else {
@@ -89,14 +100,13 @@ const concatCommentsToSelf = (node) => {
   // following_comments
   let following_comments;
   if ("following_comments" in node) {
-    following_comments = concat([
+    following_comments = lineSuffix(
       concat(
         node.following_comments.NodeVec.map((x) =>
           concat([" ", x.token.literal])
         )
-      ),
-      hardline,
-    ]);
+      )
+    );
   } else {
     following_comments = "";
   }

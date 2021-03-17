@@ -1,3 +1,4 @@
+#standardSQL
 select 1;
 -- leading1
 -- leading2
