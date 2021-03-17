@@ -44,37 +44,54 @@ const printSQL = (path, options, print) => {
       return path.call(print, "children");
     case "selectStatement":
       return printSelectStatement(path, options, print);
+    case "func":
+      return printFunc(path, options, print);
+    case "error":
+      return JSON.stringify(node);
     default:
-      return "default";
+      return printDefault(path, options, print);
   }
 };
 
 const printSelectStatement = (path, options, print) => {
   const node = path.getValue();
   return concat([
-    concatCommentsToSelf(node),
-    path.call((p) => concat(p.map(print, "NodeVec")), "exprs"),
+    // select clause
+    group(
+      concat([
+        concatCommentsToSelf(node),
+        line,
+        path.call((p) => concat(p.map(print, "NodeVec")), "exprs"),
+      ])
+    ),
     path.call((p) => p.call(print, "Node"), "semicolon"),
   ]);
 };
 
-//const printFunc = (path, options, print) => {
-//  const node = path.getValue();
-//  // comma
-//  let comma;
-//  if ("comma" in node.children) {
-//    comma = node.children.comma.Node.token.literal;
-//  } else {
-//    comma = "";
-//  }
-//  return concat([
-//    node.children.func.Node.token.literal,
-//    path.call((p) => p.call(print, "self"), "children"),
-//    path.call((p) => p.call(print, "args"), "children"),
-//    path.call((p) => p.call(print, "rparen"), "children"),
-//    comma,
-//  ]);
-//};
+const printDefault = (path, options, print) => {
+  const node = path.getValue();
+  const children = node.children;
+  return concatCommentsToSelf(children);
+};
+
+const printFunc = (path, options, print) => {
+  return "func";
+  const node = path.getValue();
+  // comma
+  //let comma;
+  //if ("comma" in node.children) {
+  //  comma = node.children.comma.Node.token.literal;
+  //} else {
+  //  comma = "";
+  //}
+  //return concat([
+  //  node.children.func.Node.token.literal,
+  //  path.call((p) => p.call(print, "self"), "children"),
+  //  path.call((p) => p.call(print, "args"), "children"),
+  //  path.call((p) => p.call(print, "rparen"), "children"),
+  //  comma,
+  //]);
+};
 
 const concatCommentsToSelf = (node) => {
   // leading_comments
@@ -89,8 +106,8 @@ const concatCommentsToSelf = (node) => {
     leading_comments = concat([
       preprocess,
       concat(
-        node.leading_comments.NodeVec.map((x) =>
-          concat([x.token.literal, literalline])
+        node.leading_comments.NodeVec.map(
+          (x) => concat([x.token.literal, literalline]) // literallineWithoutBreakParent may be better
         )
       ),
     ]);
@@ -110,20 +127,38 @@ const concatCommentsToSelf = (node) => {
   } else {
     following_comments = "";
   }
+  // self
+  let self;
+  if (node.self) {
+    self = node.self.Node.token.literal;
+  } else {
+    self = JSON.stringify(node);
+  }
   return concat([
     leading_comments,
-    node.self.Node.token.literal,
+    //node.self.Node.token.literal,
+    self,
     following_comments,
   ]);
 };
 
 const guess_node_type = (node) => {
   if ("children" in node) {
-    if (1 < Object.keys(node.children).length) return "parent"; // self and one more property
+    const basicProperties = ["self", "as", "comma"];
+    if (
+      0 <
+      Object.keys(node.children).filter(
+        (x) => basicProperties.indexOf(x) === -1
+      ).length
+    ) {
+      return "parent"; // self and one more property
+    }
   } else {
+    if ("func" in node) return "func";
     if ("Node" in node.self) {
-      if (node.self.Node.token.literal.toLowerCase() === "select")
+      if (node.self.Node.token.literal.toLowerCase() === "select") {
         return "selectStatement";
+      }
     }
   }
   return "";
