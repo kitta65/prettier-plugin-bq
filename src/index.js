@@ -12,6 +12,8 @@ const {
       literalline,
       lineSuffix,
       lineSuffixBoundary,
+      markAsRoot,
+      dedentToRoot,
     },
   },
   util,
@@ -58,13 +60,18 @@ const printSelectStatement = (path, options, print) => {
   return concat([
     // select clause
     group(
-      concat([
-        printSelf(path, options, print),
-        line,
-        path.call((p) => concat(p.map(print, "NodeVec")), "exprs"),
-      ])
+      markAsRoot(
+        indent(
+          concat([
+            dedentToRoot(printSelf(path, options, print)),
+            line,
+            path.call((p) => concat(p.map(print, "NodeVec")), "exprs"),
+          ])
+        )
+      )
     ),
     path.call((p) => p.call(print, "Node"), "semicolon"),
+    line,
   ]);
 };
 
@@ -92,17 +99,11 @@ const printSelf = (path, options, print) => {
   // leading_comments
   let leading_comments = "";
   if ("leading_comments" in node) {
-    let preprocess;
-    if (node.leading_comments.NodeVec[0].token.line !== 0) {
-      preprocess = concat([lineSuffix(""), lineSuffixBoundary]);
-    } else {
-      preprocess = "";
-    }
     leading_comments = concat([
-      preprocess,
+      // leading lineSuffixBoundary might be needed
       concat(
         node.leading_comments.NodeVec.map(
-          (x) => concat([x.token.literal, literalline]) // literallineWithoutBreakParent may be better
+          (x) => concat([x.token.literal, hardline]) // literallineWithoutBreakParent may be better
         )
       ),
     ]);
@@ -127,7 +128,13 @@ const printSelf = (path, options, print) => {
 
 const guess_node_type = (node) => {
   if ("children" in node) {
-    const basicProperties = ["self", "as", "comma"];
+    const basicProperties = [
+      "self",
+      "as",
+      "comma",
+      "leading_comments",
+      "following_comments",
+    ];
     if (
       0 <
       Object.keys(node.children).filter(
