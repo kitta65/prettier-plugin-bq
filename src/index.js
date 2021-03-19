@@ -48,11 +48,10 @@ const printSQL = (path, options, print) => {
       return printSelectStatement(path, options, print);
     case "func":
       return printFunc(path, options, print);
-    case "error":
-      return JSON.stringify(node);
+    case "binaryOperator":
+      return printBinaryOperator(path, options, print);
     default:
-      //return "default";
-      return printSelf(path, options, print); // TODO
+      return printSelf(path, options, print);
   }
 };
 
@@ -87,6 +86,22 @@ const printFunc = (path, options, print) => {
     printSelf(path, options, print, false),
     path.call((p) => join(" ", p.map(print, "NodeVec")), "args"),
     path.call((p) => p.call(print, "Node"), "rparen"),
+    comma,
+  ]);
+};
+
+const printBinaryOperator = (path, options, print) => {
+  const node = path.getValue();
+  let comma = "";
+  if ("comma" in node) {
+    comma = path.call((p) => p.call(print, "Node"), "comma");
+  }
+  return concat([
+    join(" ", [
+      path.call((p) => p.call(print, "Node"), "left"),
+      printSelf(path, options, print, false),
+      path.call((p) => p.call(print, "Node"), "right"),
+    ]),
     comma,
   ]);
 };
@@ -141,9 +156,9 @@ const guess_node_type = (node) => {
         return "selectStatement";
       }
     }
-    return "";
+    if ("right" in node && "left" in node) return "binaryOperator";
   }
-  return "error";
+  return ""; // default
 };
 
 const printers = {
