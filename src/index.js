@@ -115,9 +115,12 @@ const printFunc = (path, options, print) => {
   if ("comma" in node) {
     comma = path.call((p) => p.call(print, "Node"), "comma");
   }
+  const config = {
+    printComma: false,
+  };
   return concat([
     path.call((p) => p.call(print, "Node"), "func"),
-    printSelf(path, options, print, false),
+    printSelf(path, options, print, config),
     path.call((p) => join(" ", p.map(print, "NodeVec")), "args"),
     path.call((p) => p.call(print, "Node"), "rparen"),
     comma,
@@ -141,17 +144,21 @@ const printBinaryOperator = (path, options, print) => {
   if ("comma" in node) {
     comma = path.call((p) => p.call(print, "Node"), "comma");
   }
+  const config = {
+    printComma: false,
+  };
   return concat([
     join(" ", [
       path.call((p) => p.call(print, "Node"), "left"),
-      printSelf(path, options, print, false),
+      printSelf(path, options, print, config),
       path.call((p) => p.call(print, "Node"), "right"),
     ]),
     comma,
   ]);
 };
 
-const printSelf = (path, options, print, printComma = true) => {
+const printSelf = (path, options, print, config = { printComma: true }) => {
+  const { printComma } = config;
   const node = path.getValue();
   // leading_comments
   let leading_comments = "";
