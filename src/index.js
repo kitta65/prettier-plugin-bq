@@ -66,7 +66,7 @@ const printSelectStatement = (path, options, print) => {
           concat([
             dedentToRoot(printSelf(path, options, print)),
             line,
-            path.call((p) => concat(p.map(print, "NodeVec")), "exprs"),
+            path.call((p) => join(line, p.map(print, "NodeVec")), "exprs"),
           ])
         )
       )
@@ -117,7 +117,7 @@ const printSelf = (path, options, print) => {
   // comma
   let comma = "";
   if ("comma" in node) {
-    comma = path.call((p) => p.call(print, "Node"), "comma"); // TODO
+    comma = path.call((p) => p.call(print, "Node"), "comma");
   }
   // following_comments
   let following_comments = "";
@@ -139,23 +139,7 @@ const printSelf = (path, options, print) => {
 
 const guess_node_type = (node) => {
   if ("children" in node) {
-    //const basicProperties = [
-    //  "self",
-    //  "as",
-    //  "comma",
-    //  "leading_comments",
-    //  "following_comments",
-    //];
-    //if (
-    //  0 <
-    //  Object.keys(node.children).filter(
-    //    (x) => basicProperties.indexOf(x) === -1
-    //  ).length
-    //) {
     return "parent";
-    //} else {
-    //  return ""; // default
-    //}
   } else {
     if ("func" in node) return "func";
     if ("Node" in node.self) {
