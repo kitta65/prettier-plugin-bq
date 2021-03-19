@@ -78,29 +78,20 @@ const printSelectStatement = (path, options, print) => {
 
 const printFunc = (path, options, print) => {
   const node = path.getValue();
+  let comma = "";
+  if ("comma" in node) {
+    comma = path.call((p) => p.call(print, "Node"), "comma");
+  }
   return concat([
     path.call((p) => p.call(print, "Node"), "func"),
-    printSelf(path, options, print),
-    path.call((p) => concat(p.map(print, "NodeVec")), "args"),
+    printSelf(path, options, print, false),
+    path.call((p) => join(" ", p.map(print, "NodeVec")), "args"),
     path.call((p) => p.call(print, "Node"), "rparen"),
+    comma,
   ]);
-  // comma
-  //let comma;
-  //if ("comma" in node.children) {
-  //  comma = node.children.comma.Node.token.literal;
-  //} else {
-  //  comma = "";
-  //}
-  //return concat([
-  //  node.children.func.Node.token.literal,
-  //  path.call((p) => p.call(print, "self"), "children"),
-  //  path.call((p) => p.call(print, "args"), "children"),
-  //  path.call((p) => p.call(print, "rparen"), "children"),
-  //  comma,
-  //]);
 };
 
-const printSelf = (path, options, print) => {
+const printSelf = (path, options, print, printComma = true) => {
   const node = path.getValue();
   // leading_comments
   let leading_comments = "";
@@ -116,8 +107,10 @@ const printSelf = (path, options, print) => {
   }
   // comma
   let comma = "";
-  if ("comma" in node) {
-    comma = path.call((p) => p.call(print, "Node"), "comma");
+  if (printComma) {
+    if ("comma" in node) {
+      comma = path.call((p) => p.call(print, "Node"), "comma");
+    }
   }
   // following_comments
   let following_comments = "";
