@@ -50,6 +50,8 @@ const printSQL = (path, options, print) => {
       return printFunc(path, options, print);
     case "binaryOperator":
       return printBinaryOperator(path, options, print);
+    case "keywordWithExpr":
+      return printKeywordWithExpr(path, options, print);
     default:
       return printSelf(path, options, print);
   }
@@ -60,7 +62,7 @@ const printSelectStatement = (path, options, print) => {
   // from
   let from = "";
   if ("from" in node) {
-    from = "from";
+    from = path.call((p) => p.call(print, "Node"), "from");
   }
   return concat([
     // select clause
@@ -83,6 +85,10 @@ const printSelectStatement = (path, options, print) => {
     line,
   ]);
 };
+
+const printKeywordWithExpr = (path, options, print) => {
+  return "funcKW"
+}
 
 const printFunc = (path, options, print) => {
   const node = path.getValue();
@@ -166,6 +172,7 @@ const guess_node_type = (node) => {
       }
     }
     if ("right" in node && "left" in node) return "binaryOperator";
+    if ("expr" in node) return "keywordWithExpr";
   }
   return ""; // default
 };
