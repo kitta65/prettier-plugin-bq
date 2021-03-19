@@ -117,7 +117,7 @@ const printSelf = (path, options, print) => {
   // comma
   let comma = "";
   if ("comma" in node) {
-    //comma = path.call((p) => p.call(print, "Node"), "comma"); // TODO
+    comma = path.call((p) => p.call(print, "Node"), "comma"); // TODO
   }
   // following_comments
   let following_comments = "";
