@@ -77,7 +77,7 @@ const printSelectStatement = (path, options, print) => {
             ])
           )
         ),
-        line, // needs to be placed out of indent()
+        line, // has to be placed out of indent()
       ])
     ),
     from,
@@ -87,8 +87,18 @@ const printSelectStatement = (path, options, print) => {
 };
 
 const printKeywordWithExpr = (path, options, print) => {
-  return "funcKW"
-}
+  return group(
+    markAsRoot(
+      indent(
+        concat([
+          dedentToRoot(printSelf(path, options, print)),
+          line,
+          path.call((p) => p.call(print, "Node"), "expr"),
+        ])
+      )
+    )
+  );
+};
 
 const printFunc = (path, options, print) => {
   const node = path.getValue();
