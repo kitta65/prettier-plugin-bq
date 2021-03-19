@@ -54,6 +54,8 @@ const printSQL = (path, options, print) => {
       return printKeywordWithExpr(path, options, print);
     case "limitClause":
       return printLimitCluase(path, options, print);
+    case "as":
+      return printAs(path, options, print);
     default:
       return printSelf(path, options, print);
   }
@@ -109,6 +111,10 @@ const printKeywordWithExpr = (path, options, print) => {
   );
 };
 
+const printAs = (path, options, print) => {
+  return "asSomething"
+}
+
 const printFunc = (path, options, print) => {
   const node = path.getValue();
   let comma = "";
@@ -157,7 +163,12 @@ const printBinaryOperator = (path, options, print) => {
   ]);
 };
 
-const printSelf = (path, options, print, config = { printComma: true }) => {
+const printSelf = (
+  path,
+  options,
+  print,
+  config = { printComma: true, printAlias: true }
+) => {
   const { printComma } = config;
   const node = path.getValue();
   // leading_comments
@@ -190,9 +201,15 @@ const printSelf = (path, options, print, config = { printComma: true }) => {
       )
     );
   }
+  // alias
+  let alias = "";
+  if ("as" in node) {
+    alias = concat([" ", path.call((p) => p.call(print, "Node"), "as")]);
+  }
   return concat([
     leading_comments,
     node.self.Node.token.literal,
+    alias,
     comma,
     following_comments,
   ]);
@@ -208,6 +225,7 @@ const guess_node_type = (node) => {
         return "selectStatement";
       }
     }
+    if ("alias" in node) return "as";
     if ("right" in node && "left" in node) return "binaryOperator";
     if ("offset" in node) return "limitClause";
     if ("expr" in node) return "keywordWithExpr";
