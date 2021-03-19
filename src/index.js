@@ -52,6 +52,8 @@ const printSQL = (path, options, print) => {
       return printBinaryOperator(path, options, print);
     case "keywordWithExpr":
       return printKeywordWithExpr(path, options, print);
+    case "limitClause":
+      return printLimitCluase(path, options, print);
     default:
       return printSelf(path, options, print);
   }
@@ -63,6 +65,11 @@ const printSelectStatement = (path, options, print) => {
   let from = "";
   if ("from" in node) {
     from = path.call((p) => p.call(print, "Node"), "from");
+  }
+  // limit
+  let limit = "";
+  if ("limit" in node) {
+    limit = path.call((p) => p.call(print, "Node"), "limit");
   }
   return concat([
     // select clause
@@ -82,6 +89,8 @@ const printSelectStatement = (path, options, print) => {
     ),
     from,
     path.call((p) => p.call(print, "Node"), "semicolon"),
+    line,
+    limit,
     line,
   ]);
 };
@@ -113,6 +122,17 @@ const printFunc = (path, options, print) => {
     path.call((p) => p.call(print, "Node"), "rparen"),
     comma,
   ]);
+};
+
+const printLimitCluase = (path, options, print) => {
+  const node = path.getValue();
+  return group(
+    concat([
+      printKeywordWithExpr(path, options, print),
+      line,
+      path.call((p) => p.call(print, "Node"), "offset"),
+    ])
+  );
 };
 
 const printBinaryOperator = (path, options, print) => {
@@ -182,6 +202,7 @@ const guess_node_type = (node) => {
       }
     }
     if ("right" in node && "left" in node) return "binaryOperator";
+    if ("offset" in node) return "limitClause";
     if ("expr" in node) return "keywordWithExpr";
   }
   return ""; // default
