@@ -57,19 +57,28 @@ const printSQL = (path, options, print) => {
 
 const printSelectStatement = (path, options, print) => {
   const node = path.getValue();
+  // from
+  let from = "";
+  if ("from" in node) {
+    from = "from";
+  }
   return concat([
     // select clause
     group(
-      markAsRoot(
-        indent(
-          concat([
-            dedentToRoot(printSelf(path, options, print)),
-            line,
-            path.call((p) => join(line, p.map(print, "NodeVec")), "exprs"),
-          ])
-        )
-      )
+      concat([
+        markAsRoot(
+          indent(
+            concat([
+              dedentToRoot(printSelf(path, options, print)),
+              line,
+              path.call((p) => join(line, p.map(print, "NodeVec")), "exprs"),
+            ])
+          )
+        ),
+        line, // needs to be placed out of indent()
+      ])
     ),
+    from,
     path.call((p) => p.call(print, "Node"), "semicolon"),
     line,
   ]);
