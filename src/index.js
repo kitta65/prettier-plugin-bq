@@ -133,6 +133,7 @@ const printSelf = (path, options, print) => {
   return concat([
     leading_comments,
     node.self.Node.token.literal,
+    comma,
     following_comments,
   ]);
 };
