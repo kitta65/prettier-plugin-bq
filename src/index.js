@@ -58,6 +58,8 @@ const printSQL = (path, options, print) => {
       return printIntervalLiteral(path, options, print);
     case "limitClause":
       return printLimitCluase(path, options, print);
+    case "group":
+      return printGroup(path, options, print);
     case "as":
       return printAs(path, options, print);
     default:
@@ -235,6 +237,29 @@ const printIntervalLiteral = (path, options, print) => {
   ]);
 };
 
+const printGroup = (path, options, print) => {
+  const node = path.getValue();
+  const config = {
+    printComma: false,
+    printAlias: false,
+  };
+  let comma = "";
+  if ("comma" in node) {
+    comma = path.call((p) => p.call(print, "Node"), "comma");
+  }
+  let as = "";
+  if ("as" in node) {
+    as = concat([" ", path.call((p) => p.call(print, "Node"), "as")]);
+  }
+  return concat([
+    printSelf(path, options, print, config),
+    path.call((p) => p.call(print, "Node"), "expr"),
+    path.call((p) => p.call(print, "Node"), "rparen"),
+    as,
+    comma,
+  ]);
+};
+
 const printSelf = (
   path,
   options,
@@ -303,6 +328,7 @@ const guess_node_type = (node) => {
     if ("right" in node && "left" in node) return "binaryOperator";
     if ("right" in node && "date_part" in node) return "intervalLiteral";
     if ("right" in node) return "unaryOperator";
+    if ("rparen" in node && "expr" in node) return "group";
     if ("offset" in node) return "limitClause";
     if ("expr" in node) return "keywordWithExpr";
   }
