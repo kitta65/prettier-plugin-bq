@@ -363,7 +363,9 @@ const printWindowSpecification = (path, options, print) => {
     contents.push(path.call((p) => p.call(print, "Node"), "name"));
   }
   if ("partitionby" in node) {
-    contents.push(group(path.call((p) => p.call(print, "Node"), "partitionby")));
+    contents.push(
+      group(path.call((p) => p.call(print, "Node"), "partitionby"))
+    );
   }
   if ("orderby" in node) {
     contents.push(group(path.call((p) => p.call(print, "Node"), "orderby")));
@@ -376,7 +378,12 @@ const printWindowSpecification = (path, options, print) => {
     rparen = path.call((p) => p.call(print, "Node"), "rparen");
   }
   return group(
-    concat([printSelf(path, options, print), join(" ", contents), rparen])
+    concat([
+      printSelf(path, options, print),
+      indent(concat([softline, join(line, contents)])),
+      softline,
+      rparen,
+    ])
   );
 };
 
