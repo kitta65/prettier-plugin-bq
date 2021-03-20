@@ -80,32 +80,46 @@ const printSelectStatement = (path, options, print) => {
   // from
   let from = "";
   if ("from" in node) {
-    from = concat([line, path.call((p) => p.call(print, "Node"), "from")]);
+    from = concat([
+      line,
+      group(path.call((p) => p.call(print, "Node"), "from")),
+    ]);
   }
   // limit
   let limit = "";
   if ("limit" in node) {
-    limit = concat([line, path.call((p) => p.call(print, "Node"), "limit")]);
+    limit = concat([
+      line,
+      group(path.call((p) => p.call(print, "Node"), "limit")),
+    ]);
   }
   return concat([
-    // select clause
     group(
       concat([
-        markAsRoot(
-          indent(
-            concat([
-              dedentToRoot(printSelf(path, options, print)),
-              line,
-              path.call((p) => join(line, p.map(print, "NodeVec")), "exprs"),
-            ])
-          )
+        // select clause
+        group(
+          concat([
+            markAsRoot(
+              indent(
+                concat([
+                  dedentToRoot(printSelf(path, options, print)),
+                  line,
+                  path.call(
+                    (p) => join(line, p.map(print, "NodeVec")),
+                    "exprs"
+                  ),
+                ])
+              )
+            ),
+          ])
         ),
+        from,
+        limit,
+        softline,
+        path.call((p) => p.call(print, "Node"), "semicolon"),
       ])
     ),
-    from,
-    path.call((p) => p.call(print, "Node"), "semicolon"),
-    limit,
-    line,
+    hardline,
   ]);
 };
 
@@ -209,7 +223,7 @@ const printCaseExpr = (path, options, print) => {
   };
   let expr = "";
   if ("expr" in node) {
-    expr = concat([path.call((p) => p.call(print, "Node"), "expr"), " "]);
+    expr = concat([" ", path.call((p) => p.call(print, "Node"), "expr")]);
   }
   let comma = "";
   if ("comma" in node) {
@@ -219,16 +233,22 @@ const printCaseExpr = (path, options, print) => {
   if ("as" in node) {
     as = concat([" ", path.call((p) => p.call(print, "Node"), "as")]);
   }
-  return group(concat([
-    printSelf(path, options, print, config),
-    " ",
-    expr,
-    path.call((p) => join(line, p.map(print, "NodeVec")), "arms"),
-    " ",
-    path.call(p=> p.call(print, "Node"), "end"),
-    as,
-    comma,
-  ]));
+  return group(
+    concat([
+      printSelf(path, options, print, config),
+      expr,
+      indent(
+        concat([
+          line,
+          path.call((p) => join(line, p.map(print, "NodeVec")), "arms"),
+          " ",
+          path.call((p) => p.call(print, "Node"), "end"),
+          as,
+          comma,
+        ])
+      ),
+    ])
+  );
 };
 
 const printCaseArm = (path, options, print) => {
