@@ -8,3 +8,4 @@ select
   -- this is int64
   1,2,1=1 cond;
 select 1,2,3 from data limit 100 offset 10;
+select date '2020-01-01', 1;

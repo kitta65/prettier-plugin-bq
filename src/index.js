@@ -66,12 +66,12 @@ const printSelectStatement = (path, options, print) => {
   // from
   let from = "";
   if ("from" in node) {
-    from = path.call((p) => p.call(print, "Node"), "from");
+    from = concat([line, path.call((p) => p.call(print, "Node"), "from")]);
   }
   // limit
   let limit = "";
   if ("limit" in node) {
-    limit = path.call((p) => p.call(print, "Node"), "limit");
+    limit = concat([line, path.call((p) => p.call(print, "Node"), "limit")]);
   }
   return concat([
     // select clause
@@ -86,12 +86,10 @@ const printSelectStatement = (path, options, print) => {
             ])
           )
         ),
-        line, // has to be placed out of indent()
       ])
     ),
     from,
     path.call((p) => p.call(print, "Node"), "semicolon"),
-    line,
     limit,
     line,
   ]);
