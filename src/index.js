@@ -62,6 +62,8 @@ const printSQL = (path, options, print) => {
       return printGroup(path, options, print);
     case "as":
       return printAs(path, options, print);
+    case "betweenOperator":
+      return printBetweenOperator(path, options, print);
     default:
       return printSelf(path, options, print);
   }
@@ -175,19 +177,19 @@ const printBinaryOperator = (path, options, print) => {
   }
   let comma = "";
   if ("comma" in node) {
-    comma = path.call((p) => p.call(print, "Node"), "comma");
+    comma = concat([path.call((p) => p.call(print, "Node"), "comma"), " "]);
   }
   let as = "";
   if ("as" in node) {
     as = concat([" ", path.call((p) => p.call(print, "Node"), "as")]);
   }
   return concat([
-    join(" ", [
-      path.call((p) => p.call(print, "Node"), "left"),
-      not,
-      printSelf(path, options, print, config),
-      path.call((p) => p.call(print, "Node"), "right"),
-    ]),
+    path.call((p) => p.call(print, "Node"), "left"),
+    " ",
+    not,
+    printSelf(path, options, print, config),
+    " ",
+    path.call((p) => p.call(print, "Node"), "right"),
     as,
     comma,
   ]);
@@ -199,6 +201,10 @@ const printUnaryOperator = (path, options, print) => {
     printComma: false,
     printAlias: false,
   };
+  let self = printSelf(path, options, print, config);
+  if (node.self.Node.token.literal !== "-") {
+    self = concat([self, " "]);
+  }
   let comma = "";
   if ("comma" in node) {
     comma = path.call((p) => p.call(print, "Node"), "comma");
@@ -208,8 +214,7 @@ const printUnaryOperator = (path, options, print) => {
     as = concat([" ", path.call((p) => p.call(print, "Node"), "as")]);
   }
   return concat([
-    printSelf(path, options, print, config),
-    " ",
+    self,
     path.call((p) => p.call(print, "Node"), "right"),
     as,
     comma,
@@ -260,6 +265,35 @@ const printGroup = (path, options, print) => {
     printSelf(path, options, print, config),
     path.call((p) => p.call(print, "Node"), "expr"),
     path.call((p) => p.call(print, "Node"), "rparen"),
+    as,
+    comma,
+  ]);
+};
+
+const printBetweenOperator = (path, options, print) => {
+  const node = path.getValue();
+  const config = {
+    printComma: false,
+    printAlias: false,
+  };
+  const min = path.call((p) => p.map(print, "NodeVec")[0], "right");
+  const max = path.call((p) => p.map(print, "NodeVec")[1], "right");
+  let comma = "";
+  if ("comma" in node) {
+    comma = path.call((p) => p.call(print, "Node"), "comma");
+  }
+  let as = "";
+  if ("as" in node) {
+    as = concat([" ", path.call((p) => p.call(print, "Node"), "as")]);
+  }
+  return concat([
+    join(" ", [
+      path.call((p) => p.call(print, "Node"), "left"),
+      printSelf(path, options, print, config),
+      min,
+      path.call((p) => p.call(print, "Node"), "and"),
+      max,
+    ]),
     as,
     comma,
   ]);
@@ -330,6 +364,8 @@ const guess_node_type = (node) => {
         return "selectStatement";
       }
     }
+    if ("right" in node && "left" in node && "and" in node)
+      return "betweenOperator";
     if ("right" in node && "left" in node) return "binaryOperator";
     if ("right" in node && "date_part" in node) return "intervalLiteral";
     if ("right" in node) return "unaryOperator";
