@@ -201,8 +201,9 @@ const printUnaryOperator = (path, options, print) => {
     printComma: false,
     printAlias: false,
   };
+  const noSpaceOperators = ["-", "br", "r", "rb", "b"];
   let self = printSelf(path, options, print, config);
-  if (node.self.Node.token.literal !== "-") {
+  if (noSpaceOperators.indexOf(node.self.Node.token.literal.toLowerCase()) === -1) {
     self = concat([self, " "]);
   }
   let comma = "";
