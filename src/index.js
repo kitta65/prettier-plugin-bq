@@ -66,6 +66,10 @@ const printSQL = (path, options, print) => {
       return printAs(path, options, print);
     case "betweenOperator":
       return printBetweenOperator(path, options, print);
+    case "caseExpr":
+      return printCaseExpr(path, options, print);
+    case "caseArm":
+      return printCaseArm(path, options, print);
     default:
       return printSelf(path, options, print);
   }
@@ -194,6 +198,63 @@ const printBinaryOperator = (path, options, print) => {
     path.call((p) => p.call(print, "Node"), "right"),
     as,
     comma,
+  ]);
+};
+
+const printCaseExpr = (path, options, print) => {
+  const node = path.getValue();
+  const config = {
+    printComma: false,
+    printAlias: false,
+  };
+  let expr = "";
+  if ("expr" in node) {
+    expr = concat([path.call((p) => p.call(print, "Node"), "expr"), " "]);
+  }
+  let comma = "";
+  if ("comma" in node) {
+    comma = path.call((p) => p.call(print, "Node"), "comma");
+  }
+  let as = "";
+  if ("as" in node) {
+    as = concat([" ", path.call((p) => p.call(print, "Node"), "as")]);
+  }
+  return group(concat([
+    printSelf(path, options, print, config),
+    " ",
+    expr,
+    path.call((p) => join(line, p.map(print, "NodeVec")), "arms"),
+    " ",
+    path.call(p=> p.call(print, "Node"), "end"),
+    as,
+    comma,
+  ]));
+};
+
+const printCaseArm = (path, options, print) => {
+  const node = path.getValue();
+  const config = {
+    printComma: false,
+    printAlias: false,
+  };
+  let whenExprThen;
+  if ("expr" in node) {
+    // when
+    whenExprThen = concat([
+      join(" ", [
+        printSelf(path, options, print, config),
+        path.call((p) => p.call(print, "Node"), "expr"),
+        path.call((p) => p.call(print, "Node"), "then"),
+      ]),
+      " ",
+    ]);
+  } else {
+    // else
+    whenExprThen = concat([printSelf(path, options, print, config), " "]);
+  }
+  return concat([
+    whenExprThen,
+    path.call((p) => p.call(print, "Node"), "result"),
   ]);
 };
 
@@ -400,6 +461,8 @@ const guess_node_type = (node) => {
     if ("right" in node) return "unaryOperator";
     if ("rparen" in node && "expr" in node) return "groupedExpr";
     if ("rparen" in node && "exprs" in node) return "groupedExprs";
+    if ("arms" in node) return "caseExpr";
+    if ("result" in node) return "caseArm";
     if ("offset" in node) return "limitClause";
     if ("expr" in node) return "keywordWithExpr";
   }
