@@ -16,7 +16,6 @@ const {
       dedentToRoot,
     },
   },
-  util,
 } = require("prettier");
 
 const languages = [
@@ -72,6 +71,8 @@ const printSQL = (path, options, print) => {
       return printBetweenOperator(path, options, print);
     case "caseExpr":
       return printCaseExpr(path, options, print);
+    case "xxxByExprs":
+      return printXXXByExprs(path, options, print);
     case "caseArm":
       return printCaseArm(path, options, print);
     default:
@@ -106,6 +107,14 @@ const printSelectStatement = (path, options, print) => {
   if ("where" in node) {
     where = concat([line, path.call((p) => p.call(print, "Node"), "where")]);
   }
+  // group by
+  let groupby = "";
+  if ("groupby" in node) {
+    groupby = concat([
+      line,
+      path.call((p) => p.call(print, "Node"), "groupby"),
+    ]);
+  }
   // limit
   let limit = "";
   if ("limit" in node) {
@@ -120,6 +129,7 @@ const printSelectStatement = (path, options, print) => {
         select,
         from,
         where,
+        groupby,
         limit,
         softline,
         path.call((p) => p.call(print, "Node"), "semicolon"),
@@ -278,6 +288,17 @@ const printCaseExpr = (path, options, print) => {
       ),
     ])
   );
+};
+
+const printXXXByExprs = (path, options, print) => {
+  const node = path.getValue()
+  return concat([
+    printSelf(path, options, print),
+    " ",
+    path.call(p => p.call(print, "Node"), "by"),
+    " ",
+    path.call(p => join(line, p.map(print, "NodeVec")), "exprs"),
+  ]);
 };
 
 const printCaseArm = (path, options, print) => {
@@ -497,10 +518,11 @@ const guess_node_type = (node) => {
   } else {
     if ("func" in node) return "func";
     if ("alias" in node) return "as";
-    if ("Node" in node.self) {
-      if (node.self.Node.token.literal.toLowerCase() === "select") {
-        return "selectStatement";
-      }
+    if (
+      "Node" in node.self &&
+      node.self.Node.token.literal.toLowerCase() === "select"
+    ) {
+      return "selectStatement";
     }
     if ("right" in node && "left" in node && "and" in node) {
       return "betweenOperator";
@@ -516,6 +538,7 @@ const guess_node_type = (node) => {
     if ("for_system_time_as_of" in node) return "tableName";
     if ("system_time_as_of" in node) return "forSystemTimeAsOfClause";
     if ("expr" in node) return "keywordWithExpr";
+    if ("by" in node && "exprs" in node) return "xxxByExprs";
   }
   return ""; // default
 };
