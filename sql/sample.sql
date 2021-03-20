@@ -3,6 +3,7 @@ select 1 as one, 2 two;
 -- leading1
 -- leading2
 select /* following1 */ /* following2 */ func(1) as f, func(2,3) -- following3
+,func()
 ;
 select
   -- this is int64

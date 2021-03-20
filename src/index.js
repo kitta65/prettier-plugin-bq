@@ -122,14 +122,18 @@ const printAs = (path, options, print) => {
 
 const printFunc = (path, options, print) => {
   const node = path.getValue();
-  let comma = "";
-  if ("comma" in node) {
-    comma = path.call((p) => p.call(print, "Node"), "comma");
-  }
   const config = {
     printComma: false,
     printAlias: false,
   };
+  let args = "";
+  if ("args" in node) {
+    args = path.call((p) => join(" ", p.map(print, "NodeVec")), "args");
+  }
+  let comma = "";
+  if ("comma" in node) {
+    comma = path.call((p) => p.call(print, "Node"), "comma");
+  }
   let as = "";
   if ("as" in node) {
     as = concat([" ", path.call((p) => p.call(print, "Node"), "as")]);
@@ -137,7 +141,7 @@ const printFunc = (path, options, print) => {
   return concat([
     path.call((p) => p.call(print, "Node"), "func"),
     printSelf(path, options, print, config),
-    path.call((p) => join(" ", p.map(print, "NodeVec")), "args"),
+    args,
     path.call((p) => p.call(print, "Node"), "rparen"),
     as,
     comma,
