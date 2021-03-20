@@ -10,4 +10,4 @@ select
   1,2,1=1 cond;
 select 1,2,3 from data limit 100 offset 10;
 select date '2020-01-01', 1;
-select 1,(1),((1+1)),not 1=1,col like 'a%',col not like 'a%', 1 between -1 and 1, timestamp r"2020-01-01", 1 in (1,2);
+select 1,(1),((1+1)),not 1=1,col like 'a%',col not like 'a%', 1 between -1 and 1, timestamp r"2020-01-01", 1 in (1,2),1 not in (2,3);

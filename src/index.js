@@ -175,7 +175,7 @@ const printBinaryOperator = (path, options, print) => {
   };
   let not = "";
   if ("not" in node) {
-    not = path.call((p) => p.call(print, "Node"), "not");
+    not = concat([path.call((p) => p.call(print, "Node"), "not"), " "]);
   }
   let comma = "";
   if ("comma" in node) {
