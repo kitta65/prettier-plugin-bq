@@ -128,12 +128,18 @@ const printFunc = (path, options, print) => {
   }
   const config = {
     printComma: false,
+    printAlias: false,
   };
+  let as = "";
+  if ("as" in node) {
+    as = concat([" ", path.call((p) => p.call(print, "Node"), "as")]);
+  }
   return concat([
     path.call((p) => p.call(print, "Node"), "func"),
     printSelf(path, options, print, config),
     path.call((p) => join(" ", p.map(print, "NodeVec")), "args"),
     path.call((p) => p.call(print, "Node"), "rparen"),
+    as,
     comma,
   ]);
 };
@@ -157,13 +163,19 @@ const printBinaryOperator = (path, options, print) => {
   }
   const config = {
     printComma: false,
+    printAlias: false,
   };
+  let as = "";
+  if ("as" in node) {
+    as = concat([" ", path.call((p) => p.call(print, "Node"), "as")]);
+  }
   return concat([
     join(" ", [
       path.call((p) => p.call(print, "Node"), "left"),
       printSelf(path, options, print, config),
       path.call((p) => p.call(print, "Node"), "right"),
     ]),
+    as,
     comma,
   ]);
 };
@@ -174,7 +186,7 @@ const printSelf = (
   print,
   config = { printComma: true, printAlias: true }
 ) => {
-  const { printComma } = config;
+  const { printComma, printAlias } = config;
   const node = path.getValue();
   // leading_comments
   let leading_comments = "";
@@ -208,8 +220,10 @@ const printSelf = (
   }
   // alias
   let alias = "";
-  if ("as" in node) {
-    alias = concat([" ", path.call((p) => p.call(print, "Node"), "as")]);
+  if (printAlias) {
+    if ("as" in node) {
+      alias = concat([" ", path.call((p) => p.call(print, "Node"), "as")]);
+    }
   }
   return concat([
     leading_comments,
