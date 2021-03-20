@@ -73,6 +73,8 @@ const printSQL = (path, options, print) => {
       return printCaseExpr(path, options, print);
     case "overClause":
       return printOverClause(path, options, print);
+    case "windowSpecification":
+      return printWindowSpecification(path, options, print);
     case "xxxByExprs":
       return printXXXByExprs(path, options, print);
     case "caseArm":
@@ -346,12 +348,29 @@ const printXXXByExprs = (path, options, print) => {
 
 const printOverClause = (path, options, print) => {
   const node = path.getValue();
-  const config = {
-    printComma: false,
-    printAlias: false,
-    printOrder: false,
-  };
-  return concat([printSelf(path, options, print, config)]);
+  let win = path.call((p) => p.call(print, "Node"), "window");
+  return concat([printSelf(path, options, print), " ", win]);
+};
+
+const printWindowSpecification = (path, options, print) => {
+  const node = path.getValue();
+  let contents = [];
+  if ("name" in node) {
+    contents.push(path.call((p) => p.call(print, "Node"), "name"));
+  }
+  if ("partitionby" in node) {
+    contents.push(path.call((p) => p.call(print, "Node"), "partitionby"));
+  }
+  if ("orderby" in node) {
+    contents.push(path.call((p) => p.call(print, "Node"), "orderby"));
+  }
+  let rparen = "";
+  if ("rparen" in node) {
+    rparen = path.call((p) => p.call(print, "Node"), "rparen");
+  }
+  return group(
+    concat([printSelf(path, options, print), join(" ", contents), rparen])
+  );
 };
 
 const printCaseArm = (path, options, print) => {
@@ -624,6 +643,7 @@ const guess_node_type = (node) => {
     if ("right" in node) return "unaryOperator";
     if ("rparen" in node && "expr" in node) return "groupedExpr";
     if ("rparen" in node && "exprs" in node) return "groupedExprs";
+    if ("rparen" in node) return "windowSpecification";
     if ("arms" in node) return "caseExpr";
     if ("result" in node) return "caseArm";
     if ("offset" in node) return "limitClause";
