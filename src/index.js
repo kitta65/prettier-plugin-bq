@@ -58,8 +58,10 @@ const printSQL = (path, options, print) => {
       return printIntervalLiteral(path, options, print);
     case "limitClause":
       return printLimitCluase(path, options, print);
-    case "group":
-      return printGroup(path, options, print);
+    case "groupedExpr":
+      return printGroupedExpr(path, options, print);
+    case "groupedExprs":
+      return printGroupedExprs(path, options, print);
     case "as":
       return printAs(path, options, print);
     case "betweenOperator":
@@ -203,7 +205,9 @@ const printUnaryOperator = (path, options, print) => {
   };
   const noSpaceOperators = ["-", "br", "r", "rb", "b"];
   let self = printSelf(path, options, print, config);
-  if (noSpaceOperators.indexOf(node.self.Node.token.literal.toLowerCase()) === -1) {
+  if (
+    noSpaceOperators.indexOf(node.self.Node.token.literal.toLowerCase()) === -1
+  ) {
     self = concat([self, " "]);
   }
   let comma = "";
@@ -248,7 +252,7 @@ const printIntervalLiteral = (path, options, print) => {
   ]);
 };
 
-const printGroup = (path, options, print) => {
+const printGroupedExpr = (path, options, print) => {
   const node = path.getValue();
   const config = {
     printComma: false,
@@ -265,6 +269,29 @@ const printGroup = (path, options, print) => {
   return concat([
     printSelf(path, options, print, config),
     path.call((p) => p.call(print, "Node"), "expr"),
+    path.call((p) => p.call(print, "Node"), "rparen"),
+    as,
+    comma,
+  ]);
+};
+
+const printGroupedExprs = (path, options, print) => {
+  const node = path.getValue();
+  const config = {
+    printComma: false,
+    printAlias: false,
+  };
+  let comma = "";
+  if ("comma" in node) {
+    comma = path.call((p) => p.call(print, "Node"), "comma");
+  }
+  let as = "";
+  if ("as" in node) {
+    as = concat([" ", path.call((p) => p.call(print, "Node"), "as")]);
+  }
+  return concat([
+    printSelf(path, options, print, config),
+    path.call((p) => join(" ", p.map(print, "NodeVec")), "exprs"),
     path.call((p) => p.call(print, "Node"), "rparen"),
     as,
     comma,
@@ -365,12 +392,14 @@ const guess_node_type = (node) => {
         return "selectStatement";
       }
     }
-    if ("right" in node && "left" in node && "and" in node)
+    if ("right" in node && "left" in node && "and" in node) {
       return "betweenOperator";
+    }
     if ("right" in node && "left" in node) return "binaryOperator";
     if ("right" in node && "date_part" in node) return "intervalLiteral";
     if ("right" in node) return "unaryOperator";
-    if ("rparen" in node && "expr" in node) return "group";
+    if ("rparen" in node && "expr" in node) return "groupedExpr";
+    if ("rparen" in node && "exprs" in node) return "groupedExprs";
     if ("offset" in node) return "limitClause";
     if ("expr" in node) return "keywordWithExpr";
   }
