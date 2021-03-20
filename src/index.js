@@ -195,6 +195,11 @@ const printBinaryOperator = (path, options, print) => {
     printComma: false,
     printAlias: false,
   };
+  const noSpaceOperators = ["."];
+  let sep = " ";
+  if (noSpaceOperators.indexOf(node.self.Node.token.literal) !== -1) {
+    sep = "";
+  }
   let not = "";
   if ("not" in node) {
     not = concat([path.call((p) => p.call(print, "Node"), "not"), " "]);
@@ -209,10 +214,10 @@ const printBinaryOperator = (path, options, print) => {
   }
   return concat([
     path.call((p) => p.call(print, "Node"), "left"),
-    " ",
+    sep,
     not,
     printSelf(path, options, print, config),
-    " ",
+    sep,
     path.call((p) => p.call(print, "Node"), "right"),
     as,
     comma,
