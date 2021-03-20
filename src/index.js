@@ -81,6 +81,18 @@ const printSQL = (path, options, print) => {
 
 const printSelectStatement = (path, options, print) => {
   const node = path.getValue();
+  // select
+  const select = group(
+    markAsRoot(
+      indent(
+        concat([
+          dedentToRoot(printSelf(path, options, print)),
+          line,
+          path.call((p) => join(line, p.map(print, "NodeVec")), "exprs"),
+        ])
+      )
+    )
+  );
   // from
   let from = "";
   if ("from" in node) {
@@ -88,6 +100,11 @@ const printSelectStatement = (path, options, print) => {
       line,
       group(path.call((p) => p.call(print, "Node"), "from")),
     ]);
+  }
+  // where
+  let where = "";
+  if ("where" in node) {
+    where = concat([line, path.call((p) => p.call(print, "Node"), "where")]);
   }
   // limit
   let limit = "";
@@ -100,24 +117,9 @@ const printSelectStatement = (path, options, print) => {
   return concat([
     group(
       concat([
-        // select clause
-        group(
-          concat([
-            markAsRoot(
-              indent(
-                concat([
-                  dedentToRoot(printSelf(path, options, print)),
-                  line,
-                  path.call(
-                    (p) => join(line, p.map(print, "NodeVec")),
-                    "exprs"
-                  ),
-                ])
-              )
-            ),
-          ])
-        ),
+        select,
         from,
+        where,
         limit,
         softline,
         path.call((p) => p.call(print, "Node"), "semicolon"),
