@@ -112,8 +112,13 @@ const printKeywordWithExpr = (path, options, print) => {
 };
 
 const printAs = (path, options, print) => {
-  return "asSomething"
-}
+  const node = path.getValue();
+  let as = "";
+  if ("self" in node) {
+    as = concat([printSelf(path, options, print), " "]);
+  }
+  return concat([as, path.call((p) => p.call(print, "Node"), "alias")]);
+};
 
 const printFunc = (path, options, print) => {
   const node = path.getValue();
@@ -220,12 +225,12 @@ const guess_node_type = (node) => {
     return "parent";
   } else {
     if ("func" in node) return "func";
+    if ("alias" in node) return "as";
     if ("Node" in node.self) {
       if (node.self.Node.token.literal.toLowerCase() === "select") {
         return "selectStatement";
       }
     }
-    if ("alias" in node) return "as";
     if ("right" in node && "left" in node) return "binaryOperator";
     if ("offset" in node) return "limitClause";
     if ("expr" in node) return "keywordWithExpr";

@@ -1,5 +1,5 @@
 #standardSQL
-select 1 as one;
+select 1 as one, 2 two;
 -- leading1
 -- leading2
 select /* following1 */ /* following2 */ func(1), func(2,3) -- following3
