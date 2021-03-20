@@ -71,6 +71,8 @@ const printSQL = (path, options, print) => {
       return printBetweenOperator(path, options, print);
     case "caseExpr":
       return printCaseExpr(path, options, print);
+    case "overClause":
+      return printOverClause(path, options, print);
     case "xxxByExprs":
       return printXXXByExprs(path, options, print);
     case "caseArm":
@@ -191,6 +193,10 @@ const printFunc = (path, options, print) => {
   if ("args" in node) {
     args = path.call((p) => join(" ", p.map(print, "NodeVec")), "args");
   }
+  let over = "";
+  if ("over" in node) {
+    over = concat([" ", path.call((p) => p.call(print, "Node"), "over")]);
+  }
   let comma = "";
   if ("comma" in node) {
     comma = path.call((p) => p.call(print, "Node"), "comma");
@@ -208,6 +214,7 @@ const printFunc = (path, options, print) => {
     printSelf(path, options, print, config),
     args,
     path.call((p) => p.call(print, "Node"), "rparen"),
+    over,
     order,
     as,
     comma,
@@ -335,6 +342,16 @@ const printXXXByExprs = (path, options, print) => {
     " ",
     path.call((p) => join(line, p.map(print, "NodeVec")), "exprs"),
   ]);
+};
+
+const printOverClause = (path, options, print) => {
+  const node = path.getValue();
+  const config = {
+    printComma: false,
+    printAlias: false,
+    printOrder: false,
+  };
+  return concat([printSelf(path, options, print, config)]);
 };
 
 const printCaseArm = (path, options, print) => {
@@ -610,6 +627,7 @@ const guess_node_type = (node) => {
     if ("arms" in node) return "caseExpr";
     if ("result" in node) return "caseArm";
     if ("offset" in node) return "limitClause";
+    if ("window" in node) return "overClause";
     if ("for_system_time_as_of" in node) return "tableName";
     if ("system_time_as_of" in node) return "forSystemTimeAsOfClause";
     if ("expr" in node) return "keywordWithExpr";
