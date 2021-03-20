@@ -75,6 +75,10 @@ const printSQL = (path, options, print) => {
       return printOverClause(path, options, print);
     case "windowSpecification":
       return printWindowSpecification(path, options, print);
+    case "windowFrameClause":
+      return printWindowFrameClause(path, options, print);
+    case "frameStartOrEnd":
+      return printFrameStartOrEnd(path, options, print);
     case "xxxByExprs":
       return printXXXByExprs(path, options, print);
     case "caseArm":
@@ -349,7 +353,7 @@ const printXXXByExprs = (path, options, print) => {
 const printOverClause = (path, options, print) => {
   const node = path.getValue();
   let win = path.call((p) => p.call(print, "Node"), "window");
-  return concat([printSelf(path, options, print), " ", win]);
+  return group(concat([printSelf(path, options, print), " ", win]));
 };
 
 const printWindowSpecification = (path, options, print) => {
@@ -359,10 +363,13 @@ const printWindowSpecification = (path, options, print) => {
     contents.push(path.call((p) => p.call(print, "Node"), "name"));
   }
   if ("partitionby" in node) {
-    contents.push(path.call((p) => p.call(print, "Node"), "partitionby"));
+    contents.push(group(path.call((p) => p.call(print, "Node"), "partitionby")));
   }
   if ("orderby" in node) {
-    contents.push(path.call((p) => p.call(print, "Node"), "orderby"));
+    contents.push(group(path.call((p) => p.call(print, "Node"), "orderby")));
+  }
+  if ("frame" in node) {
+    contents.push(path.call((p) => p.call(print, "Node"), "frame"));
   }
   let rparen = "";
   if ("rparen" in node) {
@@ -371,6 +378,50 @@ const printWindowSpecification = (path, options, print) => {
   return group(
     concat([printSelf(path, options, print), join(" ", contents), rparen])
   );
+};
+
+const printWindowFrameClause = (path, options, print) => {
+  const node = path.getValue();
+  let contents = [];
+  contents.push(printSelf(path, options, print));
+  if ("between" in node) {
+    contents.push(path.call((p) => p.call(print, "Node"), "between"));
+  }
+  if ("start" in node) {
+    contents.push(path.call((p) => p.call(print, "Node"), "start"));
+  }
+  if ("and" in node) {
+    contents.push(path.call((p) => p.call(print, "Node"), "and"));
+  }
+  if ("end" in node) {
+    contents.push(path.call((p) => p.call(print, "Node"), "end"));
+  }
+  return group(join(" ", contents));
+};
+
+const printFrameStartOrEnd = (path, options, print) => {
+  const node = path.getValue();
+  let preceding = "";
+  if ("preceding" in node) {
+    preceding = concat([
+      " ",
+      path.call((p) => p.call(print, "Node"), "preceding"),
+    ]);
+    delete node.preceding;
+  }
+  let following = "";
+  if ("following" in node) {
+    following = concat([
+      " ",
+      path.call((p) => p.call(print, "Node"), "following"),
+    ]);
+    delete node.following;
+  }
+  return concat([
+    path.call(print), // TODO refuctoring
+    preceding,
+    following,
+  ]);
 };
 
 const printCaseArm = (path, options, print) => {
@@ -629,6 +680,8 @@ const guess_node_type = (node) => {
   } else {
     if ("func" in node) return "func";
     if ("alias" in node) return "as";
+    if ("start" in node) return "windowFrameClause";
+    if ("preceding" in node || "following" in node) return "frameStartOrEnd";
     if (
       "Node" in node.self &&
       node.self.Node.token.literal.toLowerCase() === "select"
