@@ -195,6 +195,10 @@ const printFunc = (path, options, print) => {
   if ("comma" in node) {
     comma = path.call((p) => p.call(print, "Node"), "comma");
   }
+  let order = "";
+  if ("order" in node) {
+    order = concat([" ", path.call((p) => p.call(print, "Node"), "order")]);
+  }
   let as = "";
   if ("as" in node) {
     as = concat([" ", path.call((p) => p.call(print, "Node"), "as")]);
@@ -204,6 +208,7 @@ const printFunc = (path, options, print) => {
     printSelf(path, options, print, config),
     args,
     path.call((p) => p.call(print, "Node"), "rparen"),
+    order,
     as,
     comma,
   ]);
@@ -240,6 +245,10 @@ const printBinaryOperator = (path, options, print) => {
   if ("comma" in node) {
     comma = path.call((p) => p.call(print, "Node"), "comma");
   }
+  let order = "";
+  if ("order" in node) {
+    order = concat([" ", path.call((p) => p.call(print, "Node"), "order")]);
+  }
   let as = "";
   if ("as" in node) {
     as = concat([" ", path.call((p) => p.call(print, "Node"), "as")]);
@@ -251,6 +260,7 @@ const printBinaryOperator = (path, options, print) => {
     printSelf(path, options, print, config),
     sep,
     path.call((p) => p.call(print, "Node"), "right"),
+    order,
     as,
     comma,
   ]);
@@ -289,6 +299,10 @@ const printCaseExpr = (path, options, print) => {
   if ("comma" in node) {
     comma = path.call((p) => p.call(print, "Node"), "comma");
   }
+  let order = "";
+  if ("order" in node) {
+    order = concat([" ", path.call((p) => p.call(print, "Node"), "order")]);
+  }
   let as = "";
   if ("as" in node) {
     as = concat([" ", path.call((p) => p.call(print, "Node"), "as")]);
@@ -303,6 +317,7 @@ const printCaseExpr = (path, options, print) => {
           path.call((p) => join(line, p.map(print, "NodeVec")), "arms"),
           " ",
           path.call((p) => p.call(print, "Node"), "end"),
+          order,
           as,
           comma,
         ])
@@ -368,6 +383,10 @@ const printUnaryOperator = (path, options, print) => {
   if ("comma" in node) {
     comma = path.call((p) => p.call(print, "Node"), "comma");
   }
+  let order = "";
+  if ("order" in node) {
+    order = concat([" ", path.call((p) => p.call(print, "Node"), "order")]);
+  }
   let as = "";
   if ("as" in node) {
     as = concat([" ", path.call((p) => p.call(print, "Node"), "as")]);
@@ -375,6 +394,7 @@ const printUnaryOperator = (path, options, print) => {
   return concat([
     self,
     path.call((p) => p.call(print, "Node"), "right"),
+    order,
     as,
     comma,
   ]);
@@ -392,6 +412,10 @@ const printIntervalLiteral = (path, options, print) => {
   if ("comma" in node) {
     comma = path.call((p) => p.call(print, "Node"), "comma");
   }
+  let order = "";
+  if ("order" in node) {
+    order = concat([" ", path.call((p) => p.call(print, "Node"), "order")]);
+  }
   let as = "";
   if ("as" in node) {
     as = concat([" ", path.call((p) => p.call(print, "Node"), "as")]);
@@ -402,6 +426,7 @@ const printIntervalLiteral = (path, options, print) => {
     path.call((p) => p.call(print, "Node"), "right"),
     " ",
     date_part,
+    order,
     as,
     comma,
   ]);
@@ -418,6 +443,10 @@ const printGroupedExpr = (path, options, print) => {
   if ("comma" in node) {
     comma = path.call((p) => p.call(print, "Node"), "comma");
   }
+  let order = "";
+  if ("order" in node) {
+    order = concat([" ", path.call((p) => p.call(print, "Node"), "order")]);
+  }
   let as = "";
   if ("as" in node) {
     as = concat([" ", path.call((p) => p.call(print, "Node"), "as")]);
@@ -426,6 +455,7 @@ const printGroupedExpr = (path, options, print) => {
     printSelf(path, options, print, config),
     path.call((p) => p.call(print, "Node"), "expr"),
     path.call((p) => p.call(print, "Node"), "rparen"),
+    order,
     as,
     comma,
   ]);
@@ -442,6 +472,10 @@ const printGroupedExprs = (path, options, print) => {
   if ("comma" in node) {
     comma = path.call((p) => p.call(print, "Node"), "comma");
   }
+  let order = "";
+  if ("order" in node) {
+    order = concat([" ", path.call((p) => p.call(print, "Node"), "order")]);
+  }
   let as = "";
   if ("as" in node) {
     as = concat([" ", path.call((p) => p.call(print, "Node"), "as")]);
@@ -450,6 +484,7 @@ const printGroupedExprs = (path, options, print) => {
     printSelf(path, options, print, config),
     path.call((p) => join(" ", p.map(print, "NodeVec")), "exprs"),
     path.call((p) => p.call(print, "Node"), "rparen"),
+    order,
     as,
     comma,
   ]);
@@ -468,6 +503,10 @@ const printBetweenOperator = (path, options, print) => {
   if ("comma" in node) {
     comma = path.call((p) => p.call(print, "Node"), "comma");
   }
+  let order = "";
+  if ("order" in node) {
+    order = concat([" ", path.call((p) => p.call(print, "Node"), "order")]);
+  }
   let as = "";
   if ("as" in node) {
     as = concat([" ", path.call((p) => p.call(print, "Node"), "as")]);
@@ -480,6 +519,7 @@ const printBetweenOperator = (path, options, print) => {
       path.call((p) => p.call(print, "Node"), "and"),
       max,
     ]),
+    order,
     as,
     comma,
   ]);
