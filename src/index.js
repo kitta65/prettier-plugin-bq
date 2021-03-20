@@ -112,7 +112,23 @@ const printSelectStatement = (path, options, print) => {
   if ("groupby" in node) {
     groupby = concat([
       line,
-      path.call((p) => p.call(print, "Node"), "groupby"),
+      group(path.call((p) => p.call(print, "Node"), "groupby")),
+    ]);
+  }
+  // having
+  let having = "";
+  if ("having" in node) {
+    having = concat([
+      line,
+      group(path.call((p) => p.call(print, "Node"), "having")),
+    ]);
+  }
+  // order by
+  let orderby = "";
+  if ("orderby" in node) {
+    orderby = concat([
+      line,
+      group(path.call((p) => p.call(print, "Node"), "orderby")),
     ]);
   }
   // limit
@@ -130,6 +146,8 @@ const printSelectStatement = (path, options, print) => {
         from,
         where,
         groupby,
+        having,
+        orderby,
         limit,
         softline,
         path.call((p) => p.call(print, "Node"), "semicolon"),
@@ -167,6 +185,7 @@ const printFunc = (path, options, print) => {
   const config = {
     printComma: false,
     printAlias: false,
+    printOrder: false,
   };
   let args = "";
   if ("args" in node) {
@@ -206,6 +225,7 @@ const printBinaryOperator = (path, options, print) => {
   const config = {
     printComma: false,
     printAlias: false,
+    printOrder: false,
   };
   const noSpaceOperators = ["."];
   let sep = " ";
@@ -259,6 +279,7 @@ const printCaseExpr = (path, options, print) => {
   const config = {
     printComma: false,
     printAlias: false,
+    printOrder: false,
   };
   let expr = "";
   if ("expr" in node) {
@@ -291,13 +312,13 @@ const printCaseExpr = (path, options, print) => {
 };
 
 const printXXXByExprs = (path, options, print) => {
-  const node = path.getValue()
+  const node = path.getValue();
   return concat([
     printSelf(path, options, print),
     " ",
-    path.call(p => p.call(print, "Node"), "by"),
+    path.call((p) => p.call(print, "Node"), "by"),
     " ",
-    path.call(p => join(line, p.map(print, "NodeVec")), "exprs"),
+    path.call((p) => join(line, p.map(print, "NodeVec")), "exprs"),
   ]);
 };
 
@@ -306,6 +327,7 @@ const printCaseArm = (path, options, print) => {
   const config = {
     printComma: false,
     printAlias: false,
+    printOrder: false,
   };
   let whenExprThen;
   if ("expr" in node) {
@@ -333,6 +355,7 @@ const printUnaryOperator = (path, options, print) => {
   const config = {
     printComma: false,
     printAlias: false,
+    printOrder: false,
   };
   const noSpaceOperators = ["-", "br", "r", "rb", "b"];
   let self = printSelf(path, options, print, config);
@@ -362,6 +385,7 @@ const printIntervalLiteral = (path, options, print) => {
   const config = {
     printComma: false,
     printAlias: false,
+    printOrder: false,
   };
   const date_part = path.call((p) => p.call(print, "Node"), "date_part");
   let comma = "";
@@ -388,6 +412,7 @@ const printGroupedExpr = (path, options, print) => {
   const config = {
     printComma: false,
     printAlias: false,
+    printOrder: false,
   };
   let comma = "";
   if ("comma" in node) {
@@ -411,6 +436,7 @@ const printGroupedExprs = (path, options, print) => {
   const config = {
     printComma: false,
     printAlias: false,
+    printOrder: false,
   };
   let comma = "";
   if ("comma" in node) {
@@ -434,6 +460,7 @@ const printBetweenOperator = (path, options, print) => {
   const config = {
     printComma: false,
     printAlias: false,
+    printOrder: false,
   };
   const min = path.call((p) => p.map(print, "NodeVec")[0], "right");
   const max = path.call((p) => p.map(print, "NodeVec")[1], "right");
@@ -462,9 +489,9 @@ const printSelf = (
   path,
   options,
   print,
-  config = { printComma: true, printAlias: true }
+  config = { printComma: true, printAlias: true, printOrder: true }
 ) => {
-  const { printComma, printAlias } = config;
+  const { printComma, printAlias, printOrder } = config;
   const node = path.getValue();
   // leading_comments
   let leading_comments = "";
@@ -477,6 +504,13 @@ const printSelf = (
         )
       ),
     ]);
+  }
+  // order
+  let order = "";
+  if (printOrder) {
+    if ("order" in node) {
+      order = concat([" ", path.call((p) => p.call(print, "Node"), "order")]);
+    }
   }
   // comma
   let comma = "";
@@ -506,6 +540,7 @@ const printSelf = (
   return concat([
     leading_comments,
     node.self.Node.token.literal,
+    order,
     alias,
     comma,
     following_comments,
