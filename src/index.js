@@ -62,6 +62,10 @@ const printSQL = (path, options, print) => {
       return printGroupedExpr(path, options, print);
     case "groupedExprs":
       return printGroupedExprs(path, options, print);
+    case "tableName":
+      return printTableName(path, options, print);
+    case "forSystemTimeAsOfClause":
+      return printForSystemTimeAsOfClause(path, options, print);
     case "as":
       return printAs(path, options, print);
     case "betweenOperator":
@@ -212,6 +216,24 @@ const printBinaryOperator = (path, options, print) => {
     path.call((p) => p.call(print, "Node"), "right"),
     as,
     comma,
+  ]);
+};
+
+const printTableName = (path, options, print) => {
+  const node = path.getValue();
+  return concat([
+    printSelf(path, options, print),
+    " ",
+    path.call((p) => p.call(print, "Node"), "for_system_time_as_of"),
+  ]);
+};
+
+const printForSystemTimeAsOfClause = (path, options, print) => {
+  const node = path.getValue();
+  return join(" ", [
+    printSelf(path, options, print),
+    path.call((p) => join(" ", p.map(print, "NodeVec")), "system_time_as_of"),
+    path.call((p) => p.call(print, "Node"), "expr"),
   ]);
 };
 
@@ -484,6 +506,8 @@ const guess_node_type = (node) => {
     if ("arms" in node) return "caseExpr";
     if ("result" in node) return "caseArm";
     if ("offset" in node) return "limitClause";
+    if ("for_system_time_as_of" in node) return "tableName";
+    if ("system_time_as_of" in node) return "forSystemTimeAsOfClause";
     if ("expr" in node) return "keywordWithExpr";
   }
   return ""; // default
