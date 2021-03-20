@@ -54,6 +54,8 @@ const printSQL = (path, options, print) => {
       return printUnaryOperator(path, options, print);
     case "keywordWithExpr":
       return printKeywordWithExpr(path, options, print);
+    case "intervalLiteral":
+      return printIntervalLiteral(path, options, print);
     case "limitClause":
       return printLimitCluase(path, options, print);
     case "as":
@@ -207,6 +209,32 @@ const printUnaryOperator = (path, options, print) => {
   ]);
 };
 
+const printIntervalLiteral = (path, options, print) => {
+  const node = path.getValue();
+  const config = {
+    printComma: false,
+    printAlias: false,
+  };
+  const date_part = path.call((p) => p.call(print, "Node"), "date_part");
+  let comma = "";
+  if ("comma" in node) {
+    comma = path.call((p) => p.call(print, "Node"), "comma");
+  }
+  let as = "";
+  if ("as" in node) {
+    as = concat([" ", path.call((p) => p.call(print, "Node"), "as")]);
+  }
+  return concat([
+    printSelf(path, options, print, config),
+    " ",
+    path.call((p) => p.call(print, "Node"), "right"),
+    " ",
+    date_part,
+    as,
+    comma,
+  ]);
+};
+
 const printSelf = (
   path,
   options,
@@ -273,6 +301,7 @@ const guess_node_type = (node) => {
       }
     }
     if ("right" in node && "left" in node) return "binaryOperator";
+    if ("right" in node && "date_part" in node) return "intervalLiteral";
     if ("right" in node) return "unaryOperator";
     if ("offset" in node) return "limitClause";
     if ("expr" in node) return "keywordWithExpr";
