@@ -50,6 +50,8 @@ const printSQL = (path, options, print) => {
       return printFunc(path, options, print);
     case "binaryOperator":
       return printBinaryOperator(path, options, print);
+    case "unaryOperator":
+      return printUnaryOperator(path, options, print);
     case "keywordWithExpr":
       return printKeywordWithExpr(path, options, print);
     case "limitClause":
@@ -155,14 +157,14 @@ const printLimitCluase = (path, options, print) => {
 
 const printBinaryOperator = (path, options, print) => {
   const node = path.getValue();
-  let comma = "";
-  if ("comma" in node) {
-    comma = path.call((p) => p.call(print, "Node"), "comma");
-  }
   const config = {
     printComma: false,
     printAlias: false,
   };
+  let comma = "";
+  if ("comma" in node) {
+    comma = path.call((p) => p.call(print, "Node"), "comma");
+  }
   let as = "";
   if ("as" in node) {
     as = concat([" ", path.call((p) => p.call(print, "Node"), "as")]);
@@ -173,6 +175,29 @@ const printBinaryOperator = (path, options, print) => {
       printSelf(path, options, print, config),
       path.call((p) => p.call(print, "Node"), "right"),
     ]),
+    as,
+    comma,
+  ]);
+};
+
+const printUnaryOperator = (path, options, print) => {
+  const node = path.getValue();
+  const config = {
+    printComma: false,
+    printAlias: false,
+  };
+  let comma = "";
+  if ("comma" in node) {
+    comma = path.call((p) => p.call(print, "Node"), "comma");
+  }
+  let as = "";
+  if ("as" in node) {
+    as = concat([" ", path.call((p) => p.call(print, "Node"), "as")]);
+  }
+  return concat([
+    printSelf(path, options, print, config),
+    " ",
+    path.call((p) => p.call(print, "Node"), "right"),
     as,
     comma,
   ]);
@@ -244,6 +269,7 @@ const guess_node_type = (node) => {
       }
     }
     if ("right" in node && "left" in node) return "binaryOperator";
+    if ("right" in node) return "unaryOperator";
     if ("offset" in node) return "limitClause";
     if ("expr" in node) return "keywordWithExpr";
   }
