@@ -63,6 +63,8 @@ const printSQL = (path, options, print) => {
       return printGroupedExprs(path, options, print);
     case "arrayAccess":
       return printArrayAccess(path, options, print);
+    case "typeDeclaration":
+      return printTypeDeclaration(path, options, print);
     case "tableName":
       return printTableName(path, options, print);
     case "forSystemTimeAsOfClause":
@@ -468,12 +470,16 @@ const printUnaryOperator = (path, options, print) => {
     printAlias: false,
     printOrder: false,
   };
-  const noSpaceOperators = ["-", "br", "r", "rb", "b"];
+  const noSpaceOperators = ["-", "br", "r", "rb", "b", "array", "struct"];
   let self = printSelf(path, options, print, config);
   if (
     noSpaceOperators.indexOf(node.self.Node.token.literal.toLowerCase()) === -1
   ) {
     self = concat([self, " "]);
+  }
+  let typeDeclaration = "";
+  if ("type_declaration" in node) {
+    typeDeclaration = path.call(p => p.call(print, "Node"), "type_declaration");
   }
   let comma = "";
   if ("comma" in node) {
@@ -489,6 +495,7 @@ const printUnaryOperator = (path, options, print) => {
   }
   return concat([
     self,
+    typeDeclaration,
     path.call((p) => p.call(print, "Node"), "right"),
     order,
     as,
@@ -616,6 +623,10 @@ const printArrayAccess = (path, options, print) => {
   ]);
 };
 
+const printTypeDeclaration = (path, options, print) => {
+  return "<type desu>"
+}
+
 const printBetweenOperator = (path, options, print) => {
   const node = path.getValue();
   const config = {
@@ -718,6 +729,7 @@ const guess_node_type = (node) => {
     return "parent";
   } else {
     if ("func" in node) return "func";
+    if ("type" in node) return "typeDeclaration";
     if ("alias" in node) return "as";
     if ("start" in node) return "windowFrameClause";
     if ("preceding" in node || "following" in node) return "frameStartOrEnd";
