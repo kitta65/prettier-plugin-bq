@@ -56,6 +56,8 @@ const printSQL = (path, options, print) => {
       return printUnaryOperator(path, options, print);
     case "keywordWithExpr":
       return printKeywordWithExpr(path, options, print);
+    case "keywordWithGroupedExprs":
+      return printKeywordWithGroupedExprs(path, options, print);
     case "intervalLiteral":
       return printIntervalLiteral(path, options, print);
     case "limitClause":
@@ -127,14 +129,19 @@ const printSelectStatement = (path, options, print) => {
   // distinct
   let distinct = "";
   if ("distinct" in node) {
-    distinct = concat([" ", path.call(p=> p.call(print, "Node"), "distinct")])
+    distinct = concat([
+      " ",
+      path.call((p) => p.call(print, "Node"), "distinct"),
+    ]);
   }
   // select
   const select = group(
     markAsRoot(
       indent(
         concat([
-          dedentToRoot(concat([printSelf(path, options, print, config), as, distinct])),
+          dedentToRoot(
+            concat([printSelf(path, options, print, config), as, distinct])
+          ),
           line,
           path.call((p) => join(line, p.map(print, "NodeVec")), "exprs"),
         ])
@@ -283,6 +290,7 @@ const printGroupedStatement = (path, options, print) => {
 };
 
 const printKeywordWithExpr = (path, options, print) => {
+  // const node = path.getValue();
   return group(
     markAsRoot(
       indent(
@@ -294,6 +302,15 @@ const printKeywordWithExpr = (path, options, print) => {
       )
     )
   );
+};
+
+const printKeywordWithGroupedExprs = (path, options, print) => {
+  const node = path.getValue();
+  return concat([
+    printSelf(path, options, print),
+    " ",
+    path.call((p) => p.call(print, "Node"), "group"),
+  ]);
 };
 
 const printAs = (path, options, print) => {
@@ -870,6 +887,11 @@ const printSelf = (
       ),
     ]);
   }
+  // except
+  let except = "";
+  if ("except" in node) {
+    except = concat([" ", path.call((p) => p.call(print, "Node"), "except")]);
+  }
   // order
   let order = "";
   if (printOrder) {
@@ -905,6 +927,7 @@ const printSelf = (
   return concat([
     leading_comments,
     node.self.Node.token.literal,
+    except,
     order,
     alias,
     comma,
@@ -917,6 +940,7 @@ const guess_node_type = (node) => {
     return "parent";
   } else {
     if ("func" in node) return "func";
+    if ("group" in node) return "keywordWithGroupedExprs";
     if ("struct_value" in node) return "asStructOrValue";
     if (("type" in node || "declarations" in node) && "rparen" in node) {
       return "typeDeclaration";
