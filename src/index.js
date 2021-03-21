@@ -108,6 +108,8 @@ const printSQL = (path, options, print) => {
       return printWithOffset(path, options, print);
     case "caseArm":
       return printCaseArm(path, options, print);
+    case "nullOrder":
+      return printNullOrder(path, options, print);
     default:
       return printSelf(path, options, print);
   }
@@ -307,6 +309,14 @@ const printGroupedStatement = (path, options, print) => {
       ])
     ),
     endOfStatement,
+  ]);
+};
+
+const printNullOrder = (path, options, print) => {
+  return concat([
+    printSelf(path, options, print),
+    " ",
+    path.call((p) => p.call(print, "Node"), "first"),
   ]);
 };
 
@@ -925,9 +935,16 @@ const printSelf = (
   }
   // order
   let order = "";
+  let null_order = "";
   if (printOrder) {
     if ("order" in node) {
       order = concat([" ", path.call((p) => p.call(print, "Node"), "order")]);
+    }
+    if ("nulls" in node) {
+      null_order = concat([
+        " ",
+        path.call((p) => p.call(print, "Node"), "nulls"),
+      ]);
     }
   }
   // comma
@@ -961,6 +978,7 @@ const printSelf = (
     except,
     replace,
     order,
+    null_order,
     alias,
     comma,
     following_comments,
@@ -973,6 +991,7 @@ const guess_node_type = (node) => {
   } else {
     if ("with" in node && "func" in node) return "unnestWithOffset";
     if ("func" in node) return "func";
+    if ("first" in node) return "nullOrder";
     if ("group" in node) return "keywordWithGroupedExprs";
     if ("struct_value" in node) return "asStructOrValue";
     if (("type" in node || "declarations" in node) && "rparen" in node) {

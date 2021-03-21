@@ -33,5 +33,6 @@ with a as (select 1) select 2;with a as (select 1), b as (select 2) select 3;
 select as struct 1;select distinct 1;select all 1;select t.* except (col1), * except(col1, col2), * replace (col1 * 2 as col2), from t;
 select * from unnest([1,2,3]);select * from unnest([1]) with offset;select * from unnest([1]) a with offset as b;
 select * from (select 1,2);select sub.* from (select 1,2) as sub;select * from main as m where not exists(select 1 from sub as s where s.x = m.x);
+select * from t order by col1 asc nulls last, col2 nulls first;
 
 
