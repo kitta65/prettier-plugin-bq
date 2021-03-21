@@ -64,6 +64,10 @@ const printSQL = (path, options, print) => {
       return printGroupedExprs(path, options, print);
     case "groupedStmt":
       return printGroupedStatement(path, options, print);
+    case "withQuery":
+      return printWithQuery(path, options, print);
+    case "withQueries":
+      return printWithQueries(path, options, print);
     case "arrayAccess":
       return printArrayAccess(path, options, print);
     case "structOrArrayType":
@@ -103,6 +107,11 @@ const printSQL = (path, options, print) => {
 
 const printSelectStatement = (path, options, print) => {
   const node = path.getValue();
+  // with
+  let with_ = "";
+  if ("with" in node) {
+    with_ = concat([path.call((p) => p.call(print, "Node"), "with"), line]);
+  }
   // select
   const select = group(
     markAsRoot(
@@ -173,6 +182,7 @@ const printSelectStatement = (path, options, print) => {
   return concat([
     group(
       concat([
+        with_,
         select,
         from,
         where,
@@ -185,6 +195,40 @@ const printSelectStatement = (path, options, print) => {
       ])
     ),
     endOfStatement,
+  ]);
+};
+
+const printWithQuery = (path, options, print) => {
+  const node = path.getValue();
+  const config = {
+    printComma: false,
+    printAlias: false,
+    printOrder: false,
+  };
+  let comma = "";
+  if ("comma" in node) {
+    comma = path.call((p) => p.call(print, "Node"), "comma");
+  }
+  return concat([
+    printSelf(path, options, print, config),
+    " ",
+    path.call((p) => p.call(print, "Node"), "as"),
+    " ",
+    path.call((p) => p.call(print, "Node"), "stmt"),
+    comma,
+  ]);
+};
+
+const printWithQueries = (path, options, print) => {
+  const node = path.getValue();
+  return concat([
+    printSelf(path, options, print),
+    indent(
+      concat([
+        line,
+        path.call((p) => join(line, p.map(print, "NodeVec")), "queries"),
+      ])
+    ),
   ]);
 };
 
@@ -877,7 +921,9 @@ const guess_node_type = (node) => {
     if ("right" in node) return "unaryOperator";
     if ("rparen" in node && "expr" in node) return "groupedExpr";
     if ("rparen" in node && "exprs" in node) return "groupedExprs";
-    if ("rparen" in node && "stmt" in node) return "groupedStmt";
+    if ("rparen" in node && "stmt" in node) return "groupedStmt"; // (select *)
+    if ("as" in node && "stmt" in node) return "withQuery"; // name as (select *)
+    if ("queries" in node) return "withQueries"; // name as (select *)
     if ("rparen" in node) return "windowSpecification";
     if ("arms" in node) return "caseExpr";
     if ("type_declaration" in node) return "structOrArrayType"; // struct<int64>

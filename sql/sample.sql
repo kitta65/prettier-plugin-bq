@@ -29,4 +29,6 @@ select (1,2),struct(1,2),struct<int64>(1),struct<int64,x float64>(1,.1),struct<a
 (select 1, 2);
 select 1 union all select 2;(select 1) union all select 2;select 1 union all (select 2);select 1 union all select 2 union all select 3;
 select 1 union all (select 2 union all select 3);(select 1 union all select 2) union all select 3;
+with a as (select 1) select 2;with a as (select 1), b as (select 2) select 3;
+
 
