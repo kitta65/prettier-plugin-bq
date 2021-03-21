@@ -350,6 +350,10 @@ const printFunc = (path, options, print) => {
     printAlias: false,
     printOrder: false,
   };
+  let sep = "";
+  if (node.func.Node.token.literal.toLowerCase() === "exists") {
+    sep = " ";
+  }
   let args = "";
   if ("args" in node) {
     args = path.call((p) => join(" ", p.map(print, "NodeVec")), "args");
@@ -372,6 +376,7 @@ const printFunc = (path, options, print) => {
   }
   return concat([
     path.call((p) => p.call(print, "Node"), "func"),
+    sep,
     printSelf(path, options, print, config),
     args,
     path.call((p) => p.call(print, "Node"), "rparen"),
