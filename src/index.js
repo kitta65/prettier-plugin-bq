@@ -50,6 +50,8 @@ const printSQL = (path, options, print) => {
       return printFunc(path, options, print);
     case "binaryOperator":
       return printBinaryOperator(path, options, print);
+    case "asStructOrValue":
+      return printAsStructOrValue(path, options, print);
     case "unaryOperator":
       return printUnaryOperator(path, options, print);
     case "keywordWithExpr":
@@ -107,17 +109,32 @@ const printSQL = (path, options, print) => {
 
 const printSelectStatement = (path, options, print) => {
   const node = path.getValue();
+  const config = {
+    printComma: false,
+    printAlias: false,
+    printOrder: false,
+  };
   // with
   let with_ = "";
   if ("with" in node) {
     with_ = concat([path.call((p) => p.call(print, "Node"), "with"), line]);
+  }
+  // as
+  let as = "";
+  if ("as" in node) {
+    as = concat([" ", path.call((p) => p.call(print, "Node"), "as")]);
+  }
+  // distinct
+  let distinct = "";
+  if ("distinct" in node) {
+    distinct = concat([" ", path.call(p=> p.call(print, "Node"), "distinct")])
   }
   // select
   const select = group(
     markAsRoot(
       indent(
         concat([
-          dedentToRoot(printSelf(path, options, print)),
+          dedentToRoot(concat([printSelf(path, options, print, config), as, distinct])),
           line,
           path.call((p) => join(line, p.map(print, "NodeVec")), "exprs"),
         ])
@@ -195,6 +212,15 @@ const printSelectStatement = (path, options, print) => {
       ])
     ),
     endOfStatement,
+  ]);
+};
+
+const printAsStructOrValue = (path, options, print) => {
+  const node = path.getValue();
+  return concat([
+    printSelf(path, options, print),
+    " ",
+    path.call((p) => p.call(print, "Node"), "struct_value"),
   ]);
 };
 
@@ -891,6 +917,7 @@ const guess_node_type = (node) => {
     return "parent";
   } else {
     if ("func" in node) return "func";
+    if ("struct_value" in node) return "asStructOrValue";
     if (("type" in node || "declarations" in node) && "rparen" in node) {
       return "typeDeclaration";
     } // <int64>
