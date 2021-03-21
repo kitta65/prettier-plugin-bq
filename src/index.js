@@ -80,6 +80,8 @@ const printSQL = (path, options, print) => {
       return printAs(path, options, print);
     case "betweenOperator":
       return printBetweenOperator(path, options, print);
+    case "setOperator":
+      return printSetOperator(path, options, print);
     case "caseExpr":
       return printCaseExpr(path, options, print);
     case "overClause":
@@ -164,9 +166,9 @@ const printSelectStatement = (path, options, print) => {
     semicolon = path.call((p) => p.call(print, "Node"), "semicolon");
   }
   // end of statement
-  let endOfStatement = ""
+  let endOfStatement = "";
   if ("semicolon" in node) {
-    endOfStatement = hardline
+    endOfStatement = hardline;
   }
   return concat([
     group(
@@ -189,23 +191,25 @@ const printSelectStatement = (path, options, print) => {
 const printGroupedStatement = (path, options, print) => {
   const node = path.getValue();
   let semicolon = "";
+  let endOfStatement = "";
   if ("semicolon" in node) {
     semicolon = path.call((p) => p.call(print, "Node"), "semicolon");
+    endOfStatement = hardline;
   }
-  return group(
-    concat([
-      printSelf(path, options, print),
-      indent(
-        concat([
-          softline,
-          path.call((p) => p.call(print, "Node"), "stmt"),
-        ])
-      ),
-      softline,
-      path.call((p) => p.call(print, "Node"), "rparen"),
-      semicolon,
-    ])
-  );
+  return concat([
+    group(
+      concat([
+        printSelf(path, options, print),
+        indent(
+          concat([softline, path.call((p) => p.call(print, "Node"), "stmt")])
+        ),
+        softline,
+        path.call((p) => p.call(print, "Node"), "rparen"),
+        semicolon,
+      ])
+    ),
+    endOfStatement,
+  ]);
 };
 
 const printKeywordWithExpr = (path, options, print) => {
@@ -751,6 +755,31 @@ const printBetweenOperator = (path, options, print) => {
   ]);
 };
 
+const printSetOperator = (path, options, print) => {
+  const node = path.getValue();
+  let semicolon = "";
+  let endOfStatement = "";
+  if ("semicolon" in node) {
+    semicolon = path.call((p) => p.call(print, "Node"), "semicolon");
+    endOfStatement = hardline;
+  }
+  return concat([
+    group(
+      concat([
+        path.call((p) => p.call(print, "Node"), "left"),
+        line,
+        printSelf(path, options, print),
+        " ",
+        path.call((p) => p.call(print, "Node"), "distinct"),
+        line,
+        path.call((p) => p.call(print, "Node"), "right"),
+        semicolon,
+      ])
+    ),
+    endOfStatement,
+  ]);
+};
+
 const printSelf = (
   path,
   options,
@@ -841,6 +870,8 @@ const guess_node_type = (node) => {
     ) {
       return "arrayAccess";
     }
+    if ("right" in node && "left" in node && "distinct" in node)
+      return "setOperator"; // union all
     if ("right" in node && "left" in node) return "binaryOperator";
     if ("right" in node && "date_part" in node) return "intervalLiteral";
     if ("right" in node) return "unaryOperator";
