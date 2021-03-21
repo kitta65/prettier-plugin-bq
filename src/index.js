@@ -82,6 +82,8 @@ const printSQL = (path, options, print) => {
       return printIdentAndType(path, options, print);
     case "tableName":
       return printTableName(path, options, print);
+    case "joinType":
+      return printJoinType(path, options, print);
     case "forSystemTimeAsOfClause":
       return printForSystemTimeAsOfClause(path, options, print);
     case "as":
@@ -320,6 +322,14 @@ const printNullOrder = (path, options, print) => {
   ]);
 };
 
+const printJoinType = (path, options, print) => {
+  return concat([
+    printSelf(path, options, print),
+    " ",
+    path.call((p) => p.call(print, "Node"), "outer"),
+  ]);
+};
+
 const printKeywordWithExpr = (path, options, print) => {
   // const node = path.getValue();
   return group(
@@ -416,13 +426,35 @@ const printBinaryOperator = (path, options, print) => {
     printOrder: false,
   };
   const noSpaceOperators = ["."];
-  let sep = " ";
+  const onesideSpaceOperators = [","];
+  let lsep = " ";
+  let rsep = " ";
   if (noSpaceOperators.indexOf(node.self.Node.token.literal) !== -1) {
-    sep = "";
+    lsep = "";
+    rsep = "";
+  } else if (
+    onesideSpaceOperators.indexOf(node.self.Node.token.literal) !== -1
+  ) {
+    lsep = "";
   }
   let not = "";
   if ("not" in node) {
     not = concat([path.call((p) => p.call(print, "Node"), "not"), " "]);
+  }
+  let joinType = "";
+  if ("join_type" in node) {
+    joinType = concat([
+      path.call((p) => p.call(print, "Node"), "join_type"),
+      " ",
+    ]);
+  }
+  let outer = "";
+  if ("outer" in node) {
+    outer = concat([path.call((p) => p.call(print, "Node"), "outer"), " "]);
+  }
+  let on = "";
+  if ("on" in node) {
+    on = concat([" ", path.call((p) => p.call(print, "Node"), "on")]);
   }
   let comma = "";
   if ("comma" in node) {
@@ -438,11 +470,14 @@ const printBinaryOperator = (path, options, print) => {
   }
   return concat([
     path.call((p) => p.call(print, "Node"), "left"),
-    sep,
+    lsep,
     not,
+    joinType,
+    outer,
     printSelf(path, options, print, config),
-    sep,
+    rsep,
     path.call((p) => p.call(print, "Node"), "right"),
+    on,
     order,
     as,
     comma,
@@ -991,6 +1026,7 @@ const guess_node_type = (node) => {
   } else {
     if ("with" in node && "func" in node) return "unnestWithOffset";
     if ("func" in node) return "func";
+    if ("outer" in node) return "joinType";
     if ("first" in node) return "nullOrder";
     if ("group" in node) return "keywordWithGroupedExprs";
     if ("struct_value" in node) return "asStructOrValue";
@@ -1019,7 +1055,7 @@ const guess_node_type = (node) => {
     }
     if ("right" in node && "left" in node && "distinct" in node)
       return "setOperator"; // union all
-    if ("right" in node && "left" in node) return "binaryOperator";
+    if ("right" in node && "left" in node) return "binaryOperator"; // and, join, =
     if ("right" in node && "date_part" in node) return "intervalLiteral";
     if ("right" in node) return "unaryOperator";
     if ("rparen" in node && "expr" in node) return "groupedExpr";
