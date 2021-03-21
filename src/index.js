@@ -61,7 +61,7 @@ const printSQL = (path, options, print) => {
     case "intervalLiteral":
       return printIntervalLiteral(path, options, print);
     case "limitClause":
-      return printLimitCluase(path, options, print);
+      return printLimitClause(path, options, print);
     case "groupedExpr":
       return printGroupedExpr(path, options, print);
     case "groupedExprs":
@@ -102,6 +102,10 @@ const printSQL = (path, options, print) => {
       return printFrameStartOrEnd(path, options, print);
     case "xxxByExprs":
       return printXXXByExprs(path, options, print);
+    case "unnestWithOffset":
+      return printUnnestWithOffset(path, options, print);
+    case "withOffset":
+      return printWithOffset(path, options, print);
     case "caseArm":
       return printCaseArm(path, options, print);
     default:
@@ -265,6 +269,23 @@ const printWithQueries = (path, options, print) => {
   ]);
 };
 
+const printUnnestWithOffset = (path, options, print) => {
+  const node = path.getValue();
+  return concat([
+    printFunc(path, options, print),
+    " ",
+    path.call((p) => p.call(print, "Node"), "with"),
+  ]);
+};
+
+const printWithOffset = (path, options, print) => {
+  return concat([
+    printSelf(path, options, print),
+    " ",
+    path.call((p) => p.call(print, "Node"), "unnest_offset"),
+  ]);
+};
+
 const printGroupedStatement = (path, options, print) => {
   const node = path.getValue();
   let semicolon = "";
@@ -361,7 +382,7 @@ const printFunc = (path, options, print) => {
   ]);
 };
 
-const printLimitCluase = (path, options, print) => {
+const printLimitClause = (path, options, print) => {
   const node = path.getValue();
   return group(
     concat([
@@ -945,6 +966,7 @@ const guess_node_type = (node) => {
   if ("children" in node) {
     return "parent";
   } else {
+    if ("with" in node && "func" in node) return "unnestWithOffset";
     if ("func" in node) return "func";
     if ("group" in node) return "keywordWithGroupedExprs";
     if ("struct_value" in node) return "asStructOrValue";
@@ -985,6 +1007,7 @@ const guess_node_type = (node) => {
     if ("arms" in node) return "caseExpr";
     if ("type_declaration" in node) return "structOrArrayType"; // struct<int64>
     if ("result" in node) return "caseArm";
+    if ("unnest_offset" in node) return "withOffset"; // with offset
     if ("offset" in node) return "limitClause";
     if ("window" in node) return "overClause";
     if ("for_system_time_as_of" in node) return "tableName";
