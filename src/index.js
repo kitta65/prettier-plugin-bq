@@ -61,6 +61,8 @@ const printSQL = (path, options, print) => {
       return printGroupedExpr(path, options, print);
     case "groupedExprs":
       return printGroupedExprs(path, options, print);
+    case "arrayAccess":
+      return printArrayAccess(path, options, print);
     case "tableName":
       return printTableName(path, options, print);
     case "forSystemTimeAsOfClause":
@@ -584,6 +586,36 @@ const printGroupedExprs = (path, options, print) => {
   ]);
 };
 
+const printArrayAccess = (path, options, print) => {
+  const node = path.getValue();
+  const config = {
+    printComma: false,
+    printAlias: false,
+    printOrder: false,
+  };
+  let comma = "";
+  if ("comma" in node) {
+    comma = path.call((p) => p.call(print, "Node"), "comma");
+  }
+  let order = "";
+  if ("order" in node) {
+    order = concat([" ", path.call((p) => p.call(print, "Node"), "order")]);
+  }
+  let as = "";
+  if ("as" in node) {
+    as = concat([" ", path.call((p) => p.call(print, "Node"), "as")]);
+  }
+  return concat([
+    path.call((p) => p.call(print, "Node"), "left"),
+    printSelf(path, options, print, config),
+    path.call((p) => p.call(print, "Node"), "right"),
+    path.call((p) => p.call(print, "Node"), "rparen"),
+    order,
+    as,
+    comma,
+  ]);
+};
+
 const printBetweenOperator = (path, options, print) => {
   const node = path.getValue();
   const config = {
@@ -697,6 +729,13 @@ const guess_node_type = (node) => {
     }
     if ("right" in node && "left" in node && "and" in node) {
       return "betweenOperator";
+    }
+    if (
+      "right" in node &&
+      "left" in node &&
+      node.self.Node.token.literal === "["
+    ) {
+      return "arrayAccess";
     }
     if ("right" in node && "left" in node) return "binaryOperator";
     if ("right" in node && "date_part" in node) return "intervalLiteral";

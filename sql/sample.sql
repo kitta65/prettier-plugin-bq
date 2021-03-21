@@ -15,13 +15,14 @@ case col when 1 then 'one' else 'two' end,
 case tooLongColumnNameToDisplayInSingleLinetooLongColumnNameToDisplayInSingleLinetooLongColumnNameToDisplayInSingleLine when 1 then 'one' else 'two' end as c;
 select d.col1 from data as d for system_time as of current_timestamp() where 1 = 1 group by 1 having true order by abc desc, -def asc;
 select
-  sum() over (),
-  sum() over named_clause,
-  sum() over (named_clause),
-  sum() over (partition by a),
-  sum() over (order by a),
-  sum() over (partition by a order by b, c),
-  sum() over (partition by a order by b, c rows between unbounded preceding and unbounded following),
-  sum() over (rows 1 + 1 preceding),
+sum() over (),
+sum() over named_clause,
+sum() over (named_clause),
+sum() over (partition by a),
+sum() over (order by a),
+sum() over (partition by a order by b, c),
+sum() over (partition by a order by b, c rows between unbounded preceding and unbounded following),
+sum() over (rows 1 + 1 preceding),
 ;
+select arr[offset(1)], [1, 2], ARRAY[1,2],array<int64>[1],array<struct<array<int64>>>[struct([1])];
 
