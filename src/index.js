@@ -1,3 +1,4 @@
+"use strict";
 const parser = require("@dr666m1/bq2cst");
 const {
   doc: {
@@ -63,8 +64,12 @@ const printSQL = (path, options, print) => {
       return printGroupedExprs(path, options, print);
     case "arrayAccess":
       return printArrayAccess(path, options, print);
+    case "structOrArrayType":
+      return printStructOrArrayType(path, options, print);
     case "typeDeclaration":
       return printTypeDeclaration(path, options, print);
+    case "identAndType":
+      return printIdentAndType(path, options, print);
     case "tableName":
       return printTableName(path, options, print);
     case "forSystemTimeAsOfClause":
@@ -479,7 +484,10 @@ const printUnaryOperator = (path, options, print) => {
   }
   let typeDeclaration = "";
   if ("type_declaration" in node) {
-    typeDeclaration = path.call(p => p.call(print, "Node"), "type_declaration");
+    typeDeclaration = path.call(
+      (p) => p.call(print, "Node"),
+      "type_declaration"
+    );
   }
   let comma = "";
   if ("comma" in node) {
@@ -624,8 +632,55 @@ const printArrayAccess = (path, options, print) => {
 };
 
 const printTypeDeclaration = (path, options, print) => {
-  return "<type desu>"
-}
+  const node = path.getValue();
+  let type = "";
+  if ("type" in node) {
+    type = path.call((p) => p.call(print, "Node"), "type");
+  }
+  let declarations = "";
+  if ("declarations" in node) {
+    declarations = path.call(
+      (p) => join(" ", p.map(print, "NodeVec")),
+      "declarations"
+    );
+  }
+  return concat([
+    printSelf(path, options, print),
+    type,
+    declarations,
+    path.call((p) => p.call(print, "Node"), "rparen"),
+  ]);
+};
+
+const printIdentAndType = (path, options, print) => {
+  const node = path.getValue();
+  const config = {
+    printComma: false,
+    printAlias: false,
+    printOrder: false,
+  };
+  let ident = "";
+  if ("self" in node) {
+    ident = concat([printSelf(path, options, print, config), " "]);
+  }
+  let comma = "";
+  if ("comma" in node) {
+    comma = path.call((p) => p.call(print, "Node"), "comma");
+  }
+  return concat([
+    ident,
+    path.call((p) => p.call(print, "Node"), "type"),
+    comma,
+  ]);
+};
+
+const printStructOrArrayType = (path, options, print) => {
+  const node = path.getValue();
+  return concat([
+    printSelf(path, options, print),
+    path.call((p) => p.call(print, "Node"), "type_declaration"),
+  ]);
+};
 
 const printBetweenOperator = (path, options, print) => {
   const node = path.getValue();
@@ -729,7 +784,10 @@ const guess_node_type = (node) => {
     return "parent";
   } else {
     if ("func" in node) return "func";
-    if ("type" in node) return "typeDeclaration";
+    if (("type" in node || "declarations" in node) && "rparen" in node) {
+      return "typeDeclaration";
+    } // <int64>
+    if ("type" in node) return "identAndType"; // x int64
     if ("alias" in node) return "as";
     if ("start" in node) return "windowFrameClause";
     if ("preceding" in node || "following" in node) return "frameStartOrEnd";
@@ -756,6 +814,7 @@ const guess_node_type = (node) => {
     if ("rparen" in node && "exprs" in node) return "groupedExprs";
     if ("rparen" in node) return "windowSpecification";
     if ("arms" in node) return "caseExpr";
+    if ("type_declaration" in node) return "structOrArrayType"; // struct<int64>
     if ("result" in node) return "caseArm";
     if ("offset" in node) return "limitClause";
     if ("window" in node) return "overClause";

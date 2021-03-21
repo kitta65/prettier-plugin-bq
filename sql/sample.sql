@@ -24,5 +24,5 @@ sum() over (partition by a order by b, c),
 sum() over (partition by a order by b, c rows between unbounded preceding and unbounded following),
 sum() over (rows 1 + 1 preceding),
 ;
-select arr[offset(1)], [1, 2], ARRAY[1,2],array<int64>[1],array<struct<array<int64>>>[struct([1])];
+select arr[offset(1)], [1, 2], ARRAY[1,2],array<int64>[1],array<struct<array<int64>, x int64>>[struct([1])];
 
