@@ -427,7 +427,7 @@ const printBinaryOperator = (path, options, print) => {
   };
   const noSpaceOperators = ["."];
   const onesideSpaceOperators = [","];
-  let lsep = " ";
+  let lsep = line;
   let rsep = " ";
   if (noSpaceOperators.indexOf(node.self.Node.token.literal) !== -1) {
     lsep = "";
@@ -435,7 +435,7 @@ const printBinaryOperator = (path, options, print) => {
   } else if (
     onesideSpaceOperators.indexOf(node.self.Node.token.literal) !== -1
   ) {
-    lsep = "";
+    lsep = softline;
   }
   let not = "";
   if ("not" in node) {
@@ -468,20 +468,26 @@ const printBinaryOperator = (path, options, print) => {
   if ("as" in node) {
     as = concat([" ", path.call((p) => p.call(print, "Node"), "as")]);
   }
-  return concat([
-    path.call((p) => p.call(print, "Node"), "left"),
-    lsep,
-    not,
-    joinType,
-    outer,
-    printSelf(path, options, print, config),
-    rsep,
-    path.call((p) => p.call(print, "Node"), "right"),
-    on,
-    order,
-    as,
-    comma,
-  ]);
+  return group(
+    concat([
+      path.call((p) => p.call(print, "Node"), "left"),
+      lsep,
+      group(
+        concat([
+          not,
+          joinType,
+          outer,
+          printSelf(path, options, print, config),
+          rsep,
+          path.call((p) => p.call(print, "Node"), "right"),
+          on,
+          order,
+          as,
+          comma,
+        ])
+      ),
+    ])
+  );
 };
 
 const printTableName = (path, options, print) => {
