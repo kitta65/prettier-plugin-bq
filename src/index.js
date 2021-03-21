@@ -62,6 +62,8 @@ const printSQL = (path, options, print) => {
       return printGroupedExpr(path, options, print);
     case "groupedExprs":
       return printGroupedExprs(path, options, print);
+    case "groupedStmt":
+      return printGroupedStatement(path, options, print);
     case "arrayAccess":
       return printArrayAccess(path, options, print);
     case "structOrArrayType":
@@ -156,6 +158,16 @@ const printSelectStatement = (path, options, print) => {
       group(path.call((p) => p.call(print, "Node"), "limit")),
     ]);
   }
+  // semicolon
+  let semicolon = "";
+  if ("semicolon" in node) {
+    semicolon = path.call((p) => p.call(print, "Node"), "semicolon");
+  }
+  // end of statement
+  let endOfStatement = ""
+  if ("semicolon" in node) {
+    endOfStatement = hardline
+  }
   return concat([
     group(
       concat([
@@ -167,11 +179,33 @@ const printSelectStatement = (path, options, print) => {
         orderby,
         limit,
         softline,
-        path.call((p) => p.call(print, "Node"), "semicolon"),
+        semicolon,
       ])
     ),
-    hardline,
+    endOfStatement,
   ]);
+};
+
+const printGroupedStatement = (path, options, print) => {
+  const node = path.getValue();
+  let semicolon = "";
+  if ("semicolon" in node) {
+    semicolon = path.call((p) => p.call(print, "Node"), "semicolon");
+  }
+  return group(
+    concat([
+      printSelf(path, options, print),
+      indent(
+        concat([
+          softline,
+          path.call((p) => p.call(print, "Node"), "stmt"),
+        ])
+      ),
+      softline,
+      path.call((p) => p.call(print, "Node"), "rparen"),
+      semicolon,
+    ])
+  );
 };
 
 const printKeywordWithExpr = (path, options, print) => {
@@ -812,6 +846,7 @@ const guess_node_type = (node) => {
     if ("right" in node) return "unaryOperator";
     if ("rparen" in node && "expr" in node) return "groupedExpr";
     if ("rparen" in node && "exprs" in node) return "groupedExprs";
+    if ("rparen" in node && "stmt" in node) return "groupedStmt";
     if ("rparen" in node) return "windowSpecification";
     if ("arms" in node) return "caseExpr";
     if ("type_declaration" in node) return "structOrArrayType"; // struct<int64>

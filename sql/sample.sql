@@ -26,4 +26,4 @@ sum() over (rows 1 + 1 preceding),
 ;
 select arr[offset(1)], [1, 2], ARRAY[1,2],array<int64>[1],array<struct<array<int64>, x int64>>[struct([1])];
 select (1,2),struct(1,2),struct<int64>(1),struct<int64,x float64>(1,.1),struct<array<int64>>([1]),;
-
+(select 1, 2);
