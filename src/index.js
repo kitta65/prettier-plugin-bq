@@ -892,6 +892,11 @@ const printSelf = (
   if ("except" in node) {
     except = concat([" ", path.call((p) => p.call(print, "Node"), "except")]);
   }
+  // replace
+  let replace = "";
+  if ("replace" in node) {
+    replace = concat([" ", path.call((p) => p.call(print, "Node"), "replace")]);
+  }
   // order
   let order = "";
   if (printOrder) {
@@ -928,6 +933,7 @@ const printSelf = (
     leading_comments,
     node.self.Node.token.literal,
     except,
+    replace,
     order,
     alias,
     comma,
