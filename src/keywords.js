@@ -424,5 +424,6 @@ const netFunctions = [
 
 module.exports = {
   reservedKeywords,
+  globalFunctions,
   netFunctions,
 };

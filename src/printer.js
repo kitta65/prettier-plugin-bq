@@ -1,6 +1,6 @@
 "use strict";
 
-const { reservedKeywords } = require("./keywords");
+const { reservedKeywords, globalFunctions } = require("./keywords");
 
 const {
   doc: {
@@ -357,6 +357,9 @@ const printFunc = (path, options, print) => {
     printAlias: false,
     printOrder: false,
   };
+  if (globalFunctions.indexOf(node.func.Node.token.literal.toUpperCase()) !== -1) {
+    node.func.Node.children.self.Node.token.literal = node.func.Node.token.literal.toUpperCase();
+  }
   let sep = "";
   if (node.func.Node.token.literal.toLowerCase() === "exists") {
     sep = " ";
