@@ -270,6 +270,8 @@ const printUnnestWithOffset = (path, options, print) => {
 };
 
 const printWithOffset = (path, options, print) => {
+  const node = path.getValue();
+  node.unnest_offset.Node.children.self.Node.token.literal = node.unnest_offset.Node.children.self.Node.token.literal.toUpperCase();
   return concat([
     printSelf(path, options, print),
     " ",
@@ -302,6 +304,8 @@ const printGroupedStatement = (path, options, print) => {
 };
 
 const printNullOrder = (path, options, print) => {
+  const node = path.getValue();
+  node.first.Node.children.self.Node.token.literal = node.first.Node.children.self.Node.token.literal.toUpperCase();
   return concat([
     printSelf(path, options, print),
     " ",
@@ -318,7 +322,8 @@ const printJoinType = (path, options, print) => {
 };
 
 const printKeywordWithExpr = (path, options, print) => {
-  // const node = path.getValue();
+  const node = path.getValue();
+  node.self.Node.token.literal = node.self.Node.token.literal.toUpperCase();
   return group(
     markAsRoot(
       indent(
@@ -357,7 +362,9 @@ const printFunc = (path, options, print) => {
     printAlias: false,
     printOrder: false,
   };
-  if (globalFunctions.indexOf(node.func.Node.token.literal.toUpperCase()) !== -1) {
+  if (
+    globalFunctions.indexOf(node.func.Node.token.literal.toUpperCase()) !== -1
+  ) {
     node.func.Node.children.self.Node.token.literal = node.func.Node.token.literal.toUpperCase();
   }
   let sep = "";
@@ -491,6 +498,9 @@ const printTableName = (path, options, print) => {
 
 const printForSystemTimeAsOfClause = (path, options, print) => {
   const node = path.getValue();
+  node.system_time_as_of.NodeVec.map((x) => {
+    x.children.self.Node.token.literal = x.children.self.Node.token.literal.toUpperCase();
+  });
   return join(" ", [
     printSelf(path, options, print),
     path.call((p) => join(" ", p.map(print, "NodeVec")), "system_time_as_of"),
@@ -667,7 +677,28 @@ const printUnaryOperator = (path, options, print) => {
     printAlias: false,
     printOrder: false,
   };
+  const upperCaseOperators = [
+    "DATE",
+    "TIMESTAMP",
+    "DATETIME",
+    "NUMERIC",
+    "BIGNUMERIC",
+    "DECIMAL",
+    "BIGDECIMAL",
+  ];
+  const lowerCaseOperators = ["br", "r", "rb", "b"];
   const noSpaceOperators = ["-", "br", "r", "rb", "b", "array", "struct"];
+  if (
+    upperCaseOperators.indexOf(node.self.Node.token.literal.toUpperCase()) !==
+    -1
+  ) {
+    node.self.Node.token.literal = node.self.Node.token.literal.toUpperCase();
+  } else if (
+    lowerCaseOperators.indexOf(node.self.Node.token.literal.toLowerCase()) !==
+    -1
+  ) {
+    node.self.Node.token.literal = node.self.Node.token.literal.toLowerCase();
+  }
   let self = printSelf(path, options, print, config);
   if (
     noSpaceOperators.indexOf(node.self.Node.token.literal.toLowerCase()) === -1
@@ -967,6 +998,7 @@ const printSelf = (
   // replace
   let replace = "";
   if ("replace" in node) {
+    node.replace.Node.children.self.Node.token.literal = node.replace.Node.children.self.Node.token.literal.toUpperCase();
     replace = concat([" ", path.call((p) => p.call(print, "Node"), "replace")]);
   }
   // order
