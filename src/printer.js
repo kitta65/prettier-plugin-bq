@@ -858,6 +858,7 @@ const printTypeDeclaration = (path, options, print) => {
   const node = path.getValue();
   let type = "";
   if ("type" in node) {
+    node.type.Node.children.self.Node.token.literal = node.type.Node.children.self.Node.token.literal.toUpperCase();
     type = path.call((p) => p.call(print, "Node"), "type");
   }
   let declarations = "";
@@ -882,6 +883,7 @@ const printIdentAndType = (path, options, print) => {
     printAlias: false,
     printOrder: false,
   };
+  node.type.Node.children.self.Node.token.literal = node.type.Node.children.self.Node.token.literal.toUpperCase();
   let ident = "";
   if ("self" in node) {
     ident = concat([printSelf(path, options, print, config), " "]);
@@ -1065,7 +1067,7 @@ const guess_node_type = (node) => {
     if ("struct_value" in node) return "asStructOrValue";
     if (("type" in node || "declarations" in node) && "rparen" in node) {
       return "typeDeclaration";
-    } // <int64>
+    } // <int64>, <x int64>
     if ("type" in node) return "identAndType"; // x int64
     if ("alias" in node) return "as";
     if ("start" in node) return "windowFrameClause";
