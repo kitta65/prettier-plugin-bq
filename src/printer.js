@@ -1,4 +1,7 @@
 "use strict";
+
+const { reservedKeywords } = require("./keywords");
+
 const {
   doc: {
     builders: {
@@ -948,6 +951,11 @@ const printSelf = (
       ),
     ]);
   }
+  // self
+  let self = node.self.Node.token.literal;
+  if (reservedKeywords.indexOf(self.toUpperCase()) !== -1) {
+    self = self.toUpperCase();
+  }
   // except
   let except = "";
   if ("except" in node) {
@@ -999,7 +1007,7 @@ const printSelf = (
   }
   return concat([
     leading_comments,
-    node.self.Node.token.literal,
+    self,
     except,
     replace,
     order,

@@ -1,6 +1,7 @@
 "use strict";
 
-reservedKeywords = [
+const reservedKeywords = [
+  "ALL",
   "AND",
   "ANY",
   "ARRAY",
@@ -97,7 +98,7 @@ reservedKeywords = [
   "WITHIN",
 ];
 
-globalFunctions = [
+const globalFunctions = [
   // aggregate functions
   "ANY_VALUE",
   "ARRAY_AGG",
@@ -382,7 +383,7 @@ globalFunctions = [
   "NULLIF",
 ];
 
-hllCountFunctions = [
+const hllCountFunctions = [
   // HLL functions
   "INIT",
   "MERGE",
@@ -390,7 +391,7 @@ hllCountFunctions = [
   "EXTRACT",
 ];
 
-keysFunctions = [
+const keysFunctions = [
   // AEAD encryption functions
   "NEW_KEYSET",
   "ADD_KEY_FROM_RAW_BYTES",
@@ -400,14 +401,14 @@ keysFunctions = [
   "KEYSET_LENGTH",
 ];
 
-aeadFunctions = [
+const aeadFunctions = [
   // AEAD encryption functions
   "DECRYPT_BYTES",
   "DECRYPT_STRING",
   "ENCRYPT",
 ];
 
-netFunctions = [
+const netFunctions = [
   // net functions
   "IP_FROM_STRING",
   "SAFE_IP_FROM_STRING",
@@ -420,3 +421,8 @@ netFunctions = [
   "PUBLIC_SUFFIX",
   "REG_DOMAIN",
 ];
+
+module.exports = {
+  reservedKeywords,
+  netFunctions,
+};
