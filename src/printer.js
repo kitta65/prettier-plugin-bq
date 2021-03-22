@@ -422,6 +422,16 @@ const printBinaryOperator = (path, options, print) => {
     printAlias: false,
     printOrder: false,
   };
+  const uppercasePrefix = ["SAFE", "KEYS", "AEAD", "NET", "HLL_COUNT"];
+  if (
+    node.self.Node.token.literal === "." &&
+    uppercasePrefix.indexOf(node.left.Node.children.self.Node.token.literal.toUpperCase()) !==
+      -1 &&
+    "func" in node.right.Node.children
+  ) {
+    node.left.Node.children.self.Node.token.literal = node.left.Node.children.self.Node.token.literal.toUpperCase();
+    node.right.Node.children.func.Node.children.self.Node.token.literal = node.right.Node.children.func.Node.children.self.Node.token.literal.toUpperCase();
+  }
   const noSpaceOperators = ["."];
   const onesideSpaceOperators = [","];
   let lsep = line;
