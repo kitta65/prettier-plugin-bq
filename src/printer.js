@@ -735,6 +735,7 @@ const printUnaryOperator = (path, options, print) => {
   const upperCaseOperators = [
     "DATE",
     "TIMESTAMP",
+    "TIME",
     "DATETIME",
     "NUMERIC",
     "BIGNUMERIC",
