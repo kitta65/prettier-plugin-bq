@@ -37,4 +37,9 @@ select * from t order by col1 asc nulls last, col2 nulls first;
 select * from data1 as one inner join data2 two ON true;
 select * from data1 as one , data2 two join (data3 full outer join data4 on col1=col2) on true;
 select safe.substr('foo', 0, -2),keys.func();
-
+select last_value(col3) OVER (c ROWS BETWEEN 2 PRECEDING AND 2 FOLLOWING)
+FROM table
+WINDOW
+a AS (PARTITION BY col1),
+b AS (a ORDER BY col2),
+c AS b;

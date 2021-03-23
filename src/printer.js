@@ -87,6 +87,10 @@ const printSQL = (path, options, print) => {
       return printWindowSpecification(path, options, print);
     case "windowFrameClause":
       return printWindowFrameClause(path, options, print);
+    case "windowClause":
+      return printWindowClause(path, options, print);
+    case "windowExprs":
+      return printWindowExprs(path, options, print);
     case "frameStartOrEnd":
       return printFrameStartOrEnd(path, options, print);
     case "xxxByExprs":
@@ -151,6 +155,11 @@ const printSelectStatement = (path, options, print) => {
       group(path.call((p) => p.call(print, "Node"), "from")),
     ]);
   }
+  // window
+  let window = "";
+  if ("window" in node) {
+    window = concat([line, path.call((p) => p.call(print, "Node"), "window")]);
+  }
   // where
   let where = "";
   if ("where" in node) {
@@ -207,6 +216,7 @@ const printSelectStatement = (path, options, print) => {
         where,
         groupby,
         having,
+        window,
         orderby,
         limit,
         softline,
@@ -425,8 +435,9 @@ const printBinaryOperator = (path, options, print) => {
   const uppercasePrefix = ["SAFE", "KEYS", "AEAD", "NET", "HLL_COUNT"];
   if (
     node.self.Node.token.literal === "." &&
-    uppercasePrefix.indexOf(node.left.Node.children.self.Node.token.literal.toUpperCase()) !==
-      -1 &&
+    uppercasePrefix.indexOf(
+      node.left.Node.children.self.Node.token.literal.toUpperCase()
+    ) !== -1 &&
     "func" in node.right.Node.children
   ) {
     node.left.Node.children.self.Node.token.literal = node.left.Node.children.self.Node.token.literal.toUpperCase();
@@ -625,6 +636,40 @@ const printWindowFrameClause = (path, options, print) => {
     contents.push(path.call((p) => p.call(print, "Node"), "end"));
   }
   return group(join(" ", contents));
+};
+
+const printWindowClause = (path, options, print) => {
+  const node = path.getValue();
+  return concat([
+    printSelf(path, options, print),
+    indent(
+      concat([
+        line,
+        path.call((p) => join(line, p.map(print, "NodeVec")), "window_exprs"),
+      ])
+    ),
+  ]);
+};
+
+const printWindowExprs = (path, options, print) => {
+  const node = path.getValue();
+  const config = {
+    printComma: false,
+    printAlias: false,
+    printOrder: false,
+  };
+  let comma = "";
+  if ("comma" in node) {
+    comma = path.call((p) => p.call(print, "Node"), "comma");
+  }
+  return concat([
+    printSelf(path, options, print, config),
+    " ",
+    path.call((p) => p.call(print, "Node"), "as"),
+    " ",
+    path.call((p) => p.call(print, "Node"), "window"),
+    comma,
+  ]);
 };
 
 const printFrameStartOrEnd = (path, options, print) => {
@@ -1071,6 +1116,7 @@ const guess_node_type = (node) => {
   } else {
     if ("with" in node && "func" in node) return "unnestWithOffset";
     if ("func" in node) return "func";
+    if ("window_exprs" in node) return "windowClause"; // window abc as (partition by 1)
     if ("outer" in node) return "joinType";
     if ("first" in node) return "nullOrder";
     if ("group" in node) return "keywordWithGroupedExprs";
@@ -1080,7 +1126,7 @@ const guess_node_type = (node) => {
     } // <int64>, <x int64>
     if ("type" in node) return "identAndType"; // x int64
     if ("alias" in node) return "as";
-    if ("start" in node) return "windowFrameClause";
+    if ("start" in node) return "windowFrameClause"; // rows between 2 preceding and 2 following
     if ("preceding" in node || "following" in node) return "frameStartOrEnd";
     if (
       "Node" in node.self &&
@@ -1107,8 +1153,9 @@ const guess_node_type = (node) => {
     if ("rparen" in node && "exprs" in node) return "groupedExprs";
     if ("rparen" in node && "stmt" in node) return "groupedStmt"; // (select *)
     if ("as" in node && "stmt" in node) return "withQuery"; // name as (select *)
+    if ("as" in node && "window" in node) return "windowExprs"; // name as (partition by col1)
     if ("queries" in node) return "withQueries"; // name as (select *)
-    if ("rparen" in node) return "windowSpecification";
+    if ("rparen" in node) return "windowSpecification"; // (parttion by col1 order by col2)
     if ("arms" in node) return "caseExpr";
     if ("type_declaration" in node) return "structOrArrayType"; // struct<int64>
     if ("result" in node) return "caseArm";
