@@ -155,7 +155,7 @@ const printCreateFunctionStatement = (path, options, print) => {
   if ("returns" in node) {
     node.returns.Node.children.self.Node.token.literal = node.returns.Node.children.self.Node.token.literal.toUpperCase();
     returnType = concat([
-      " ",
+      line,
       path.call((p) => p.call(print, "Node"), "returns"), // guessed as identAndType
     ]);
   }
@@ -175,7 +175,7 @@ const printCreateFunctionStatement = (path, options, print) => {
   let language = "";
   if ("language" in node) {
     language = concat([
-      " ",
+      line,
       path.call((p) => p.call(print, "Node"), "language"),
     ]);
   }
@@ -189,23 +189,31 @@ const printCreateFunctionStatement = (path, options, print) => {
   }
   // AS function_definition
   const as_ = concat([" ", path.call((p) => p.call(print, "Node"), "as")]);
-  return concat([
-    printSelf(path, options, print, config),
-    orReplace,
-    temporary,
-    " ",
-    path.call((p) => p.call(print, "Node"), "what"),
-    ifNotExists,
-    " ",
-    path.call((p) => p.call(print, "Node"), "ident"),
-    path.call((p) => p.call(print, "Node"), "group"),
-    returnType,
-    determinism,
-    language,
-    options_,
-    as_,
-    hardline,
-  ]);
+  // ;
+  let semicolon = "";
+  if ("semicolon" in node) {
+    semicolon = path.call((p) => p.call(print, "Node"), "semicolon");
+  }
+  return group(
+    concat([
+      printSelf(path, options, print, config),
+      orReplace,
+      temporary,
+      " ",
+      path.call((p) => p.call(print, "Node"), "what"),
+      ifNotExists,
+      " ",
+      path.call((p) => p.call(print, "Node"), "ident"),
+      path.call((p) => p.call(print, "Node"), "group"),
+      returnType,
+      determinism,
+      language,
+      options_,
+      as_,
+      semicolon,
+      hardline,
+    ])
+  );
 };
 
 const printLanguage = (path, options, print) => {
@@ -455,15 +463,10 @@ const printKeywordWithExpr = (path, options, print) => {
   const node = path.getValue();
   node.self.Node.token.literal = node.self.Node.token.literal.toUpperCase();
   return group(
-    markAsRoot(
-      indent(
-        concat([
-          dedentToRoot(printSelf(path, options, print)),
-          line,
-          path.call((p) => p.call(print, "Node"), "expr"),
-        ])
-      )
-    )
+    concat([
+      printSelf(path, options, print),
+      indent(concat([line, path.call((p) => p.call(print, "Node"), "expr")])),
+    ])
   );
 };
 
@@ -961,14 +964,19 @@ const printGroupedExpr = (path, options, print) => {
   if ("as" in node) {
     as = concat([" ", path.call((p) => p.call(print, "Node"), "as")]);
   }
-  return concat([
-    printSelf(path, options, print, config),
-    path.call((p) => p.call(print, "Node"), "expr"),
-    path.call((p) => p.call(print, "Node"), "rparen"),
-    order,
-    as,
-    comma,
-  ]);
+  return group(
+    concat([
+      printSelf(path, options, print, config),
+      group(
+        indent(concat([softline, path.call((p) => p.call(print, "Node"), "expr")]))
+      ),
+      softline,
+      path.call((p) => p.call(print, "Node"), "rparen"),
+      order,
+      as,
+      comma,
+    ])
+  );
 };
 
 const printGroupedExprs = (path, options, print) => {
@@ -990,14 +998,22 @@ const printGroupedExprs = (path, options, print) => {
   if ("as" in node) {
     as = concat([" ", path.call((p) => p.call(print, "Node"), "as")]);
   }
-  return concat([
-    printSelf(path, options, print, config),
-    path.call((p) => join(" ", p.map(print, "NodeVec")), "exprs"),
-    path.call((p) => p.call(print, "Node"), "rparen"),
-    order,
-    as,
-    comma,
-  ]);
+  return group(
+    concat([
+      printSelf(path, options, print, config),
+      indent(
+        concat([
+          softline,
+          path.call((p) => join(" ", p.map(print, "NodeVec")), "exprs"),
+        ])
+      ),
+      softline,
+      path.call((p) => p.call(print, "Node"), "rparen"),
+      order,
+      as,
+      comma,
+    ])
+  );
 };
 
 const printArrayAccess = (path, options, print) => {
@@ -1236,8 +1252,8 @@ const guess_node_type = (node) => {
     return "parent";
   } else {
     if ("with" in node && "func" in node) return "unnestWithOffset";
-    if ("args" in node) return "namedParameter"; // (x int64)
     if ("func" in node) return "func";
+    if ("args" in node) return "namedParameter"; // (x int64)
     if ("window_exprs" in node) return "windowClause"; // window abc as (partition by 1)
     if ("outer" in node) return "joinType";
     if ("first" in node) return "nullOrder";
