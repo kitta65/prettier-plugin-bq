@@ -31,6 +31,12 @@ const printSQL = (path, options, print) => {
   switch (guess_node_type(node)) {
     case "parent":
       return path.call(print, "children");
+    case "createFunctionStatement":
+      return printCreateFunctionStatement(path, options, print);
+    case "language":
+      return printLanguage(path, options, print);
+    case "namedParameter":
+      return printNamedParameter(path, options, print);
     case "selectStatement":
       return printSelectStatement(path, options, print);
     case "func":
@@ -106,6 +112,120 @@ const printSQL = (path, options, print) => {
     default:
       return printSelf(path, options, print);
   }
+};
+
+const printCreateFunctionStatement = (path, options, print) => {
+  const node = path.getValue();
+  const config = {
+    printComma: false,
+    printAlias: false,
+    printOrder: false,
+  };
+  // TEMPORARY
+  let temporary = "";
+  if ("temp" in node) {
+    node.temp.Node.children.self.Node.token.literal = "TEMPORARY";
+    temporary = concat([" ", path.call((p) => p.call(print, "Node"), "temp")]);
+  }
+  // OR REPLACE
+  let orReplace = "";
+  if ("or_replace" in node) {
+    node.or_replace.NodeVec.map((x) => {
+      x.children.self.Node.token.literal = x.children.self.Node.token.literal.toUpperCase();
+    });
+    orReplace = concat([
+      " ",
+      path.call((p) => join(" ", p.map(print, "NodeVec")), "or_replace"),
+    ]);
+  }
+  node.what.Node.children.self.Node.token.literal = node.what.Node.children.self.Node.token.literal.toUpperCase();
+  // IF NOT EXISTS
+  let ifNotExists = "";
+  if ("if_not_exists" in node) {
+    node.if_not_exists.NodeVec.map((x) => {
+      x.children.self.Node.token.literal = x.children.self.Node.token.literal.toUpperCase();
+    });
+    ifNotExists = concat([
+      " ",
+      path.call((p) => join(" ", p.map(print, "NodeVec")), "if_not_exists"),
+    ]);
+  }
+  // RETURNS
+  let returnType = "";
+  if ("returns" in node) {
+    node.returns.Node.children.self.Node.token.literal = node.returns.Node.children.self.Node.token.literal.toUpperCase();
+    returnType = concat([
+      " ",
+      path.call((p) => p.call(print, "Node"), "returns"), // guessed as identAndType
+    ]);
+  }
+  // DETERMINISTIC
+  let determinism = "";
+  if ("determinism" in node) {
+    node.determinism.Node.children.self.Node.token.literal = node.determinism.Node.children.self.Node.token.literal.toUpperCase();
+    if ("right" in node.determinism.Node.children) {
+      node.determinism.Node.children.right.Node.children.self.Node.token.literal = node.determinism.Node.children.right.Node.children.self.Node.token.literal.toUpperCase();
+    }
+    determinism = concat([
+      " ",
+      path.call((p) => p.call(print, "Node"), "determinism"),
+    ]);
+  }
+  // LANGUAGE js
+  let language = "";
+  if ("language" in node) {
+    language = concat([
+      " ",
+      path.call((p) => p.call(print, "Node"), "language"),
+    ]);
+  }
+  // OPTIONS
+  let options_ = "";
+  if ("options" in node) {
+    options_ = concat([
+      " ",
+      path.call((p) => p.call(print, "Node"), "options"),
+    ]);
+  }
+  // AS function_definition
+  const as_ = concat([" ", path.call((p) => p.call(print, "Node"), "as")]);
+  return concat([
+    printSelf(path, options, print, config),
+    orReplace,
+    temporary,
+    " ",
+    path.call((p) => p.call(print, "Node"), "what"),
+    ifNotExists,
+    " ",
+    path.call((p) => p.call(print, "Node"), "ident"),
+    path.call((p) => p.call(print, "Node"), "group"),
+    returnType,
+    determinism,
+    language,
+    options_,
+    as_,
+    hardline,
+  ]);
+};
+
+const printLanguage = (path, options, print) => {
+  const node = path.getValue();
+  node.self.Node.token.literal = node.self.Node.token.literal.toUpperCase();
+  node.language.Node.token.literal = node.language.Node.token.literal.toUpperCase();
+  return concat([
+    printSelf(path, options, print),
+    " ",
+    path.call((p) => p.call(print, "Node"), "language"),
+  ]);
+};
+
+const printNamedParameter = (path, options, print) => {
+  const node = path.getValue();
+  return concat([
+    printSelf(path, options, print),
+    path.call((p) => join(" ", p.map(print, "NodeVec")), "args"),
+    path.call((p) => p.call(print, "Node"), "rparen"),
+  ]);
 };
 
 const printSelectStatement = (path, options, print) => {
@@ -1116,10 +1236,21 @@ const guess_node_type = (node) => {
     return "parent";
   } else {
     if ("with" in node && "func" in node) return "unnestWithOffset";
+    if ("args" in node) return "namedParameter"; // (x int64)
     if ("func" in node) return "func";
     if ("window_exprs" in node) return "windowClause"; // window abc as (partition by 1)
     if ("outer" in node) return "joinType";
     if ("first" in node) return "nullOrder";
+    if (
+      "self" in node &&
+      "Node" in node.self &&
+      node.self.Node.token.literal.toUpperCase() === "CREATE" &&
+      "what" in node &&
+      node.what.Node.children.self.Node.token.literal.toUpperCase() ==
+        "FUNCTION"
+    ) {
+      return "createFunctionStatement";
+    }
     if ("group" in node) return "keywordWithGroupedExprs";
     if ("struct_value" in node) return "asStructOrValue";
     if (("type" in node || "declarations" in node) && "rparen" in node) {
@@ -1145,6 +1276,7 @@ const guess_node_type = (node) => {
     ) {
       return "arrayAccess";
     }
+    if ("language" in node) return "language";
     if ("right" in node && "left" in node && "distinct" in node)
       return "setOperator"; // union all
     if ("right" in node && "left" in node) return "binaryOperator"; // and, join, =
