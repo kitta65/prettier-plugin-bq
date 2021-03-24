@@ -964,19 +964,36 @@ const printGroupedExpr = (path, options, print) => {
   if ("as" in node) {
     as = concat([" ", path.call((p) => p.call(print, "Node"), "as")]);
   }
-  return group(
-    concat([
-      printSelf(path, options, print, config),
-      group(
-        indent(concat([softline, path.call((p) => p.call(print, "Node"), "expr")]))
-      ),
-      softline,
-      path.call((p) => p.call(print, "Node"), "rparen"),
-      order,
-      as,
-      comma,
-    ])
-  );
+  if (node.expr.Node.children.self.Node.token.literal === "(") {
+    return group(
+      concat([
+        printSelf(path, options, print, config),
+        group(
+          path.call((p) => p.call(print, "Node"), "expr")
+        ),
+        path.call((p) => p.call(print, "Node"), "rparen"),
+        order,
+        as,
+        comma,
+      ])
+    );
+  } else {
+    return group(
+      concat([
+        printSelf(path, options, print, config),
+        group(
+          indent(
+            concat([softline, path.call((p) => p.call(print, "Node"), "expr")])
+          )
+        ),
+        softline,
+        path.call((p) => p.call(print, "Node"), "rparen"),
+        order,
+        as,
+        comma,
+      ])
+    );
+  }
 };
 
 const printGroupedExprs = (path, options, print) => {
