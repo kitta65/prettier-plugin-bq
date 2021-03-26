@@ -43,3 +43,9 @@ WINDOW
 a AS (PARTITION BY col1),
 b AS (a ORDER BY col2),
 c AS b;
+select
+cast(abc as string),string_agg(distinct x, y ignore nulls order by z limit 100),array(select 1 union all select 2),
+extract(day from ts),extract(day from ts at time zone 'UTC'),extract(week(sunday) from ts),
+st_geogfromtext(p, oriented => true),
+;
+

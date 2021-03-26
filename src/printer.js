@@ -81,6 +81,8 @@ const printSQL = (path, options, print) => {
       return printForSystemTimeAsOfClause(path, options, print);
     case "as":
       return printAs(path, options, print);
+    case "castArgument":
+      return printCastArgument(path, options, print);
     case "betweenOperator":
       return printBetweenOperator(path, options, print);
     case "setOperator":
@@ -968,9 +970,7 @@ const printGroupedExpr = (path, options, print) => {
     return group(
       concat([
         printSelf(path, options, print, config),
-        group(
-          path.call((p) => p.call(print, "Node"), "expr")
-        ),
+        group(path.call((p) => p.call(print, "Node"), "expr")),
         path.call((p) => p.call(print, "Node"), "rparen"),
         order,
         as,
@@ -1176,6 +1176,16 @@ const printSetOperator = (path, options, print) => {
   ]);
 };
 
+const printCastArgument = (path, options, print) => {
+  const node = path.getValue();
+  node.cast_to.Node.children.self.Node.token.literal = node.cast_to.Node.children.self.Node.token.literal.toUpperCase();
+  return join(" ", [
+    path.call((p) => p.call(print, "Node"), "cast_from"),
+    printSelf(path, options, print),
+    path.call((p) => p.call(print, "Node"), "cast_to"),
+  ]);
+};
+
 const printSelf = (
   path,
   options,
@@ -1269,6 +1279,7 @@ const guess_node_type = (node) => {
     return "parent";
   } else {
     if ("with" in node && "func" in node) return "unnestWithOffset";
+    if ("cast_from" in node) return "castArgument";
     if ("func" in node) return "func";
     if ("args" in node) return "namedParameter"; // (x int64)
     if ("window_exprs" in node) return "windowClause"; // window abc as (partition by 1)
