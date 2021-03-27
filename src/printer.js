@@ -619,9 +619,19 @@ const printBinaryOperator = (path, options, print) => {
   ) {
     lsep = softline;
   }
-  let not = "";
-  if ("not" in node) {
-    not = concat([path.call((p) => p.call(print, "Node"), "not"), " "]);
+  let operator;
+  if (node.self.Node.token.literal.toUpperCase() === "IS") {
+    let not = "";
+    if ("not" in node) {
+      not = concat([" ", path.call((p) => p.call(print, "Node"), "not")]);
+    }
+    operator = concat([printSelf(path, options, print, config), not]);
+  } else {
+    let not = "";
+    if ("not" in node) {
+      not = concat([path.call((p) => p.call(print, "Node"), "not"), " "]);
+    }
+    operator = concat([not, printSelf(path, options, print, config)]);
   }
   let joinType = "";
   if ("join_type" in node) {
@@ -656,10 +666,9 @@ const printBinaryOperator = (path, options, print) => {
       lsep,
       group(
         concat([
-          not,
           joinType,
           outer,
-          printSelf(path, options, print, config),
+          operator,
           rsep,
           path.call((p) => p.call(print, "Node"), "right"),
           on,
@@ -907,7 +916,17 @@ const printUnaryOperator = (path, options, print) => {
     "BIGDECIMAL",
   ];
   const lowerCaseOperators = ["br", "r", "rb", "b"];
-  const noSpaceOperators = ["-", "br", "r", "rb", "b", "array", "struct"];
+  const noSpaceOperators = [
+    "+",
+    "-",
+    "~",
+    "br",
+    "r",
+    "rb",
+    "b",
+    "array",
+    "struct",
+  ];
   if (
     upperCaseOperators.indexOf(node.self.Node.token.literal.toUpperCase()) !==
     -1
@@ -1162,6 +1181,10 @@ const printBetweenOperator = (path, options, print) => {
     printAlias: false,
     printOrder: false,
   };
+  let not = "";
+  if ("not" in node) {
+    not = path.call((p) => p.call(print, "Node"), "not");
+  }
   const min = path.call((p) => p.map(print, "NodeVec")[0], "right");
   const max = path.call((p) => p.map(print, "NodeVec")[1], "right");
   let comma = "";
@@ -1179,6 +1202,7 @@ const printBetweenOperator = (path, options, print) => {
   return concat([
     join(" ", [
       path.call((p) => p.call(print, "Node"), "left"),
+      not,
       printSelf(path, options, print, config),
       min,
       path.call((p) => p.call(print, "Node"), "and"),
@@ -1236,8 +1260,8 @@ const printIgnoreOrReplaceNulls = (path, options, print) => {
 const printExtractArgument = (path, options, print) => {
   const node = path.getValue();
   if (node.extract_datepart.Node.children.self.Node.token.literal === "(") {
-    node.extract_datepart.Node.children.func.Node.children.self.Node.token.literal = node.extract_datepart.Node.children.func.Node.children.self.Node.token.literal.toUpperCase()
-    node.extract_datepart.Node.children.args.NodeVec[0].children.self.Node.token.literal = node.extract_datepart.Node.children.args.NodeVec[0].children.self.Node.token.literal.toUpperCase()
+    node.extract_datepart.Node.children.func.Node.children.self.Node.token.literal = node.extract_datepart.Node.children.func.Node.children.self.Node.token.literal.toUpperCase();
+    node.extract_datepart.Node.children.args.NodeVec[0].children.self.Node.token.literal = node.extract_datepart.Node.children.args.NodeVec[0].children.self.Node.token.literal.toUpperCase();
   } else {
     node.extract_datepart.Node.children.self.Node.token.literal = node.extract_datepart.Node.children.self.Node.token.literal.toUpperCase();
   }

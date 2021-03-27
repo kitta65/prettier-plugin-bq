@@ -49,4 +49,10 @@ NORMALIZE_AND_CASEFOLD(a, nFD),
 extract(day from ts),extract(day from ts at time zone 'UTC'),extract(week(sunday) from ts),
 st_geogfromtext(p, oriented => true),
 ;
+select
+aaa.bbb.ccc,x[offset(1)],-+1,~1,1*2/3,'a'||'b',1+2-3,1<<3>>2,1|2^3&4,
+1<2,3>4,1<=2,3>=4,1!=2,1<>2,
+'a' like '%a','a' not like 'b',1 between 1 and 2,1 not between 1 and 2,'a' in ('a'),'a' not in ('a','b'),
+a is null,a is not null,true is true,true or true is not true,not true is true,true or false not in (true),
+;
 
