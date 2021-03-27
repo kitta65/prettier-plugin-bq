@@ -83,6 +83,8 @@ const printSQL = (path, options, print) => {
       return printAs(path, options, print);
     case "castArgument":
       return printCastArgument(path, options, print);
+    case "extractArgument":
+      return printExtractArgument(path, options, print);
     case "betweenOperator":
       return printBetweenOperator(path, options, print);
     case "setOperator":
@@ -111,6 +113,8 @@ const printSQL = (path, options, print) => {
       return printCaseArm(path, options, print);
     case "nullOrder":
       return printNullOrder(path, options, print);
+    case "ignoreOrReplaceNulls":
+      return printIgnoreOrReplaceNulls(path, options, print);
     default:
       return printSelf(path, options, print);
   }
@@ -497,18 +501,45 @@ const printFunc = (path, options, print) => {
     printAlias: false,
     printOrder: false,
   };
+  let sep = "";
+  if (node.func.Node.token.literal.toLowerCase() === "exists") {
+    sep = " ";
+  }
   if (
     globalFunctions.indexOf(node.func.Node.token.literal.toUpperCase()) !== -1
   ) {
     node.func.Node.children.self.Node.token.literal = node.func.Node.token.literal.toUpperCase();
   }
-  let sep = "";
-  if (node.func.Node.token.literal.toLowerCase() === "exists") {
-    sep = " ";
+  let distinct = "";
+  if ("distinct" in node) {
+    node.distinct.Node.children.self.Node.token.literal = node.distinct.Node.children.self.Node.token.literal.toUpperCase();
+    distinct = concat([
+      path.call((p) => p.call(print, "Node"), "distinct"),
+      " ",
+    ]);
   }
   let args = "";
   if ("args" in node) {
+    switch (node.func.Node.token.literal.toUpperCase()) {
+      case "NORMALIZE":
+        node.args.NodeVec[1].children.self.Node.token.literal = node.args.NodeVec[1].children.self.Node.token.literal.toUpperCase();
+        break;
+      case "NORMALIZE_AND_CASEFOLD":
+        node.args.NodeVec[1].children.self.Node.token.literal = node.args.NodeVec[1].children.self.Node.token.literal.toUpperCase();
+        break;
+    }
     args = path.call((p) => join(" ", p.map(print, "NodeVec")), "args");
+  }
+  let ignoreNulls = "";
+  if ("ignore_nulls" in node) {
+    ignoreNulls = concat([
+      " ",
+      path.call((p) => p.call(print, "Node"), "ignore_nulls"),
+    ]);
+  }
+  let orderBy = "";
+  if ("orderby" in node) {
+    orderBy = concat([" ", path.call((p) => p.call(print, "Node"), "orderby")]);
   }
   let over = "";
   if ("over" in node) {
@@ -522,6 +553,10 @@ const printFunc = (path, options, print) => {
   if ("order" in node) {
     order = concat([" ", path.call((p) => p.call(print, "Node"), "order")]);
   }
+  let limit = "";
+  if ("limit" in node) {
+    limit = concat([" ", path.call((p) => p.call(print, "Node"), "limit")]);
+  }
   let as = "";
   if ("as" in node) {
     as = concat([" ", path.call((p) => p.call(print, "Node"), "as")]);
@@ -530,7 +565,11 @@ const printFunc = (path, options, print) => {
     path.call((p) => p.call(print, "Node"), "func"),
     sep,
     printSelf(path, options, print, config),
+    distinct,
     args,
+    ignoreNulls,
+    orderBy,
+    limit,
     path.call((p) => p.call(print, "Node"), "rparen"),
     over,
     order,
@@ -1186,6 +1225,31 @@ const printCastArgument = (path, options, print) => {
   ]);
 };
 
+const printIgnoreOrReplaceNulls = (path, options, print) => {
+  return concat([
+    printSelf(path, options, print),
+    " ",
+    path.call((p) => p.call(print, "Node"), "nulls"),
+  ]);
+};
+
+const printExtractArgument = (path, options, print) => {
+  const node = path.getValue();
+  if (node.extract_datepart.Node.children.self.Node.token.literal === "(") {
+    node.extract_datepart.Node.children.func.Node.children.self.Node.token.literal = node.extract_datepart.Node.children.func.Node.children.self.Node.token.literal.toUpperCase()
+    node.extract_datepart.Node.children.args.NodeVec[0].children.self.Node.token.literal = node.extract_datepart.Node.children.args.NodeVec[0].children.self.Node.token.literal.toUpperCase()
+  } else {
+    node.extract_datepart.Node.children.self.Node.token.literal = node.extract_datepart.Node.children.self.Node.token.literal.toUpperCase();
+  }
+  return concat([
+    path.call((p) => p.call(print, "Node"), "extract_datepart"),
+    " ",
+    printSelf(path, options, print),
+    " ",
+    path.call((p) => p.call(print, "Node"), "extract_from"),
+  ]);
+};
+
 const printSelf = (
   path,
   options,
@@ -1229,10 +1293,10 @@ const printSelf = (
     if ("order" in node) {
       order = concat([" ", path.call((p) => p.call(print, "Node"), "order")]);
     }
-    if ("nulls" in node) {
+    if ("null_order" in node) {
       null_order = concat([
         " ",
-        path.call((p) => p.call(print, "Node"), "nulls"),
+        path.call((p) => p.call(print, "Node"), "null_order"),
       ]);
     }
   }
@@ -1280,7 +1344,9 @@ const guess_node_type = (node) => {
   } else {
     if ("with" in node && "func" in node) return "unnestWithOffset";
     if ("cast_from" in node) return "castArgument";
+    if ("nulls" in node) return "ignoreOrReplaceNulls";
     if ("func" in node) return "func";
+    if ("extract_datepart" in node) return "extractArgument";
     if ("args" in node) return "namedParameter"; // (x int64)
     if ("window_exprs" in node) return "windowClause"; // window abc as (partition by 1)
     if ("outer" in node) return "joinType";
