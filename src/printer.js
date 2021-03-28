@@ -35,6 +35,8 @@ const printSQL = (path, options, print) => {
       return printCreateFunctionStatement(path, options, print);
     case "insertStatement":
       return printInsertStatement(path, options, print);
+    case "updateStatement":
+      return printUpdateStatement(path, options, print);
     case "truncateStatement":
       return printTruncateStatement(path, options, print);
     case "deleteStatement":
@@ -1347,10 +1349,47 @@ const printTruncateStatement = (path, options, print) => {
   ]);
 };
 
+const printUpdateStatement = (path, options, print) => {
+  const node = path.getValue();
+  node.self.Node.token.literal = node.self.Node.token.literal.toUpperCase();
+  let target_name = "";
+  if ("target_name" in node) {
+    target_name = concat([
+      " ",
+      path.call((p) => p.call(print, "Node"), "target_name"),
+    ]);
+  }
+  const set = concat([line, path.call((p) => p.call(print, "Node"), "set")]);
+  let from = "";
+  if ("from" in node) {
+    from = concat([line, path.call((p) => p.call(print, "Node"), "from")]);
+  }
+  let where = "";
+  if ("where" in node) {
+    where = concat([line, path.call((p) => p.call(print, "Node"), "where")]);
+  }
+  let semicolon = "";
+  if ("semicolon" in node) {
+    semicolon = path.call((p) => p.call(print, "Node"), "semicolon");
+  }
+  return concat([
+    group(
+      concat([
+        printSelf(path, options, print),
+        target_name,
+        set,
+        from,
+        where,
+        semicolon,
+      ])
+    ),
+    hardline,
+  ]);
+};
+
 const printDeleteStatement = (path, options, print) => {
   const node = path.getValue();
   node.self.Node.token.literal = node.self.Node.token.literal.toUpperCase();
-
   let from = "";
   if ("from" in node) {
     from = concat([" ", path.call((p) => p.call(print, "Node"), "from")]);
@@ -1359,11 +1398,17 @@ const printDeleteStatement = (path, options, print) => {
   if ("semicolon" in node) {
     semicolon = path.call((p) => p.call(print, "Node"), "semicolon");
   }
-  const target_name = concat([
-    " ",
-    path.call((p) => p.call(print, "Node"), "target_name"),
-  ]);
-  const where = concat([" ", path.call((p) => p.call(print, "Node"), "where")]);
+  let target_name = "";
+  if ("target_name" in node) {
+    target_name = concat([
+      " ",
+      path.call((p) => p.call(print, "Node"), "target_name"),
+    ]);
+  }
+  let where = "";
+  if ("where" in node) {
+    where = concat([" ", path.call((p) => p.call(print, "Node"), "where")]);
+  }
   return concat([
     printSelf(path, options, print),
     from,
@@ -1511,6 +1556,12 @@ const guess_node_type = (node) => {
       node.self.Node.token.literal.toLowerCase() === "truncate"
     ) {
       return "truncateStatement";
+    }
+    if (
+      "Node" in node.self &&
+      node.self.Node.token.literal.toLowerCase() === "update"
+    ) {
+      return "updateStatement";
     }
     if (
       "Node" in node.self &&
