@@ -1326,6 +1326,25 @@ const printInsertStatement = (path, options, print) => {
   ]);
 };
 
+const printTruncateStatement = (path, options, print) => {
+  const node = path.getValue();
+  node.self.Node.token.literal = node.self.Node.token.literal.toUpperCase()
+  node.table.Node.children.self.Node.token.literal = node.table.Node.children.self.Node.token.literal.toUpperCase()
+  let semicolon = "";
+  if ("semicolon" in node) {
+    semicolon = path.call((p) => p.call(print, "Node"), "semicolon");
+  }
+  return concat([
+    printSelf(path, options, print),
+    " ",
+    path.call((p) => p.call(print, "Node"), "table"),
+    " ",
+    path.call((p) => p.call(print, "Node"), "target_name"),
+    semicolon,
+    hardline,
+  ]);
+};
+
 const printSelf = (
   path,
   options,
