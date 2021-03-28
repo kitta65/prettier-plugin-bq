@@ -37,6 +37,8 @@ const printSQL = (path, options, print) => {
       return printInsertStatement(path, options, print);
     case "truncateStatement":
       return printTruncateStatement(path, options, print);
+    case "deleteStatement":
+      return printDeleteStatement(path, options, print);
     case "language":
       return printLanguage(path, options, print);
     case "namedParameter":
@@ -1328,8 +1330,8 @@ const printInsertStatement = (path, options, print) => {
 
 const printTruncateStatement = (path, options, print) => {
   const node = path.getValue();
-  node.self.Node.token.literal = node.self.Node.token.literal.toUpperCase()
-  node.table.Node.children.self.Node.token.literal = node.table.Node.children.self.Node.token.literal.toUpperCase()
+  node.self.Node.token.literal = node.self.Node.token.literal.toUpperCase();
+  node.table.Node.children.self.Node.token.literal = node.table.Node.children.self.Node.token.literal.toUpperCase();
   let semicolon = "";
   if ("semicolon" in node) {
     semicolon = path.call((p) => p.call(print, "Node"), "semicolon");
@@ -1340,6 +1342,33 @@ const printTruncateStatement = (path, options, print) => {
     path.call((p) => p.call(print, "Node"), "table"),
     " ",
     path.call((p) => p.call(print, "Node"), "target_name"),
+    semicolon,
+    hardline,
+  ]);
+};
+
+const printDeleteStatement = (path, options, print) => {
+  const node = path.getValue();
+  node.self.Node.token.literal = node.self.Node.token.literal.toUpperCase();
+
+  let from = "";
+  if ("from" in node) {
+    from = concat([" ", path.call((p) => p.call(print, "Node"), "from")]);
+  }
+  let semicolon = "";
+  if ("semicolon" in node) {
+    semicolon = path.call((p) => p.call(print, "Node"), "semicolon");
+  }
+  const target_name = concat([
+    " ",
+    path.call((p) => p.call(print, "Node"), "target_name"),
+  ]);
+  const where = concat([" ", path.call((p) => p.call(print, "Node"), "where")]);
+  return concat([
+    printSelf(path, options, print),
+    from,
+    target_name,
+    where,
     semicolon,
     hardline,
   ]);
@@ -1482,6 +1511,12 @@ const guess_node_type = (node) => {
       node.self.Node.token.literal.toLowerCase() === "truncate"
     ) {
       return "truncateStatement";
+    }
+    if (
+      "Node" in node.self &&
+      node.self.Node.token.literal.toLowerCase() === "delete"
+    ) {
+      return "deleteStatement";
     }
     if ("right" in node && "left" in node && "and" in node) {
       return "betweenOperator";
