@@ -135,9 +135,73 @@ const printSQL = (path, options, print) => {
       return printSetStatement(path, options, print);
     case "executeStatement":
       return printExecuteStatement(path, options, print);
+    case "beginStatement":
+      return printBeginStatement(path, options, print);
     default:
       return printSelf(path, options, print);
   }
+};
+
+const printBeginStatement = (path, options, print) => {
+  const node = path.getValue();
+  node.self.Node.token.literal = node.self.Node.token.literal.toUpperCase();
+  let stmts = "";
+  if ("stmts" in node) {
+    node.stmts.NodeVec.map((x) => {
+      x.children.notRoot = true;
+    });
+    stmts = indent(
+      concat([
+        line,
+        path.call((p) => join(hardline, p.map(print, "NodeVec")), "stmts"),
+      ])
+    );
+  }
+  let exceptionWhenErrorThen = "";
+  if ("exception_when_error_then" in node) {
+    node.exception_when_error_then.NodeVec.map((x) => {
+      x.children.self.Node.token.literal = x.children.self.Node.token.literal.toUpperCase();
+    });
+    exceptionWhenErrorThen = concat([
+      line,
+      path.call(
+        (p) => join(" ", p.map(print, "NodeVec")),
+        "exception_when_error_then"
+      ),
+    ]);
+  }
+  let exceptionStmt = "";
+  if ("exception_stmts" in node) {
+    node.exception_stmts.NodeVec.map((x) => {
+      x.children.notRoot = true;
+    });
+    exceptionStmt = concat([
+      line,
+      path.call(
+        (p) => join(hardline, p.map(print, "NodeVec")),
+        "exception_stmts"
+      ),
+    ]);
+  }
+  let semicolon = "";
+  if ("semicolon" in node) {
+    semicolon = path.call((p) => p.call(print, "Node"), "semicolon");
+  }
+
+  return concat([
+    group(
+      concat([
+        printSelf(path, options, print),
+        stmts,
+        exceptionWhenErrorThen,
+        exceptionStmt,
+        line,
+        path.call((p) => p.call(print, "Node"), "end"),
+        semicolon,
+      ])
+    ),
+    hardline,
+  ]);
 };
 
 const printExecuteStatement = (path, options, print) => {
@@ -181,6 +245,7 @@ const printSetStatement = (path, options, print) => {
 
 const printDeclareStatement = (path, options, print) => {
   const node = path.getValue();
+  node.self.Node.token.literal = node.self.Node.token.literal.toUpperCase();
   let variableType = "";
   if ("variable_type" in node) {
     node.variable_type.Node.children.self.Node.token.literal = node.variable_type.Node.children.self.Node.token.literal.toUpperCase();
@@ -429,7 +494,7 @@ const printSelectStatement = (path, options, print) => {
   }
   // end of statement
   let endOfStatement = "";
-  if ("semicolon" in node) {
+  if ("semicolon" in node && !node.notRoot) {
     endOfStatement = hardline;
   }
   return concat([
@@ -1750,6 +1815,12 @@ const guess_node_type = (node) => {
       node.self.Node.token.literal.toLowerCase() === "execute"
     ) {
       return "executeStatement";
+    }
+    if (
+      "Node" in node.self &&
+      node.self.Node.token.literal.toLowerCase() === "begin"
+    ) {
+      return "beginStatement";
     }
     if ("right" in node && "left" in node && "and" in node) {
       return "betweenOperator";
