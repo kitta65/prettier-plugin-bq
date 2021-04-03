@@ -129,9 +129,37 @@ const printSQL = (path, options, print) => {
       return printNullOrder(path, options, print);
     case "ignoreOrReplaceNulls":
       return printIgnoreOrReplaceNulls(path, options, print);
+    case "declareStatement":
+      return printDeclareStatement(path, options, print);
     default:
       return printSelf(path, options, print);
   }
+};
+
+const printDeclareStatement = (path, options, print) => {
+  const node = path.getValue();
+  let semicolon = "";
+  if ("semicolon" in node) {
+    semicolon = path.call((p) => p.call(print, "Node"), "semicolon");
+  }
+  let variableType = "";
+  if ("variable_type" in node) {
+    node.variable_type.Node.children.self.Node.token.literal = node.variable_type.Node.children.self.Node.token.literal.toUpperCase();
+    variableType = concat([" ", path.call((p) => p.call(print, "Node"), "variable_type")]);
+  }
+  let default_ = "";
+  if ("default" in node) {
+    default_ = concat([" ", path.call(p => p.call(print, "Node"), "default")])
+  }
+  return concat([
+    printSelf(path, options, print),
+    " ",
+    path.call((p) => join(" ", p.map(print, "NodeVec")), "idents"),
+    variableType,
+    default_,
+    semicolon,
+    hardline,
+  ]);
 };
 
 const printCreateFunctionStatement = (path, options, print) => {
@@ -1654,6 +1682,12 @@ const guess_node_type = (node) => {
       node.self.Node.token.literal.toLowerCase() === "merge"
     ) {
       return "mergeStatement";
+    }
+    if (
+      "Node" in node.self &&
+      node.self.Node.token.literal.toLowerCase() === "declare"
+    ) {
+      return "declareStatement";
     }
     if ("right" in node && "left" in node && "and" in node) {
       return "betweenOperator";

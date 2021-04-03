@@ -4,7 +4,7 @@ const printSQL = require("./printer");
 
 const languages = [
   {
-    extensions: [".sql"],
+    extensions: [".sql", ".bq"],
     name: "sql",
     parsers: ["sql-parse"],
   },
