@@ -149,9 +149,36 @@ const printSQL = (path, options, print) => {
       return printWhileStatement(path, options, print);
     case "singleWordStatement":
       return printSingleWordStatement(path, options, print);
+    case "raiseStatement":
+      return printRaiseStatement(path, options, print);
     default:
       return printSelf(path, options, print);
   }
+};
+
+const printRaiseStatement = (path, options, print) => {
+  const node = path.getValue();
+  node.self.Node.token.literal = node.self.Node.token.literal.toUpperCase();
+  let using = "";
+  if ("using" in node) {
+    // message -> MESSAGE
+    node.using.Node.children.expr.Node.children.left.Node.children.self.Node.token.literal = node.using.Node.children.expr.Node.children.left.Node.children.self.Node.token.literal.toUpperCase();
+    using = concat([" ", path.call((p) => p.call(print, "Node"), "using")]);
+  }
+  let semicolon = "";
+  if ("semicolon" in node) {
+    semicolon = path.call((p) => p.call(print, "Node"), "semicolon");
+  }
+  let endOfStatement = "";
+  if (!node.notRoot) {
+    endOfStatement = hardline;
+  }
+  return concat([
+    printSelf(path, options, print),
+    using,
+    semicolon,
+    endOfStatement,
+  ]);
 };
 
 const printSingleWordStatement = (path, options, print) => {
@@ -161,9 +188,9 @@ const printSingleWordStatement = (path, options, print) => {
   if ("semicolon" in node) {
     semicolon = path.call((p) => p.call(print, "Node"), "semicolon");
   }
-  let endOfStatement = ""
+  let endOfStatement = "";
   if (!node.notRoot) {
-    endOfStatement = hardline
+    endOfStatement = hardline;
   }
   return concat([printSelf(path, options, print), semicolon, endOfStatement]);
 };
@@ -264,10 +291,6 @@ const printKeywordWithStmts = (path, options, print) => {
 
 const printIfStatement = (path, options, print) => {
   const node = path.getValue();
-  let semicolon = "";
-  if ("semicolon" in node) {
-    semicolon = path.call((p) => p.call(print, "Node"), "semicolon");
-  }
   const then = path.call((p) => p.call(print, "Node"), "then");
   let elseifs = "";
   if ("elseifs" in node) {
@@ -279,6 +302,10 @@ const printIfStatement = (path, options, print) => {
   let else_ = "";
   if ("else" in node) {
     else_ = concat([line, path.call((p) => p.call(print, "Node"), "else")]);
+  }
+  let semicolon = "";
+  if ("semicolon" in node) {
+    semicolon = path.call((p) => p.call(print, "Node"), "semicolon");
   }
   return concat([
     group(
@@ -332,19 +359,24 @@ const printBeginStatement = (path, options, print) => {
     node.exception_stmts.NodeVec.map((x) => {
       x.children.notRoot = true;
     });
-    exceptionStmt = concat([
-      line,
-      path.call(
-        (p) => join(hardline, p.map(print, "NodeVec")),
-        "exception_stmts"
-      ),
-    ]);
+    exceptionStmt = indent(
+      concat([
+        line,
+        path.call(
+          (p) => join(hardline, p.map(print, "NodeVec")),
+          "exception_stmts"
+        ),
+      ])
+    );
   }
   let semicolon = "";
   if ("semicolon" in node) {
     semicolon = path.call((p) => p.call(print, "Node"), "semicolon");
   }
-
+  let endOfStatement = "";
+  if (!node.notRoot) {
+    endOfStatement = hardline;
+  }
   return concat([
     group(
       concat([
@@ -357,7 +389,7 @@ const printBeginStatement = (path, options, print) => {
         semicolon,
       ])
     ),
-    hardline,
+    endOfStatement,
   ]);
 };
 
@@ -2014,6 +2046,12 @@ const guess_node_type = (node) => {
       ) !== -1
     ) {
       return "singleWordStatement";
+    }
+    if (
+      "Node" in node.self &&
+      node.self.Node.token.literal.toLowerCase() === "raise"
+    ) {
+      return "raiseStatement";
     }
     if ("right" in node && "left" in node && "and" in node) {
       return "betweenOperator";

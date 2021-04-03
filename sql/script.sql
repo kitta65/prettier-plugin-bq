@@ -11,4 +11,14 @@ if true then else select 1;select 2; end;
 loop select 1; end loop;loop select 1;break; end loop;
 while true do select 1; end while;
 while true do iterate;leave;continue; end while;
+raise;raise using message = 'error';
+begin
+  begin
+    select 1;
+  exception when error then
+    raise using message='error';
+  end;
+exception when error then
+  select @@error.message;
+end;
 
