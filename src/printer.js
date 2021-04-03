@@ -63,6 +63,8 @@ const printSQL = (path, options, print) => {
       return printKeywordWithExpr(path, options, print);
     case "keywordWithExprs":
       return printKeywordWithExprs(path, options, print);
+    case "keywordWithStmts":
+      return printKeywordWithStmts(path, options, print);
     case "keywordWithGroupedExprs":
       return printKeywordWithGroupedExprs(path, options, print);
     case "intervalLiteral":
@@ -137,9 +139,80 @@ const printSQL = (path, options, print) => {
       return printExecuteStatement(path, options, print);
     case "beginStatement":
       return printBeginStatement(path, options, print);
+    case "ifStatement":
+      return printIfStatement(path, options, print);
+    case "elseifClause":
+      return printElseifClause(path, options, print);
     default:
       return printSelf(path, options, print);
   }
+};
+
+const printElseifClause = (path, options, print) => {
+  const node = path.getValue();
+  node.self.Node.token.literal = node.self.Node.token.literal.toUpperCase();
+  return concat([
+    printSelf(path, options, print),
+    " ",
+    path.call((p) => p.call(print, "Node"), "condition"),
+    " ",
+    path.call((p) => p.call(print, "Node"), "then"),
+  ]);
+};
+
+const printKeywordWithStmts = (path, options, print) => {
+  const node = path.getValue();
+  node.stmts.NodeVec.map((x) => {
+    x.children.notRoot = true;
+  });
+  return group(
+    concat([
+      printSelf(path, options, print),
+      indent(
+        concat([
+          line,
+          path.call((p) => join(hardline, p.map(print, "NodeVec")), "stmts"),
+        ])
+      ),
+    ])
+  );
+};
+
+const printIfStatement = (path, options, print) => {
+  const node = path.getValue();
+  let semicolon = "";
+  if ("semicolon" in node) {
+    semicolon = path.call((p) => p.call(print, "Node"), "semicolon");
+  }
+  const then = path.call((p) => p.call(print, "Node"), "then");
+  let elseifs = "";
+  if ("elseifs" in node) {
+    elseifs = concat([
+      line,
+      path.call((p) => join(hardline, p.map(print, "NodeVec")), "elseifs"),
+    ]);
+  }
+  let else_ = "";
+  if ("else" in node) {
+    else_ = concat([line, path.call((p) => p.call(print, "Node"), "else")]);
+  }
+  return concat([
+    group(
+      concat([
+        printSelf(path, options, print),
+        " ",
+        path.call((p) => p.call(print, "Node"), "condition"),
+        " ",
+        then,
+        elseifs,
+        else_,
+        line,
+        path.call((p) => p.call(print, "Node"), "end"),
+        semicolon,
+      ])
+    ),
+    hardline,
+  ]);
 };
 
 const printBeginStatement = (path, options, print) => {
@@ -1822,6 +1895,20 @@ const guess_node_type = (node) => {
     ) {
       return "beginStatement";
     }
+    if (
+      "Node" in node.self &&
+      node.self.Node.token.literal.toLowerCase() === "if" &&
+      "condition" in node
+    ) {
+      return "ifStatement";
+    }
+    if (
+      "Node" in node.self &&
+      node.self.Node.token.literal.toLowerCase() === "elseif" &&
+      "condition" in node
+    ) {
+      return "elseifClause";
+    }
     if ("right" in node && "left" in node && "and" in node) {
       return "betweenOperator";
     }
@@ -1856,6 +1943,7 @@ const guess_node_type = (node) => {
     if ("system_time_as_of" in node) return "forSystemTimeAsOfClause";
     if ("expr" in node) return "keywordWithExpr";
     if ("exprs" in node) return "keywordWithExprs";
+    if ("stmts" in node) return "keywordWithStmts";
     if ("by" in node && "exprs" in node) return "xxxByExprs";
   }
   return ""; // default
