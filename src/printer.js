@@ -133,9 +133,35 @@ const printSQL = (path, options, print) => {
       return printDeclareStatement(path, options, print);
     case "setStatement":
       return printSetStatement(path, options, print);
+    case "executeStatement":
+      return printExecuteStatement(path, options, print);
     default:
       return printSelf(path, options, print);
   }
+};
+
+const printExecuteStatement = (path, options, print) => {
+  const node = path.getValue();
+  node.self.Node.token.literal = node.self.Node.token.literal.toUpperCase();
+  node.immediate.Node.children.self.Node.token.literal = node.immediate.Node.children.self.Node.token.literal.toUpperCase();
+  let using = "";
+  if ("using" in node) {
+    using = concat([" ", path.call((p) => p.call(print, "Node"), "using")]);
+  }
+  let semicolon = "";
+  if ("semicolon" in node) {
+    semicolon = path.call((p) => p.call(print, "Node"), "semicolon");
+  }
+  return concat([
+    printSelf(path, options, print),
+    " ",
+    path.call((p) => p.call(print, "Node"), "immediate"),
+    " ",
+    path.call((p) => p.call(print, "Node"), "sql_expr"),
+    using,
+    semicolon,
+    hardline,
+  ]);
 };
 
 const printSetStatement = (path, options, print) => {
@@ -1718,6 +1744,12 @@ const guess_node_type = (node) => {
       "expr" in node
     ) {
       return "setStatement";
+    }
+    if (
+      "Node" in node.self &&
+      node.self.Node.token.literal.toLowerCase() === "execute"
+    ) {
+      return "executeStatement";
     }
     if ("right" in node && "left" in node && "and" in node) {
       return "betweenOperator";
