@@ -145,9 +145,43 @@ const printSQL = (path, options, print) => {
       return printElseifClause(path, options, print);
     case "loopStatement":
       return printLoopStatement(path, options, print);
+    case "whileStatement":
+      return printWhileStatement(path, options, print);
     default:
       return printSelf(path, options, print);
   }
+};
+
+const printWhileStatement = (path, options, print) => {
+  const node = path.getValue();
+  node.self.Node.token.literal = node.self.Node.token.literal.toUpperCase();
+  node.stmts.NodeVec.map((x) => {
+    x.children.notRoot = true;
+  });
+  node.end_while.NodeVec.map((x) => {
+    x.children.self.Node.token.literal = x.children.self.Node.token.literal.toUpperCase();
+  });
+  let semicolon = "";
+  if ("semicolon" in node) {
+    semicolon = path.call((p) => p.call(print, "Node"), "semicolon");
+  }
+  return concat([
+    group(
+      concat([
+        printSelf(path, options, print),
+        indent(
+          concat([
+            line,
+            path.call((p) => join(hardline, p.map(print, "NodeVec")), "stmts"),
+          ])
+        ),
+        line,
+        path.call((p) => join(" ", p.map(print, "NodeVec")), "end_while"),
+        semicolon,
+      ])
+    ),
+    hardline,
+  ]);
 };
 
 const printLoopStatement = (path, options, print) => {
@@ -157,8 +191,12 @@ const printLoopStatement = (path, options, print) => {
     x.children.notRoot = true;
   });
   node.end_loop.NodeVec.map((x) => {
-    x.children.self.Node.token.literal = x.children.self.Node.token.literal.toUpperCase()
+    x.children.self.Node.token.literal = x.children.self.Node.token.literal.toUpperCase();
   });
+  let semicolon = "";
+  if ("semicolon" in node) {
+    semicolon = path.call((p) => p.call(print, "Node"), "semicolon");
+  }
   return concat([
     group(
       concat([
@@ -171,6 +209,7 @@ const printLoopStatement = (path, options, print) => {
         ),
         line,
         path.call((p) => join(" ", p.map(print, "NodeVec")), "end_loop"),
+        semicolon,
       ])
     ),
     hardline,
@@ -1944,6 +1983,13 @@ const guess_node_type = (node) => {
       "end_loop" in node
     ) {
       return "loopStatement";
+    }
+    if (
+      "Node" in node.self &&
+      node.self.Node.token.literal.toLowerCase() === "while" &&
+      "end_while" in node
+    ) {
+      return "whileStatement";
     }
     if ("right" in node && "left" in node && "and" in node) {
       return "betweenOperator";
