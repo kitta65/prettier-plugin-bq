@@ -151,10 +151,28 @@ const printSQL = (path, options, print) => {
       return printSingleWordStatement(path, options, print);
     case "raiseStatement":
       return printRaiseStatement(path, options, print);
+    case "callStatement":
+      return printCallStatement(path, options, print);
     default:
       return printSelf(path, options, print);
   }
 };
+
+const printCallStatement = (path, options, print) => {
+  const node = path.getValue()
+  node.self.Node.token.literal = node.self.Node.token.literal.toUpperCase();
+  let semicolon = "";
+  if ("semicolon" in node) {
+    semicolon = path.call((p) => p.call(print, "Node"), "semicolon");
+  }
+  return concat([
+    printSelf(path, options, print),
+    " ",
+    path.call(p=>p.call(print,"Node"), "expr"),
+    semicolon,
+    hardline,
+  ])
+}
 
 const printRaiseStatement = (path, options, print) => {
   const node = path.getValue();
@@ -2052,6 +2070,12 @@ const guess_node_type = (node) => {
       node.self.Node.token.literal.toLowerCase() === "raise"
     ) {
       return "raiseStatement";
+    }
+    if (
+      "Node" in node.self &&
+      node.self.Node.token.literal.toLowerCase() === "call"
+    ) {
+      return "callStatement";
     }
     if ("right" in node && "left" in node && "and" in node) {
       return "betweenOperator";

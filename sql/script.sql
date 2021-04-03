@@ -21,4 +21,5 @@ begin
 exception when error then
   select @@error.message;
 end;
+call mydataset.myprocedure(1);
 
