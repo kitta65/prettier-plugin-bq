@@ -147,9 +147,25 @@ const printSQL = (path, options, print) => {
       return printLoopStatement(path, options, print);
     case "whileStatement":
       return printWhileStatement(path, options, print);
+    case "singleWordStatement":
+      return printSingleWordStatement(path, options, print);
     default:
       return printSelf(path, options, print);
   }
+};
+
+const printSingleWordStatement = (path, options, print) => {
+  const node = path.getValue();
+  node.self.Node.token.literal = node.self.Node.token.literal.toUpperCase();
+  let semicolon = "";
+  if ("semicolon" in node) {
+    semicolon = path.call((p) => p.call(print, "Node"), "semicolon");
+  }
+  let endOfStatement = ""
+  if (!node.notRoot) {
+    endOfStatement = hardline
+  }
+  return concat([printSelf(path, options, print), semicolon, endOfStatement]);
 };
 
 const printWhileStatement = (path, options, print) => {
@@ -1990,6 +2006,14 @@ const guess_node_type = (node) => {
       "end_while" in node
     ) {
       return "whileStatement";
+    }
+    if (
+      "Node" in node.self &&
+      ["iterate", "break", "leave", "continue"].indexOf(
+        node.self.Node.token.literal.toLowerCase()
+      ) !== -1
+    ) {
+      return "singleWordStatement";
     }
     if ("right" in node && "left" in node && "and" in node) {
       return "betweenOperator";
