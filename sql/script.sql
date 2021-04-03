@@ -8,4 +8,7 @@ if true then select 1; elseif true then end;
 if true then elseif true then select 1; elseif true then select 2; select 3; else end;
 if true then else select 1; end;
 if true then else select 1;select 2; end;
+loop select 1; end loop;loop select 1;break; end loop;
+while true do select 1; end while;
+while true do iterate;leave;continue; end while;
 

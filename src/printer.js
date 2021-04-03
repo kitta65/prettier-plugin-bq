@@ -143,9 +143,38 @@ const printSQL = (path, options, print) => {
       return printIfStatement(path, options, print);
     case "elseifClause":
       return printElseifClause(path, options, print);
+    case "loopStatement":
+      return printLoopStatement(path, options, print);
     default:
       return printSelf(path, options, print);
   }
+};
+
+const printLoopStatement = (path, options, print) => {
+  const node = path.getValue();
+  node.self.Node.token.literal = node.self.Node.token.literal.toUpperCase();
+  node.stmts.NodeVec.map((x) => {
+    x.children.notRoot = true;
+  });
+  node.end_loop.NodeVec.map((x) => {
+    x.children.self.Node.token.literal = x.children.self.Node.token.literal.toUpperCase()
+  });
+  return concat([
+    group(
+      concat([
+        printSelf(path, options, print),
+        indent(
+          concat([
+            line,
+            path.call((p) => join(hardline, p.map(print, "NodeVec")), "stmts"),
+          ])
+        ),
+        line,
+        path.call((p) => join(" ", p.map(print, "NodeVec")), "end_loop"),
+      ])
+    ),
+    hardline,
+  ]);
 };
 
 const printElseifClause = (path, options, print) => {
@@ -1908,6 +1937,13 @@ const guess_node_type = (node) => {
       "condition" in node
     ) {
       return "elseifClause";
+    }
+    if (
+      "Node" in node.self &&
+      node.self.Node.token.literal.toLowerCase() === "loop" &&
+      "end_loop" in node
+    ) {
+      return "loopStatement";
     }
     if ("right" in node && "left" in node && "and" in node) {
       return "betweenOperator";
