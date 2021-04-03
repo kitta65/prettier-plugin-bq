@@ -131,25 +131,48 @@ const printSQL = (path, options, print) => {
       return printIgnoreOrReplaceNulls(path, options, print);
     case "declareStatement":
       return printDeclareStatement(path, options, print);
+    case "setStatement":
+      return printSetStatement(path, options, print);
     default:
       return printSelf(path, options, print);
   }
 };
 
-const printDeclareStatement = (path, options, print) => {
+const printSetStatement = (path, options, print) => {
   const node = path.getValue();
   let semicolon = "";
   if ("semicolon" in node) {
     semicolon = path.call((p) => p.call(print, "Node"), "semicolon");
   }
+  return concat([
+    printSelf(path, options, print),
+    " ",
+    path.call((p) => p.call(print, "Node"), "expr"),
+    semicolon,
+    hardline,
+  ]);
+};
+
+const printDeclareStatement = (path, options, print) => {
+  const node = path.getValue();
   let variableType = "";
   if ("variable_type" in node) {
     node.variable_type.Node.children.self.Node.token.literal = node.variable_type.Node.children.self.Node.token.literal.toUpperCase();
-    variableType = concat([" ", path.call((p) => p.call(print, "Node"), "variable_type")]);
+    variableType = concat([
+      " ",
+      path.call((p) => p.call(print, "Node"), "variable_type"),
+    ]);
   }
   let default_ = "";
   if ("default" in node) {
-    default_ = concat([" ", path.call(p => p.call(print, "Node"), "default")])
+    default_ = concat([
+      " ",
+      path.call((p) => p.call(print, "Node"), "default"),
+    ]);
+  }
+  let semicolon = "";
+  if ("semicolon" in node) {
+    semicolon = path.call((p) => p.call(print, "Node"), "semicolon");
   }
   return concat([
     printSelf(path, options, print),
@@ -1688,6 +1711,13 @@ const guess_node_type = (node) => {
       node.self.Node.token.literal.toLowerCase() === "declare"
     ) {
       return "declareStatement";
+    }
+    if (
+      "Node" in node.self &&
+      node.self.Node.token.literal.toLowerCase() === "set" &&
+      "expr" in node
+    ) {
+      return "setStatement";
     }
     if ("right" in node && "left" in node && "and" in node) {
       return "betweenOperator";
