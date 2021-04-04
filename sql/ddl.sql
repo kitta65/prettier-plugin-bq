@@ -9,4 +9,20 @@ create table example (x int64);create temp table example (x int64, y int64);
 CREATE  or replace TABLE dataset.example(x INT64 OPTIONS(description='dummy'))
 PARTITION BY _PARTITIONDATE OPTIONS(partition_expiration_days=1);
 create table if not exists example (x int64 not null) cluster by x as select 1;
+create view dataset.new_table as select * from dataset.old_table;
+create materialized view dataset.new_table options(dummy='dummy') as select count(*) from dataset.old_table;
+CREATE EXTERNAL TABLE dataset.new_table
+WITH PARTITION COLUMNS
+OPTIONS (
+  uris=['dummy'],
+  format=csv
+);
+CREATE EXTERNAL TABLE dataset.new_table
+WITH PARTITION COLUMNS (
+    col1 string
+)
+OPTIONS (
+  uris=['dummy'],
+  format=csv
+);
 

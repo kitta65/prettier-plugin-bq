@@ -37,6 +37,10 @@ const printSQL = (path, options, print) => {
       return printCreateFunctionStatement(path, options, print);
     case "createTableStatement":
       return printCreateTableStatement(path, options, print);
+    case "withPartitionColumnsClause":
+      return printWithPartitionColumnsClause(path, options, print);
+    case "createViewStatement":
+      return printCreateTableStatement(path, options, print);
     case "insertStatement":
       return printInsertStatement(path, options, print);
     case "updateStatement":
@@ -168,6 +172,24 @@ const printSQL = (path, options, print) => {
   }
 };
 
+const printWithPartitionColumnsClause = (path, options, print) => {
+  const node = path.getValue();
+  let columnSchemaGroup = "";
+  if ("column_schema_group" in node) {
+    columnSchemaGroup = path.call(
+      (p) => p.call(print, "Node"),
+      "column_schema_group"
+    );
+  }
+  return concat([
+    printSelf(path, options, print),
+    " ",
+    path.call((p) => join(" ", p.map(print, "NodeVec")), "partition_columns"),
+    " ",
+    columnSchemaGroup,
+  ]);
+};
+
 const printSchema = (path, options, print) => {
   const node = path.getValue();
   let options_ = "";
@@ -220,6 +242,22 @@ const printCreateTableStatement = (path, options, print) => {
     node.temp.Node.children.self.Node.token.literal = "TEMPORARY";
     temporary = concat([" ", path.call((p) => p.call(print, "Node"), "temp")]);
   }
+  let materialized = "";
+  if ("materialized" in node) {
+    node.materialized.Node.children.self.Node.token.literal = node.materialized.Node.children.self.Node.token.literal.toUpperCase();
+    materialized = concat([
+      " ",
+      path.call((p) => p.call(print, "Node"), "materialized"),
+    ]);
+  }
+  let external = "";
+  if ("external" in node) {
+    node.external.Node.children.self.Node.token.literal = node.external.Node.children.self.Node.token.literal.toUpperCase();
+    materialized = concat([
+      " ",
+      path.call((p) => p.call(print, "Node"), "external"),
+    ]);
+  }
   let ifNotExists = "";
   if ("if_not_exists" in node) {
     ifNotExists = concat([
@@ -249,8 +287,16 @@ const printCreateTableStatement = (path, options, print) => {
       path.call((p) => p.call(print, "Node"), "clusterby"),
     ]);
   }
+  let withPartitionColumns = "";
+  if ("with_partition_columns" in node) {
+    withPartitionColumns = concat([
+      line,
+      path.call((p) => p.call(print, "Node"), "with_partition_columns"),
+    ]);
+  }
   let options_ = "";
   if ("options" in node) {
+    node.options.Node.children.self.Node.token.literal = node.options.Node.children.self.Node.token.literal.toUpperCase();
     options = concat([
       line,
       path.call((p) => p.call(print, "Node"), "options"),
@@ -270,6 +316,8 @@ const printCreateTableStatement = (path, options, print) => {
         printSelf(path, options, print, config),
         orReplace,
         temporary,
+        materialized,
+        external,
         " ",
         path.call((p) => p.call(print, "Node"), "what"),
         ifNotExists,
@@ -278,6 +326,7 @@ const printCreateTableStatement = (path, options, print) => {
         columnSchemaGroup,
         partitionby,
         clusterby,
+        withPartitionColumns,
         options,
         as,
         semicolon,
@@ -2093,6 +2142,7 @@ const guess_node_type = (node) => {
     return "parent";
   } else {
     if ("column_definitions" in node) return "columnDefinitions";
+    if ("partition_columns" in node) return "withPartitionColumnsClause";
     if ("with" in node && "func" in node) return "unnestWithOffset";
     if ("cast_from" in node) return "castArgument";
     if ("nulls" in node) return "ignoreOrReplaceNulls";
@@ -2120,6 +2170,15 @@ const guess_node_type = (node) => {
       node.what.Node.children.self.Node.token.literal.toUpperCase() == "TABLE"
     ) {
       return "createTableStatement";
+    }
+    if (
+      "self" in node &&
+      "Node" in node.self &&
+      node.self.Node.token.literal.toUpperCase() === "CREATE" &&
+      "what" in node &&
+      node.what.Node.children.self.Node.token.literal.toUpperCase() == "VIEW"
+    ) {
+      return "createViewStatement";
     }
     if ("group" in node) return "keywordWithGroupedExprs";
     if ("struct_value" in node) return "asStructOrValue";
