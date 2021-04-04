@@ -31,8 +31,12 @@ const printSQL = (path, options, print) => {
   switch (guess_node_type(node)) {
     case "parent":
       return path.call(print, "children");
+    case "schema":
+      return printSchema(path, options, print);
     case "createFunctionStatement":
       return printCreateFunctionStatement(path, options, print);
+    case "createTableStatement":
+      return printCreateTableStatement(path, options, print);
     case "insertStatement":
       return printInsertStatement(path, options, print);
     case "updateStatement":
@@ -63,6 +67,8 @@ const printSQL = (path, options, print) => {
       return printKeywordWithExpr(path, options, print);
     case "keywordWithExprs":
       return printKeywordWithExprs(path, options, print);
+    case "keywordWithStmt":
+      return printKeywordWithStmt(path, options, print);
     case "keywordWithStmts":
       return printKeywordWithStmts(path, options, print);
     case "keywordWithGroupedExprs":
@@ -121,6 +127,8 @@ const printSQL = (path, options, print) => {
       return printFrameStartOrEnd(path, options, print);
     case "xxxByExprs":
       return printXXXByExprs(path, options, print);
+    case "xxxByExpr":
+      return printXXXByExpr(path, options, print);
     case "unnestWithOffset":
       return printUnnestWithOffset(path, options, print);
     case "withOffset":
@@ -153,13 +161,134 @@ const printSQL = (path, options, print) => {
       return printRaiseStatement(path, options, print);
     case "callStatement":
       return printCallStatement(path, options, print);
+    case "columnDefinitions":
+      return printColumnDefinitions(path, options, print);
     default:
       return printSelf(path, options, print);
   }
 };
 
+const printSchema = (path, options, print) => {
+  const node = path.getValue();
+  let options_ = "";
+  if ("options" in node) {
+    options = concat([" ", path.call((p) => p.call(print, "Node"), "options")]);
+  }
+  let notNull = "";
+  if ("not_null" in node) {
+    notNull = concat([
+      " ",
+      path.call((p) => join(" ", p.map(print, "NodeVec")), "not_null"),
+    ]);
+  }
+  return concat([printSelf(path, options, print), options, notNull]);
+};
+
+const printColumnDefinitions = (path, options, print) => {
+  const node = path.getValue();
+  const columnDefinitions = path.call(
+    (p) => join(" ", p.map(print, "NodeVec")),
+    "column_definitions"
+  );
+  return concat([
+    printSelf(path, options, print),
+    columnDefinitions,
+    path.call((p) => p.call(print, "Node"), "rparen"),
+  ]);
+};
+
+const printCreateTableStatement = (path, options, print) => {
+  const node = path.getValue();
+  const config = {
+    printComma: false,
+    printAlias: false,
+    printOrder: false,
+  };
+  node.what.Node.children.self.Node.token.literal = node.what.Node.children.self.Node.token.literal.toUpperCase();
+  let orReplace = "";
+  if ("or_replace" in node) {
+    node.or_replace.NodeVec.map((x) => {
+      x.children.self.Node.token.literal = x.children.self.Node.token.literal.toUpperCase();
+    });
+    orReplace = concat([
+      " ",
+      path.call((p) => join(" ", p.map(print, "NodeVec")), "or_replace"),
+    ]);
+  }
+  let temporary = "";
+  if ("temp" in node) {
+    node.temp.Node.children.self.Node.token.literal = "TEMPORARY";
+    temporary = concat([" ", path.call((p) => p.call(print, "Node"), "temp")]);
+  }
+  let ifNotExists = "";
+  if ("if_not_exists" in node) {
+    ifNotExists = concat([
+      " ",
+      path.call((p) => join(" ", p.map(print, "NodeVec")), "if_not_exists"),
+    ]);
+  }
+  let columnSchemaGroup = "";
+  if ("column_schema_group" in node) {
+    columnSchemaGroup = concat([
+      " ",
+      path.call((p) => p.call(print, "Node"), "column_schema_group"),
+    ]);
+  }
+  let partitionby = "";
+  if ("partitionby" in node) {
+    partitionby = concat([
+      line,
+      path.call((p) => p.call(print, "Node"), "partitionby"),
+    ]);
+  }
+  let clusterby = "";
+  if ("clusterby" in node) {
+    node.clusterby.Node.children.self.Node.token.literal = node.clusterby.Node.children.self.Node.token.literal.toUpperCase();
+    clusterby = concat([
+      line,
+      path.call((p) => p.call(print, "Node"), "clusterby"),
+    ]);
+  }
+  let options_ = "";
+  if ("options" in node) {
+    options = concat([
+      line,
+      path.call((p) => p.call(print, "Node"), "options"),
+    ]);
+  }
+  let semicolon = "";
+  if ("semicolon" in node) {
+    semicolon = path.call((p) => p.call(print, "Node"), "semicolon");
+  }
+  let as = "";
+  if ("as" in node) {
+    as = concat([" ", path.call((p) => p.call(print, "Node"), "as")]);
+  }
+  return concat([
+    group(
+      concat([
+        printSelf(path, options, print, config),
+        orReplace,
+        temporary,
+        " ",
+        path.call((p) => p.call(print, "Node"), "what"),
+        ifNotExists,
+        " ",
+        path.call((p) => p.call(print, "Node"), "ident"),
+        columnSchemaGroup,
+        partitionby,
+        clusterby,
+        options,
+        as,
+        semicolon,
+      ])
+    ),
+    hardline,
+  ]);
+};
+
 const printCallStatement = (path, options, print) => {
-  const node = path.getValue()
+  const node = path.getValue();
   node.self.Node.token.literal = node.self.Node.token.literal.toUpperCase();
   let semicolon = "";
   if ("semicolon" in node) {
@@ -168,11 +297,11 @@ const printCallStatement = (path, options, print) => {
   return concat([
     printSelf(path, options, print),
     " ",
-    path.call(p=>p.call(print,"Node"), "expr"),
+    path.call((p) => p.call(print, "Node"), "expr"),
     semicolon,
     hardline,
-  ])
-}
+  ]);
+};
 
 const printRaiseStatement = (path, options, print) => {
   const node = path.getValue();
@@ -287,6 +416,17 @@ const printElseifClause = (path, options, print) => {
     " ",
     path.call((p) => p.call(print, "Node"), "then"),
   ]);
+};
+
+const printKeywordWithStmt = (path, options, print) => {
+  const node = path.getValue();
+  node.stmt.Node.children.notRoot = true;
+  return group(
+    concat([
+      printSelf(path, options, print),
+      indent(concat([line, path.call((p) => p.call(print, "Node"), "stmt")])),
+    ])
+  );
 };
 
 const printKeywordWithStmts = (path, options, print) => {
@@ -1119,6 +1259,17 @@ const printCaseExpr = (path, options, print) => {
   );
 };
 
+const printXXXByExpr = (path, options, print) => {
+  const node = path.getValue();
+  return concat([
+    printSelf(path, options, print),
+    " ",
+    path.call((p) => p.call(print, "Node"), "by"),
+    " ",
+    path.call((p) => p.call(print, "Node"), "expr"),
+  ]);
+};
+
 const printXXXByExprs = (path, options, print) => {
   const node = path.getValue();
   return concat([
@@ -1528,7 +1679,7 @@ const printIdentAndType = (path, options, print) => {
   node.type.Node.children.self.Node.token.literal = node.type.Node.children.self.Node.token.literal.toUpperCase();
   let ident = "";
   if ("self" in node) {
-    ident = concat([printSelf(path, options, print, config), " "]);
+    ident = printSelf(path, options, print, config);
   }
   let comma = "";
   if ("comma" in node) {
@@ -1536,6 +1687,7 @@ const printIdentAndType = (path, options, print) => {
   }
   return concat([
     ident,
+    " ",
     path.call((p) => p.call(print, "Node"), "type"),
     comma,
   ]);
@@ -1940,6 +2092,7 @@ const guess_node_type = (node) => {
   if ("children" in node) {
     return "parent";
   } else {
+    if ("column_definitions" in node) return "columnDefinitions";
     if ("with" in node && "func" in node) return "unnestWithOffset";
     if ("cast_from" in node) return "castArgument";
     if ("nulls" in node) return "ignoreOrReplaceNulls";
@@ -1958,6 +2111,15 @@ const guess_node_type = (node) => {
         "FUNCTION"
     ) {
       return "createFunctionStatement";
+    }
+    if (
+      "self" in node &&
+      "Node" in node.self &&
+      node.self.Node.token.literal.toUpperCase() === "CREATE" &&
+      "what" in node &&
+      node.what.Node.children.self.Node.token.literal.toUpperCase() == "TABLE"
+    ) {
+      return "createTableStatement";
     }
     if ("group" in node) return "keywordWithGroupedExprs";
     if ("struct_value" in node) return "asStructOrValue";
@@ -2109,10 +2271,13 @@ const guess_node_type = (node) => {
     if ("window" in node) return "overClause";
     if ("for_system_time_as_of" in node) return "tableName";
     if ("system_time_as_of" in node) return "forSystemTimeAsOfClause";
+    if ("by" in node && "expr" in node) return "xxxByExpr";
+    if ("by" in node && "exprs" in node) return "xxxByExprs";
+    if ("options" in node || "not_null" in node) return "schema";
     if ("expr" in node) return "keywordWithExpr";
     if ("exprs" in node) return "keywordWithExprs";
     if ("stmts" in node) return "keywordWithStmts";
-    if ("by" in node && "exprs" in node) return "xxxByExprs";
+    if ("stmt" in node) return "keywordWithStmt";
   }
   return ""; // default
 };

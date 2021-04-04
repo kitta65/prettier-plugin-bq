@@ -5,4 +5,8 @@ create function abc() returns int64 language js options() as '''return 1''';
 create function abc() returns int64 not deterministic language js as '''
 return 1
 ''';
+create table example (x int64);create temp table example (x int64, y int64);
+CREATE  or replace TABLE dataset.example(x INT64 OPTIONS(description='dummy'))
+PARTITION BY _PARTITIONDATE OPTIONS(partition_expiration_days=1);
+create table if not exists example (x int64 not null) cluster by x as select 1;
 
