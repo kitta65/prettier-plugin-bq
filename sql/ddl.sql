@@ -25,4 +25,6 @@ OPTIONS (
   uris=['dummy'],
   format=csv
 );
+CREATE pROCEDURE if not exists dataset.procede() BEGIN SELECT 1; END;
+CREATE PROCEDURE dataset.procede(inout x int64, y int64) options(dummy='dummy') BEGIN SELECT 1; END;
 

@@ -33,6 +33,8 @@ const printSQL = (path, options, print) => {
       return path.call(print, "children");
     case "schema":
       return printSchema(path, options, print);
+    case "procedureArgument":
+      return printProcedureArgument(path, options, print);
     case "createFunctionStatement":
       return printCreateFunctionStatement(path, options, print);
     case "createTableStatement":
@@ -41,6 +43,8 @@ const printSQL = (path, options, print) => {
       return printWithPartitionColumnsClause(path, options, print);
     case "createViewStatement":
       return printCreateTableStatement(path, options, print);
+    case "createProcedureStatement":
+      return printCreateProcedureStatement(path, options, print);
     case "insertStatement":
       return printInsertStatement(path, options, print);
     case "updateStatement":
@@ -170,6 +174,77 @@ const printSQL = (path, options, print) => {
     default:
       return printSelf(path, options, print);
   }
+};
+
+const printProcedureArgument = (path, options, print) => {
+  const node = path.getValue();
+  const config = {
+    printComma: false,
+    printAlias: false,
+    printOrder: false,
+  };
+  node.in_out.Node.children.self.Node.token.literal = node.in_out.Node.children.self.Node.token.literal.toUpperCase();
+  node.type.Node.children.self.Node.token.literal = node.type.Node.children.self.Node.token.literal.toUpperCase();
+  let comma = "";
+  if ("comma" in node) {
+    comma = path.call((p) => p.call(print, "Node"), "comma")
+  }
+  return concat([
+    path.call((p) => p.call(print, "Node"), "in_out"),
+    " ",
+    printSelf(path, options, print, config),
+    " ",
+    path.call((p) => p.call(print, "Node"), "type"),
+    comma,
+  ]);
+};
+
+const printCreateProcedureStatement = (path, options, print) => {
+  const node = path.getValue();
+  node.what.Node.children.self.Node.token.literal = node.what.Node.children.self.Node.token.literal.toUpperCase();
+  node.stmt.Node.children.notRoot = true;
+  let orReplace = "";
+  if ("or_replace" in node) {
+    node.or_replace.NodeVec.map((x) => {
+      x.children.self.Node.token.literal = x.children.self.Node.token.literal.toUpperCase();
+    });
+    orReplace = concat([
+      " ",
+      path.call((p) => join(" ", p.map(print, "NodeVec")), "or_replace"),
+    ]);
+  }
+  let ifNotExists = "";
+  if ("if_not_exists" in node) {
+    ifNotExists = concat([
+      " ",
+      path.call((p) => join(" ", p.map(print, "NodeVec")), "if_not_exists"),
+    ]);
+  }
+  let options_ = "";
+  if ("options" in node) {
+    node.options.Node.children.self.Node.token.literal = node.options.Node.children.self.Node.token.literal.toUpperCase();
+    options = concat([" ", path.call((p) => p.call(print, "Node"), "options")]);
+  }
+  let semicolon = "";
+  if ("semicolon" in node) {
+    semicolon = path.call((p) => p.call(print, "Node"), "semicolon");
+  }
+  return concat([
+    concat([
+      printSelf(path, options, print),
+      " ",
+      path.call((p) => p.call(print, "Node"), "what"),
+      ifNotExists,
+      " ",
+      path.call((p) => p.call(print, "Node"), "ident"),
+      path.call((p) => p.call(print, "Node"), "group"),
+      options,
+      line,
+      path.call((p) => p.call(print, "Node"), "stmt"),
+      semicolon,
+    ]),
+    hardline,
+  ]);
 };
 
 const printWithPartitionColumnsClause = (path, options, print) => {
@@ -2142,6 +2217,7 @@ const guess_node_type = (node) => {
     return "parent";
   } else {
     if ("column_definitions" in node) return "columnDefinitions";
+    if ("in_out" in node) return "procedureArgument";
     if ("partition_columns" in node) return "withPartitionColumnsClause";
     if ("with" in node && "func" in node) return "unnestWithOffset";
     if ("cast_from" in node) return "castArgument";
@@ -2179,6 +2255,16 @@ const guess_node_type = (node) => {
       node.what.Node.children.self.Node.token.literal.toUpperCase() == "VIEW"
     ) {
       return "createViewStatement";
+    }
+    if (
+      "self" in node &&
+      "Node" in node.self &&
+      node.self.Node.token.literal.toUpperCase() === "CREATE" &&
+      "what" in node &&
+      node.what.Node.children.self.Node.token.literal.toUpperCase() ==
+        "PROCEDURE"
+    ) {
+      return "createProcedureStatement";
     }
     if ("group" in node) return "keywordWithGroupedExprs";
     if ("struct_value" in node) return "asStructOrValue";
