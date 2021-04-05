@@ -175,9 +175,60 @@ const printSQL = (path, options, print) => {
       return printAlterStatement(path, options, print);
     case "addColumnCluase":
       return printAddColumnClause(path, options, print);
+    case "dropStatement":
+      return printDropStatement(path, options, print);
     default:
       return printSelf(path, options, print);
   }
+};
+
+const printDropStatement = (path, options, print) => {
+  const node = path.getValue();
+  let semicolon = "";
+  node.self.Node.token.literal = node.self.Node.token.literal.toUpperCase();
+  node.what.Node.children.self.Node.token.literal = node.what.Node.children.self.Node.token.literal.toUpperCase();
+  let materialized = "";
+  if ("materialized" in node) {
+    node.materialized.Node.children.self.Node.token.literal = node.materialized.Node.children.self.Node.token.literal.toUpperCase();
+    materialized = concat([
+      " ",
+      path.call((p) => p.call(print, "Node"), "materialized"),
+    ]);
+  }
+  let external = "";
+  if ("external" in node) {
+    node.external.Node.children.self.Node.token.literal = node.external.Node.children.self.Node.token.literal.toUpperCase();
+    external = concat([
+      " ",
+      path.call((p) => p.call(print, "Node"), "external"),
+    ]);
+  }
+  let ifExists = "";
+  if ("if_exists" in node) {
+    ifExists = concat([
+      " ",
+      path.call((p) => join(" ", p.map(print, "NodeVec")), "if_exists"),
+    ]);
+  }
+  if ("semicolon" in node) {
+    semicolon = path.call((p) => p.call(print, "Node"), "semicolon");
+  }
+  return concat([
+    group(
+      concat([
+        printSelf(path, options, print),
+        materialized,
+        external,
+        " ",
+        path.call((p) => p.call(print, "Node"), "what"),
+        ifExists,
+        " ",
+        path.call((p) => p.call(print, "Node"), "ident"),
+        semicolon,
+      ])
+    ),
+    hardline,
+  ]);
 };
 
 const printAddColumnClause = (path, options, print) => {
@@ -223,10 +274,6 @@ const printAlterStatement = (path, options, print) => {
       path.call((p) => p.call(print, "Node"), "materialized"),
     ]);
   }
-  let semicolon = "";
-  if ("semicolon" in node) {
-    semicolon = path.call((p) => p.call(print, "Node"), "semicolon");
-  }
   let set = "";
   if ("set" in node) {
     set = concat([" ", path.call((p) => p.call(print, "Node"), "set")]);
@@ -245,6 +292,10 @@ const printAlterStatement = (path, options, print) => {
       line,
       path.call((p) => join(line, p.map(print, "NodeVec")), "add_columns"),
     ]);
+  }
+  let semicolon = "";
+  if ("semicolon" in node) {
+    semicolon = path.call((p) => p.call(print, "Node"), "semicolon");
   }
   return concat([
     group(
@@ -2479,6 +2530,12 @@ const guess_node_type = (node) => {
       node.self.Node.token.literal.toLowerCase() === "alter"
     ) {
       return "alterStatement";
+    }
+    if (
+      "Node" in node.self &&
+      node.self.Node.token.literal.toLowerCase() === "drop"
+    ) {
+      return "dropStatement";
     }
     if ("right" in node && "left" in node && "and" in node) {
       return "betweenOperator";
