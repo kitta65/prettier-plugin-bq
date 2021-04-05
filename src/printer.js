@@ -171,9 +171,98 @@ const printSQL = (path, options, print) => {
       return printCallStatement(path, options, print);
     case "columnDefinitions":
       return printColumnDefinitions(path, options, print);
+    case "alterStatement":
+      return printAlterStatement(path, options, print);
+    case "addColumnCluase":
+      return printAddColumnClause(path, options, print);
     default:
       return printSelf(path, options, print);
   }
+};
+
+const printAddColumnClause = (path, options, print) => {
+  const node = path.getValue();
+  const config = {
+    printComma: false,
+    printAlias: false,
+    printOrder: false,
+  };
+  node.self.Node.token.literal = node.self.Node.token.literal.toUpperCase();
+  node.column.Node.children.self.Node.token.literal = node.column.Node.children.self.Node.token.literal.toUpperCase();
+  let ifNotExists = "";
+  if ("if_not_exists" in node) {
+    ifNotExists = concat([
+      " ",
+      path.call((p) => join(" ", p.map(print, "NodeVec")), "if_not_exists"),
+    ]);
+  }
+  let comma = "";
+  if ("comma" in node) {
+    comma = path.call((p) => p.call(print, "Node"), "comma");
+  }
+  return concat([
+    printSelf(path, options, print, config),
+    " ",
+    path.call((p) => p.call(print, "Node"), "column"),
+    ifNotExists,
+    " ",
+    path.call((p) => p.call(print, "Node"), "column_definition"),
+    comma,
+  ]);
+};
+
+const printAlterStatement = (path, options, print) => {
+  const node = path.getValue();
+  node.self.Node.token.literal = node.self.Node.token.literal.toUpperCase();
+  node.what.Node.children.self.Node.token.literal = node.what.Node.children.self.Node.token.literal.toUpperCase();
+  let materialized = "";
+  if ("materialized" in node) {
+    node.materialized.Node.children.self.Node.token.literal = node.materialized.Node.children.self.Node.token.literal.toUpperCase();
+    materialized = concat([
+      " ",
+      path.call((p) => p.call(print, "Node"), "materialized"),
+    ]);
+  }
+  let semicolon = "";
+  if ("semicolon" in node) {
+    semicolon = path.call((p) => p.call(print, "Node"), "semicolon");
+  }
+  let set = "";
+  if ("set" in node) {
+    set = concat([" ", path.call((p) => p.call(print, "Node"), "set")]);
+  }
+  let options_ = "";
+  if ("options" in node) {
+    node.options.Node.children.self.Node.token.literal = node.options.Node.children.self.Node.token.literal.toUpperCase();
+    options_ = concat([
+      " ",
+      path.call((p) => p.call(print, "Node"), "options"),
+    ]);
+  }
+  let add_columns = "";
+  if ("add_columns" in node) {
+    add_columns = concat([
+      line,
+      path.call((p) => join(line, p.map(print, "NodeVec")), "add_columns"),
+    ]);
+  }
+  return concat([
+    group(
+      concat([
+        printSelf(path, options, print),
+        materialized,
+        " ",
+        path.call((p) => p.call(print, "Node"), "what"),
+        " ",
+        path.call((p) => p.call(print, "Node"), "ident"),
+        set,
+        options_,
+        add_columns,
+        semicolon,
+      ])
+    ),
+    hardline,
+  ]);
 };
 
 const printProcedureArgument = (path, options, print) => {
@@ -187,7 +276,7 @@ const printProcedureArgument = (path, options, print) => {
   node.type.Node.children.self.Node.token.literal = node.type.Node.children.self.Node.token.literal.toUpperCase();
   let comma = "";
   if ("comma" in node) {
-    comma = path.call((p) => p.call(print, "Node"), "comma")
+    comma = path.call((p) => p.call(print, "Node"), "comma");
   }
   return concat([
     path.call((p) => p.call(print, "Node"), "in_out"),
@@ -2216,6 +2305,7 @@ const guess_node_type = (node) => {
   if ("children" in node) {
     return "parent";
   } else {
+    if ("column" in node) return "addColumnCluase";
     if ("column_definitions" in node) return "columnDefinitions";
     if ("in_out" in node) return "procedureArgument";
     if ("partition_columns" in node) return "withPartitionColumnsClause";
@@ -2383,6 +2473,12 @@ const guess_node_type = (node) => {
       node.self.Node.token.literal.toLowerCase() === "call"
     ) {
       return "callStatement";
+    }
+    if (
+      "Node" in node.self &&
+      node.self.Node.token.literal.toLowerCase() === "alter"
+    ) {
+      return "alterStatement";
     }
     if ("right" in node && "left" in node && "and" in node) {
       return "betweenOperator";
