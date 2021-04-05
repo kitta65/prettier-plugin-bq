@@ -33,4 +33,4 @@ alter materialized view example set options(dummy='dummy');
 alter table example add column x int64;
 alter table example add column if not exists x int64 options(description='dummy'),add column y struct<z int64 not null>;
 drop table example;drop external table if exists example;drop materialized view example;
-
+-- end comment
