@@ -1427,6 +1427,10 @@ const printBinaryOperator = (path, options, print) => {
   if ("on" in node) {
     on = concat([" ", path.call((p) => p.call(print, "Node"), "on")]);
   }
+  let using = ""
+  if ("using" in node) {
+    using = concat([" ", path.call((p) => p.call(print, "Node"), "using")]);
+  }
   let comma = "";
   if ("comma" in node) {
     comma = path.call((p) => p.call(print, "Node"), "comma");
@@ -1451,6 +1455,7 @@ const printBinaryOperator = (path, options, print) => {
           rsep,
           path.call((p) => p.call(print, "Node"), "right"),
           on,
+          using,
           order,
           as,
           comma,

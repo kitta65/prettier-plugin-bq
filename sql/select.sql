@@ -35,6 +35,7 @@ select * from unnest([1,2,3]);select * from unnest([1]) with offset;select * fro
 select * from (select 1,2);select sub.* from (select 1,2) as sub;select * from main as m where not exists(select 1 from sub as s where s.x = m.x);
 select * from t order by col1 asc nulls last, col2 nulls first;
 select * from data1 as one inner join data2 two ON true;
+select * from data1 as one inner join data2 two using(col) left outer join data3 on true;
 select * from data1 as one , data2 two join (data3 full outer join data4 on col1=col2) on true;
 select safe.substr('foo', 0, -2),keys.func();
 select last_value(col3) OVER (c ROWS BETWEEN 2 PRECEDING AND 2 FOLLOWING)
