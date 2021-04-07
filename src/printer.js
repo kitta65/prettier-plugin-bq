@@ -1035,19 +1035,17 @@ const printSelectStatement = (path, options, print) => {
     ]);
   }
   // select
-  const select = group(
-    markAsRoot(
-      indent(
-        concat([
-          dedentToRoot(
-            concat([printSelf(path, options, print, config), as, distinct])
-          ),
-          line,
-          path.call((p) => join(line, p.map(print, "NodeVec")), "exprs"),
-        ])
+  const select = concat([
+    printSelf(path, options, print, config),
+    as,
+    distinct,
+    indent(
+      path.call(
+        (p) => concat(p.map(print, "NodeVec").map((x) => concat([line, x]))),
+        "exprs"
       )
-    )
-  );
+    ),
+  ]);
   // from
   let from = "";
   if ("from" in node) {
@@ -1101,7 +1099,7 @@ const printSelectStatement = (path, options, print) => {
   // semicolon
   let semicolon = "";
   if ("semicolon" in node) {
-    semicolon = path.call((p) => p.call(print, "Node"), "semicolon");
+    semicolon = concat([softline, path.call((p) => p.call(print, "Node"), "semicolon")]);
   }
   // end of statement
   let endOfStatement = "";
@@ -1120,7 +1118,6 @@ const printSelectStatement = (path, options, print) => {
         window,
         orderby,
         limit,
-        softline,
         semicolon,
       ])
     ),
@@ -1427,7 +1424,7 @@ const printBinaryOperator = (path, options, print) => {
   if ("on" in node) {
     on = concat([" ", path.call((p) => p.call(print, "Node"), "on")]);
   }
-  let using = ""
+  let using = "";
   if ("using" in node) {
     using = concat([" ", path.call((p) => p.call(print, "Node"), "using")]);
   }
