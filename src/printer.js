@@ -1099,7 +1099,10 @@ const printSelectStatement = (path, options, print) => {
   // semicolon
   let semicolon = "";
   if ("semicolon" in node) {
-    semicolon = concat([softline, path.call((p) => p.call(print, "Node"), "semicolon")]);
+    semicolon = concat([
+      softline,
+      path.call((p) => p.call(print, "Node"), "semicolon"),
+    ]);
   }
   // end of statement
   let endOfStatement = "";
@@ -1976,7 +1979,7 @@ const printBetweenOperator = (path, options, print) => {
   };
   let not = "";
   if ("not" in node) {
-    not = path.call((p) => p.call(print, "Node"), "not");
+    not = concat([" ", path.call((p) => p.call(print, "Node"), "not")]);
   }
   const min = path.call((p) => p.map(print, "NodeVec")[0], "right");
   const max = path.call((p) => p.map(print, "NodeVec")[1], "right");
@@ -1993,14 +1996,16 @@ const printBetweenOperator = (path, options, print) => {
     as = concat([" ", path.call((p) => p.call(print, "Node"), "as")]);
   }
   return concat([
-    join(" ", [
-      path.call((p) => p.call(print, "Node"), "left"),
-      not,
-      printSelf(path, options, print, config),
-      min,
-      path.call((p) => p.call(print, "Node"), "and"),
-      max,
-    ]),
+    path.call((p) => p.call(print, "Node"), "left"),
+    not,
+    " ",
+    printSelf(path, options, print, config),
+    " ",
+    min,
+    " ",
+    path.call((p) => p.call(print, "Node"), "and"),
+    " ",
+    max,
     order,
     as,
     comma,
