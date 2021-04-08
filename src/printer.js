@@ -25,6 +25,28 @@ const printSQL = (path, options, print) => {
   const node = path.getValue();
 
   if (Array.isArray(node)) {
+    for (let i = 0; i < node.length - 2; i++) {
+      if ("semicolon" in node[i].children) {
+        const endOfStatement =
+          node[i].children.semicolon.Node.children.self.Node.token.line;
+        let startOfStatementNode = node[i + 1].children;
+        while (
+          ["UNION", "INTERSECT", "EXCEPT", "("].indexOf(
+            startOfStatementNode.self.Node.token.literal.toUpperCase()
+          ) !== -1
+        ) {
+          if ("left" in startOfStatementNode) {
+            startOfStatementNode = startOfStatementNode.left.Node.children;
+          } else if ("stmt" in startOfStatementNode) {
+            startOfStatementNode = startOfStatementNode.stmt.Node.children;
+          } else {
+            return JSON.stringify(node);
+          }
+        }
+        const startOfStatement = startOfStatementNode.self.Node.token.line;
+        node[i].children.emptyLines = startOfStatement - endOfStatement - 1;
+      }
+    }
     return concat(path.map(print));
   }
 
@@ -1108,7 +1130,11 @@ const printSelectStatement = (path, options, print) => {
   // end of statement
   let endOfStatement = "";
   if ("semicolon" in node && !node.notRoot) {
-    endOfStatement = hardline;
+    if ("emptyLines" in node && 0 < node.emptyLines) {
+      endOfStatement = concat([hardline, hardline]);
+    } else {
+      endOfStatement = hardline;
+    }
   }
   return concat([
     group(
