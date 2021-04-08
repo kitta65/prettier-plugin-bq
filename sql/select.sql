@@ -57,4 +57,7 @@ aaa.bbb.ccc,x[offset(1)],-+1,~1,1*2/3,'a'||'b',1+2-3,1<<3>>2,1|2^3&4,
 'a' like '%a','a' not like 'b',1 between 1 and 2,1 not between 1 and 2,'a' in ('a'),'a' not in ('a','b'),
 a is null,a is not null,true is true,true or true is not true,not true is true,true or false not in (true),
 ;
-
+select
+sum(if(TooLongColumnToPrintInOneLine1 = 1 and TooLongColumnToPrintInOneLine2=2,1,0))
+over(partition by TooLongColumnToPrintInOneLine3, TooLongColumnToPrintInOneLine4 order by TooLongColumnToPrintInOneLine4) as ifFunc,
+sum(case when TooLongColumnToPrintInOneLine1 then 1 when TooLongColumnToPrintInOneLine2 then 2 else null end);

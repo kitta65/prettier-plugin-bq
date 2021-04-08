@@ -1041,7 +1041,8 @@ const printSelectStatement = (path, options, print) => {
     distinct,
     indent(
       path.call(
-        (p) => concat(p.map(print, "NodeVec").map((x) => concat([line, x]))),
+        (p) =>
+          concat(p.map(print, "NodeVec").map((x) => concat([line, group(x)]))),
         "exprs"
       )
     ),
@@ -1298,6 +1299,7 @@ const printFunc = (path, options, print) => {
     ]);
   }
   let args = "";
+  let rsep = softline;
   if ("args" in node) {
     switch (node.func.Node.token.literal.toUpperCase()) {
       case "NORMALIZE":
@@ -1307,7 +1309,30 @@ const printFunc = (path, options, print) => {
         node.args.NodeVec[1].children.self.Node.token.literal = node.args.NodeVec[1].children.self.Node.token.literal.toUpperCase();
         break;
     }
-    args = path.call((p) => join(" ", p.map(print, "NodeVec")), "args");
+    if (
+      node.args.NodeVec.length === 1 &&
+      "func" in node.args.NodeVec[0].children
+    ) {
+      rsep = "";
+      args = path.call(
+        (p) => p.map(print, "NodeVec").map((x) => group(x))[0],
+        "args"
+      );
+    } else {
+      args = indent(
+        concat([
+          softline,
+          path.call(
+            (p) =>
+              join(
+                line,
+                p.map(print, "NodeVec").map((x) => group(x))
+              ),
+            "args"
+          ),
+        ])
+      );
+    }
   }
   let ignoreNulls = "";
   if ("ignore_nulls" in node) {
@@ -1340,21 +1365,24 @@ const printFunc = (path, options, print) => {
   if ("as" in node) {
     as = concat([" ", path.call((p) => p.call(print, "Node"), "as")]);
   }
-  return concat([
-    path.call((p) => p.call(print, "Node"), "func"),
-    sep,
-    printSelf(path, options, print, config),
-    distinct,
-    args,
-    ignoreNulls,
-    orderBy,
-    limit,
-    path.call((p) => p.call(print, "Node"), "rparen"),
-    over,
-    order,
-    as,
-    comma,
-  ]);
+  return group(
+    concat([
+      path.call((p) => p.call(print, "Node"), "func"),
+      sep,
+      printSelf(path, options, print, config),
+      distinct,
+      args,
+      ignoreNulls,
+      orderBy,
+      limit,
+      rsep,
+      path.call((p) => p.call(print, "Node"), "rparen"),
+      over,
+      order,
+      as,
+      comma,
+    ])
+  );
 };
 
 const printLimitClause = (path, options, print) => {
@@ -1443,26 +1471,22 @@ const printBinaryOperator = (path, options, print) => {
   if ("as" in node) {
     as = concat([" ", path.call((p) => p.call(print, "Node"), "as")]);
   }
-  return group(
+  return concat([
+    path.call((p) => p.call(print, "Node"), "left"),
+    lsep,
     concat([
-      path.call((p) => p.call(print, "Node"), "left"),
-      lsep,
-      group(
-        concat([
-          joinType,
-          outer,
-          operator,
-          rsep,
-          path.call((p) => p.call(print, "Node"), "right"),
-          on,
-          using,
-          order,
-          as,
-          comma,
-        ])
-      ),
-    ])
-  );
+      joinType,
+      outer,
+      operator,
+      rsep,
+      path.call((p) => p.call(print, "Node"), "right"),
+      on,
+      using,
+      order,
+      as,
+      comma,
+    ]),
+  ]);
 };
 
 const printTableName = (path, options, print) => {
