@@ -1839,6 +1839,7 @@ const printIntervalLiteral = (path, options, print) => {
     printAlias: false,
     printOrder: false,
   };
+  node.date_part.Node.children.self.Node.token.literal = node.date_part.Node.children.self.Node.token.literal.toUpperCase()
   const date_part = path.call((p) => p.call(print, "Node"), "date_part");
   let comma = "";
   if ("comma" in node) {
