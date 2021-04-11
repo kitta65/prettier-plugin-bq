@@ -27,24 +27,38 @@ const printSQL = (path, options, print) => {
   if (Array.isArray(node)) {
     for (let i = 0; i < node.length - 2; i++) {
       if ("semicolon" in node[i].children) {
-        const endOfStatement =
-          node[i].children.semicolon.Node.children.self.Node.token.line;
-        let startOfStatementNode = node[i + 1].children;
+        // end of statement
+        let endNode = node[i].children.semicolon.Node;
+        let endLine = endNode.token.line;
+        if ("following_comments" in endNode.children) {
+          const len = endNode.children.following_comments.NodeVec.length;
+          endNode = endNode.children.following_comments.NodeVec[len - 1];
+          const endLiteral = endNode.token.literal;
+          let newLines = endLiteral.match(/\n/g);
+          if (newLines) {
+            endLine = endNode.token.line + newLines.length;
+          }
+        }
+        // start of statement
+        let startNode = node[i + 1].children;
         while (
           ["UNION", "INTERSECT", "EXCEPT", "("].indexOf(
-            startOfStatementNode.self.Node.token.literal.toUpperCase()
+            startNode.self.Node.token.literal.toUpperCase()
           ) !== -1
         ) {
-          if ("left" in startOfStatementNode) {
-            startOfStatementNode = startOfStatementNode.left.Node.children;
-          } else if ("stmt" in startOfStatementNode) {
-            startOfStatementNode = startOfStatementNode.stmt.Node.children;
+          if ("left" in startNode) {
+            startNode = startNode.left.Node.children;
+          } else if ("stmt" in startNode) {
+            startNode = startNode.stmt.Node.children;
           } else {
             return JSON.stringify(node);
           }
         }
-        const startOfStatement = startOfStatementNode.self.Node.token.line;
-        node[i].children.emptyLines = startOfStatement - endOfStatement - 1;
+        let startLine = startNode.self.Node.token.line;
+        if ("leading_comments" in startNode) {
+          startLine = startNode.leading_comments.NodeVec[0].token.line;
+        }
+        node[i].children.emptyLines = startLine - endLine - 1;
       }
     }
     return concat(path.map(print));

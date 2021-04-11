@@ -61,3 +61,19 @@ select
 sum(if(TooLongColumnToPrintInOneLine1 = 1 and TooLongColumnToPrintInOneLine2=2,1,0))
 over(partition by TooLongColumnToPrintInOneLine3, TooLongColumnToPrintInOneLine4 order by TooLongColumnToPrintInOneLine4) as ifFunc,
 sum(case when TooLongColumnToPrintInOneLine1 then 1 when TooLongColumnToPrintInOneLine2 then 2 else null end);
+
+select 1;
+
+select 2; /*
+
+*/
+select 3; /*
+
+*/
+
+select 4;
+-- 
+select 5;
+
+-- 
+select 6;
