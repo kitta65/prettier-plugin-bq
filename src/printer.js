@@ -1443,16 +1443,25 @@ const printBinaryOperator = (path, options, print) => {
     printAlias: false,
     printOrder: false,
   };
-  const uppercasePrefix = ["SAFE", "KEYS", "AEAD", "NET", "HLL_COUNT"];
+  node.right.Node.children.notGlobal = true;
+  const uppercasePrefix = [
+    "SAFE",
+    "KEYS",
+    "AEAD",
+    "NET",
+    "HLL_COUNT",
+    "_SESSION",
+  ];
   if (
     node.self.Node.token.literal === "." &&
     uppercasePrefix.indexOf(
       node.left.Node.children.self.Node.token.literal.toUpperCase()
-    ) !== -1 &&
-    "func" in node.right.Node.children
+    ) !== -1
   ) {
     node.left.Node.children.self.Node.token.literal = node.left.Node.children.self.Node.token.literal.toUpperCase();
-    node.right.Node.children.func.Node.children.self.Node.token.literal = node.right.Node.children.func.Node.children.self.Node.token.literal.toUpperCase();
+    if ("func" in node.right.Node.children) {
+      node.right.Node.children.func.Node.children.self.Node.token.literal = node.right.Node.children.func.Node.children.self.Node.token.literal.toUpperCase();
+    }
   }
   const noSpaceOperators = ["."];
   const onesideSpaceOperators = [","];
@@ -1839,7 +1848,7 @@ const printIntervalLiteral = (path, options, print) => {
     printAlias: false,
     printOrder: false,
   };
-  node.date_part.Node.children.self.Node.token.literal = node.date_part.Node.children.self.Node.token.literal.toUpperCase()
+  node.date_part.Node.children.self.Node.token.literal = node.date_part.Node.children.self.Node.token.literal.toUpperCase();
   const date_part = path.call((p) => p.call(print, "Node"), "date_part");
   let comma = "";
   if ("comma" in node) {
@@ -2358,8 +2367,17 @@ const printSelf = (
   }
   // self
   let self = node.self.Node.token.literal;
-  if (reservedKeywords.indexOf(self.toUpperCase()) !== -1) {
-    self = self.toUpperCase();
+  if (!node.notGlobal) {
+    if (
+      reservedKeywords.indexOf(self.toUpperCase()) !== -1 ||
+      // Field names are not allowed to start with the (case-insensitive) prefixes _PARTITION, _TABLE_, _FILE_ and _ROW_TIMESTAMP
+      self.match(/^_partition/i) ||
+      self.match(/^_table_/i) ||
+      self.match(/^_file_/i) ||
+      self.match(/^_row_timestamp/i)
+    ) {
+      self = self.toUpperCase();
+    }
   }
   // except
   let except = "";

@@ -77,3 +77,6 @@ select 5;
 
 -- 
 select 6;
+
+select _partitiondate as dt1,_table_suffix as dt2, from data where _table_suffix = '20200101';
+select myfunc.current_timestamp(), current_timestamp();
