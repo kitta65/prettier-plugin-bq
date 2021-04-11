@@ -249,6 +249,15 @@ const printDropStatement = (path, options, print) => {
   if ("semicolon" in node) {
     semicolon = path.call((p) => p.call(print, "Node"), "semicolon");
   }
+  // end of statement
+  let endOfStatement = "";
+  if ("semicolon" in node && !node.notRoot) {
+    if ("emptyLines" in node && 0 < node.emptyLines) {
+      endOfStatement = concat([hardline, hardline]);
+    } else {
+      endOfStatement = hardline;
+    }
+  }
   return concat([
     group(
       concat([
@@ -263,7 +272,7 @@ const printDropStatement = (path, options, print) => {
         semicolon,
       ])
     ),
-    hardline,
+    endOfStatement,
   ]);
 };
 
@@ -333,6 +342,15 @@ const printAlterStatement = (path, options, print) => {
   if ("semicolon" in node) {
     semicolon = path.call((p) => p.call(print, "Node"), "semicolon");
   }
+  // end of statement
+  let endOfStatement = "";
+  if ("semicolon" in node && !node.notRoot) {
+    if ("emptyLines" in node && 0 < node.emptyLines) {
+      endOfStatement = concat([hardline, hardline]);
+    } else {
+      endOfStatement = hardline;
+    }
+  }
   return concat([
     group(
       concat([
@@ -348,7 +366,7 @@ const printAlterStatement = (path, options, print) => {
         semicolon,
       ])
     ),
-    hardline,
+    endOfStatement,
   ]);
 };
 
@@ -405,6 +423,15 @@ const printCreateProcedureStatement = (path, options, print) => {
   if ("semicolon" in node) {
     semicolon = path.call((p) => p.call(print, "Node"), "semicolon");
   }
+  // end of statement
+  let endOfStatement = "";
+  if ("semicolon" in node && !node.notRoot) {
+    if ("emptyLines" in node && 0 < node.emptyLines) {
+      endOfStatement = concat([hardline, hardline]);
+    } else {
+      endOfStatement = hardline;
+    }
+  }
   return concat([
     concat([
       printSelf(path, options, print),
@@ -419,7 +446,7 @@ const printCreateProcedureStatement = (path, options, print) => {
       path.call((p) => p.call(print, "Node"), "stmt"),
       semicolon,
     ]),
-    hardline,
+    endOfStatement,
   ]);
 };
 
@@ -553,13 +580,22 @@ const printCreateTableStatement = (path, options, print) => {
       path.call((p) => p.call(print, "Node"), "options"),
     ]);
   }
+  let as = "";
+  if ("as" in node) {
+    as = concat([" ", path.call((p) => p.call(print, "Node"), "as")]);
+  }
   let semicolon = "";
   if ("semicolon" in node) {
     semicolon = path.call((p) => p.call(print, "Node"), "semicolon");
   }
-  let as = "";
-  if ("as" in node) {
-    as = concat([" ", path.call((p) => p.call(print, "Node"), "as")]);
+  // end of statement
+  let endOfStatement = "";
+  if ("semicolon" in node && !node.notRoot) {
+    if ("emptyLines" in node && 0 < node.emptyLines) {
+      endOfStatement = concat([hardline, hardline]);
+    } else {
+      endOfStatement = hardline;
+    }
   }
   return concat([
     group(
@@ -583,7 +619,7 @@ const printCreateTableStatement = (path, options, print) => {
         semicolon,
       ])
     ),
-    hardline,
+    endOfStatement,
   ]);
 };
 
@@ -594,12 +630,21 @@ const printCallStatement = (path, options, print) => {
   if ("semicolon" in node) {
     semicolon = path.call((p) => p.call(print, "Node"), "semicolon");
   }
+  // end of statement
+  let endOfStatement = "";
+  if ("semicolon" in node && !node.notRoot) {
+    if ("emptyLines" in node && 0 < node.emptyLines) {
+      endOfStatement = concat([hardline, hardline]);
+    } else {
+      endOfStatement = hardline;
+    }
+  }
   return concat([
     printSelf(path, options, print),
     " ",
     path.call((p) => p.call(print, "Node"), "expr"),
     semicolon,
-    hardline,
+    endOfStatement,
   ]);
 };
 
@@ -616,9 +661,14 @@ const printRaiseStatement = (path, options, print) => {
   if ("semicolon" in node) {
     semicolon = path.call((p) => p.call(print, "Node"), "semicolon");
   }
+  // end of statement
   let endOfStatement = "";
-  if (!node.notRoot) {
-    endOfStatement = hardline;
+  if ("semicolon" in node && !node.notRoot) {
+    if ("emptyLines" in node && 0 < node.emptyLines) {
+      endOfStatement = concat([hardline, hardline]);
+    } else {
+      endOfStatement = hardline;
+    }
   }
   return concat([
     printSelf(path, options, print),
@@ -635,9 +685,14 @@ const printSingleWordStatement = (path, options, print) => {
   if ("semicolon" in node) {
     semicolon = path.call((p) => p.call(print, "Node"), "semicolon");
   }
+  // end of statement
   let endOfStatement = "";
-  if (!node.notRoot) {
-    endOfStatement = hardline;
+  if ("semicolon" in node && !node.notRoot) {
+    if ("emptyLines" in node && 0 < node.emptyLines) {
+      endOfStatement = concat([hardline, hardline]);
+    } else {
+      endOfStatement = hardline;
+    }
   }
   return concat([printSelf(path, options, print), semicolon, endOfStatement]);
 };
@@ -655,6 +710,15 @@ const printWhileStatement = (path, options, print) => {
   if ("semicolon" in node) {
     semicolon = path.call((p) => p.call(print, "Node"), "semicolon");
   }
+  // end of statement
+  let endOfStatement = "";
+  if ("semicolon" in node && !node.notRoot) {
+    if ("emptyLines" in node && 0 < node.emptyLines) {
+      endOfStatement = concat([hardline, hardline]);
+    } else {
+      endOfStatement = hardline;
+    }
+  }
   return concat([
     group(
       concat([
@@ -670,7 +734,7 @@ const printWhileStatement = (path, options, print) => {
         semicolon,
       ])
     ),
-    hardline,
+    endOfStatement,
   ]);
 };
 
@@ -687,6 +751,15 @@ const printLoopStatement = (path, options, print) => {
   if ("semicolon" in node) {
     semicolon = path.call((p) => p.call(print, "Node"), "semicolon");
   }
+  // end of statement
+  let endOfStatement = "";
+  if ("semicolon" in node && !node.notRoot) {
+    if ("emptyLines" in node && 0 < node.emptyLines) {
+      endOfStatement = concat([hardline, hardline]);
+    } else {
+      endOfStatement = hardline;
+    }
+  }
   return concat([
     group(
       concat([
@@ -702,7 +775,7 @@ const printLoopStatement = (path, options, print) => {
         semicolon,
       ])
     ),
-    hardline,
+    endOfStatement,
   ]);
 };
 
@@ -765,6 +838,15 @@ const printIfStatement = (path, options, print) => {
   if ("semicolon" in node) {
     semicolon = path.call((p) => p.call(print, "Node"), "semicolon");
   }
+  // end of statement
+  let endOfStatement = "";
+  if ("semicolon" in node && !node.notRoot) {
+    if ("emptyLines" in node && 0 < node.emptyLines) {
+      endOfStatement = concat([hardline, hardline]);
+    } else {
+      endOfStatement = hardline;
+    }
+  }
   return concat([
     group(
       concat([
@@ -780,7 +862,7 @@ const printIfStatement = (path, options, print) => {
         semicolon,
       ])
     ),
-    hardline,
+    endOfStatement,
   ]);
 };
 
@@ -831,9 +913,14 @@ const printBeginStatement = (path, options, print) => {
   if ("semicolon" in node) {
     semicolon = path.call((p) => p.call(print, "Node"), "semicolon");
   }
+  // end of statement
   let endOfStatement = "";
-  if (!node.notRoot) {
-    endOfStatement = hardline;
+  if ("semicolon" in node && !node.notRoot) {
+    if ("emptyLines" in node && 0 < node.emptyLines) {
+      endOfStatement = concat([hardline, hardline]);
+    } else {
+      endOfStatement = hardline;
+    }
   }
   return concat([
     group(
@@ -863,6 +950,15 @@ const printExecuteStatement = (path, options, print) => {
   if ("semicolon" in node) {
     semicolon = path.call((p) => p.call(print, "Node"), "semicolon");
   }
+  // end of statement
+  let endOfStatement = "";
+  if ("semicolon" in node && !node.notRoot) {
+    if ("emptyLines" in node && 0 < node.emptyLines) {
+      endOfStatement = concat([hardline, hardline]);
+    } else {
+      endOfStatement = hardline;
+    }
+  }
   return concat([
     printSelf(path, options, print),
     " ",
@@ -871,7 +967,7 @@ const printExecuteStatement = (path, options, print) => {
     path.call((p) => p.call(print, "Node"), "sql_expr"),
     using,
     semicolon,
-    hardline,
+    endOfStatement,
   ]);
 };
 
@@ -881,12 +977,21 @@ const printSetStatement = (path, options, print) => {
   if ("semicolon" in node) {
     semicolon = path.call((p) => p.call(print, "Node"), "semicolon");
   }
+  // end of statement
+  let endOfStatement = "";
+  if ("semicolon" in node && !node.notRoot) {
+    if ("emptyLines" in node && 0 < node.emptyLines) {
+      endOfStatement = concat([hardline, hardline]);
+    } else {
+      endOfStatement = hardline;
+    }
+  }
   return concat([
     printSelf(path, options, print),
     " ",
     path.call((p) => p.call(print, "Node"), "expr"),
     semicolon,
-    hardline,
+    endOfStatement,
   ]);
 };
 
@@ -912,6 +1017,15 @@ const printDeclareStatement = (path, options, print) => {
   if ("semicolon" in node) {
     semicolon = path.call((p) => p.call(print, "Node"), "semicolon");
   }
+  // end of statement
+  let endOfStatement = "";
+  if ("semicolon" in node && !node.notRoot) {
+    if ("emptyLines" in node && 0 < node.emptyLines) {
+      endOfStatement = concat([hardline, hardline]);
+    } else {
+      endOfStatement = hardline;
+    }
+  }
   return concat([
     printSelf(path, options, print),
     " ",
@@ -919,7 +1033,7 @@ const printDeclareStatement = (path, options, print) => {
     variableType,
     default_,
     semicolon,
-    hardline,
+    endOfStatement,
   ]);
 };
 
@@ -1003,26 +1117,37 @@ const printCreateFunctionStatement = (path, options, print) => {
   if ("semicolon" in node) {
     semicolon = path.call((p) => p.call(print, "Node"), "semicolon");
   }
-  return group(
-    concat([
-      printSelf(path, options, print, config),
-      orReplace,
-      temporary,
-      " ",
-      path.call((p) => p.call(print, "Node"), "what"),
-      ifNotExists,
-      " ",
-      path.call((p) => p.call(print, "Node"), "ident"),
-      path.call((p) => p.call(print, "Node"), "group"),
-      returnType,
-      determinism,
-      language,
-      options_,
-      as_,
-      semicolon,
-      hardline,
-    ])
-  );
+  // end of statement
+  let endOfStatement = "";
+  if ("semicolon" in node && !node.notRoot) {
+    if ("emptyLines" in node && 0 < node.emptyLines) {
+      endOfStatement = concat([hardline, hardline]);
+    } else {
+      endOfStatement = hardline;
+    }
+  }
+  return concat([
+    group(
+      concat([
+        printSelf(path, options, print, config),
+        orReplace,
+        temporary,
+        " ",
+        path.call((p) => p.call(print, "Node"), "what"),
+        ifNotExists,
+        " ",
+        path.call((p) => p.call(print, "Node"), "ident"),
+        path.call((p) => p.call(print, "Node"), "group"),
+        returnType,
+        determinism,
+        language,
+        options_,
+        as_,
+        semicolon,
+      ])
+    ),
+    endOfStatement,
+  ]);
 };
 
 const printLanguage = (path, options, print) => {
@@ -1489,7 +1614,6 @@ const printBinaryOperator = (path, options, print) => {
     printAlias: false,
     printOrder: false,
   };
-  node.right.Node.children.notGlobal = true;
   const uppercasePrefix = [
     "SAFE",
     "KEYS",
@@ -1498,26 +1622,34 @@ const printBinaryOperator = (path, options, print) => {
     "HLL_COUNT",
     "_SESSION",
   ];
-  if (
-    node.self.Node.token.literal === "." &&
-    uppercasePrefix.indexOf(
-      node.left.Node.children.self.Node.token.literal.toUpperCase()
-    ) !== -1
-  ) {
-    node.left.Node.children.self.Node.token.literal = node.left.Node.children.self.Node.token.literal.toUpperCase();
-    if ("func" in node.right.Node.children) {
-      node.right.Node.children.func.Node.children.self.Node.token.literal = node.right.Node.children.func.Node.children.self.Node.token.literal.toUpperCase();
+  if (node.self.Node.token.literal === ".") {
+    node.right.Node.children.notGlobal = true;
+    if (
+      uppercasePrefix.indexOf(
+        node.left.Node.children.self.Node.token.literal.toUpperCase()
+      ) !== -1
+    ) {
+      node.left.Node.children.self.Node.token.literal = node.left.Node.children.self.Node.token.literal.toUpperCase();
+      if ("func" in node.right.Node.children) {
+        // except for _SESSION
+        node.right.Node.children.func.Node.children.self.Node.token.literal = node.right.Node.children.func.Node.children.self.Node.token.literal.toUpperCase();
+      }
     }
   }
   const noSpaceOperators = ["."];
-  const onesideSpaceOperators = [","];
-  let lsep = line;
+  const leftLineOperators = ["OR", "AND"];
+  const leftSoftLineOperators = [","];
+  let lsep = " ";
   let rsep = " ";
   if (noSpaceOperators.indexOf(node.self.Node.token.literal) !== -1) {
     lsep = "";
     rsep = "";
   } else if (
-    onesideSpaceOperators.indexOf(node.self.Node.token.literal) !== -1
+    leftLineOperators.indexOf(node.self.Node.token.literal.toUpperCase()) !== -1
+  ) {
+    lsep = line;
+  } else if (
+    leftSoftLineOperators.indexOf(node.self.Node.token.literal) !== -1
   ) {
     lsep = softline;
   }
@@ -2212,10 +2344,17 @@ const printInsertStatement = (path, options, print) => {
   }
   let input = concat([" ", path.call((p) => p.call(print, "Node"), "input")]);
   let semicolon = "";
-  let endOfStatement = "";
   if ("semicolon" in node) {
     semicolon = path.call((p) => p.call(print, "Node"), "semicolon");
-    endOfStatement = hardline;
+  }
+  // end of statement
+  let endOfStatement = "";
+  if ("semicolon" in node && !node.notRoot) {
+    if ("emptyLines" in node && 0 < node.emptyLines) {
+      endOfStatement = concat([hardline, hardline]);
+    } else {
+      endOfStatement = hardline;
+    }
   }
   return concat([
     printSelf(path, options, print),
@@ -2236,6 +2375,15 @@ const printTruncateStatement = (path, options, print) => {
   if ("semicolon" in node) {
     semicolon = path.call((p) => p.call(print, "Node"), "semicolon");
   }
+  // end of statement
+  let endOfStatement = "";
+  if ("semicolon" in node && !node.notRoot) {
+    if ("emptyLines" in node && 0 < node.emptyLines) {
+      endOfStatement = concat([hardline, hardline]);
+    } else {
+      endOfStatement = hardline;
+    }
+  }
   return concat([
     printSelf(path, options, print),
     " ",
@@ -2243,7 +2391,7 @@ const printTruncateStatement = (path, options, print) => {
     " ",
     path.call((p) => p.call(print, "Node"), "target_name"),
     semicolon,
-    hardline,
+    endOfStatement,
   ]);
 };
 
@@ -2264,6 +2412,15 @@ const printMergeStatement = (path, options, print) => {
   if ("semicolon" in node) {
     semicolon = path.call((p) => p.call(print, "Node"), "semicolon");
   }
+  // end of statement
+  let endOfStatement = "";
+  if ("semicolon" in node && !node.notRoot) {
+    if ("emptyLines" in node && 0 < node.emptyLines) {
+      endOfStatement = concat([hardline, hardline]);
+    } else {
+      endOfStatement = hardline;
+    }
+  }
   return concat([
     printSelf(path, options, print),
     target_name,
@@ -2274,7 +2431,7 @@ const printMergeStatement = (path, options, print) => {
     whens,
     softline,
     semicolon,
-    hardline,
+    endOfStatement,
   ]);
 };
 
@@ -2336,10 +2493,17 @@ const printUpdateStatement = (path, options, print) => {
     where = concat([line, path.call((p) => p.call(print, "Node"), "where")]);
   }
   let semicolon = "";
-  let endOfStatement = "";
   if ("semicolon" in node) {
     semicolon = path.call((p) => p.call(print, "Node"), "semicolon");
-    endOfStatement = hardline;
+  }
+  // end of statement
+  let endOfStatement = "";
+  if ("semicolon" in node && !node.notRoot) {
+    if ("emptyLines" in node && 0 < node.emptyLines) {
+      endOfStatement = concat([hardline, hardline]);
+    } else {
+      endOfStatement = hardline;
+    }
   }
   return concat([
     group(
@@ -2376,10 +2540,17 @@ const printDeleteStatement = (path, options, print) => {
     where = concat([" ", path.call((p) => p.call(print, "Node"), "where")]);
   }
   let semicolon = "";
-  let endOfStatement = "";
   if ("semicolon" in node) {
     semicolon = path.call((p) => p.call(print, "Node"), "semicolon");
-    endOfStatement = hardline;
+  }
+  // end of statement
+  let endOfStatement = "";
+  if ("semicolon" in node && !node.notRoot) {
+    if ("emptyLines" in node && 0 < node.emptyLines) {
+      endOfStatement = concat([hardline, hardline]);
+    } else {
+      endOfStatement = hardline;
+    }
   }
   return concat([
     printSelf(path, options, print),

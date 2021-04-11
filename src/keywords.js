@@ -226,6 +226,10 @@ const globalFunctions = [
   "JSON_EXTRACT_SCALAR",
   "JSON_VALUE",
   "JSON_EXTRACT_ARRAY",
+  "JSON_EXTRACT_STRING_ARRAY",
+  "JSON_QUERY",
+  "JSON_QUERY_ARRAY",
+  "JSON_VALUE_ARRAY",
   "TO_JSON_STRING",
   // mathematical functions
   "ABS",
