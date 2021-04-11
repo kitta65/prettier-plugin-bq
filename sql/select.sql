@@ -80,3 +80,6 @@ select 6;
 
 select _partitiondate as dt1,_table_suffix as dt2, from data where _table_suffix = '20200101';
 select myfunc.current_timestamp(), current_timestamp();
+
+select date_diff(date '2020-01-01', date '2020-01-02', day),date_diff(date '2020-01-01', date '2020-01-02', week(monday)),
+date_trunc(date '2020-01-31', month);

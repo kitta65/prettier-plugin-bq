@@ -1342,11 +1342,48 @@ const printFunc = (path, options, print) => {
   let rsep = softline;
   if ("args" in node) {
     switch (node.func.Node.token.literal.toUpperCase()) {
+      // NORMALEZE
       case "NORMALIZE":
-        node.args.NodeVec[1].children.self.Node.token.literal = node.args.NodeVec[1].children.self.Node.token.literal.toUpperCase();
+        if (2 <= node.args.NodeVec.length) {
+          node.args.NodeVec[1].children.self.Node.token.literal = node.args.NodeVec[1].children.self.Node.token.literal.toUpperCase();
+        }
         break;
       case "NORMALIZE_AND_CASEFOLD":
-        node.args.NodeVec[1].children.self.Node.token.literal = node.args.NodeVec[1].children.self.Node.token.literal.toUpperCase();
+        if (2 <= node.args.NodeVec.length) {
+          node.args.NodeVec[1].children.self.Node.token.literal = node.args.NodeVec[1].children.self.Node.token.literal.toUpperCase();
+        }
+        break;
+      // XXX_DIFF
+      case "DATE_DIFF":
+        replaceDatePartWithUpperCase(node.args.NodeVec[2]);
+        break;
+      case "DATETIME_DIFF":
+        replaceDatePartWithUpperCase(node.args.NodeVec[2]);
+        break;
+      case "TIME_DIFF":
+        replaceDatePartWithUpperCase(node.args.NodeVec[2]);
+        break;
+      case "TIMESTAMP_DIFF":
+        replaceDatePartWithUpperCase(node.args.NodeVec[2]);
+        break;
+      // XXX_TRUNC
+      case "DATE_TRUNC":
+        replaceDatePartWithUpperCase(node.args.NodeVec[1]);
+        break;
+      case "DATETIME_TRUNC":
+        replaceDatePartWithUpperCase(node.args.NodeVec[1]);
+        break;
+      case "TIME_TRUNC":
+        replaceDatePartWithUpperCase(node.args.NodeVec[1]);
+        break;
+      case "TIMESTAMP_TRUNC":
+        replaceDatePartWithUpperCase(node.args.NodeVec[1]);
+        break;
+      // LAST_DAY
+      case "LAST_DAY":
+        if (2 <= node.args.NodeVec.length) {
+          replaceDatePartWithUpperCase(node.args.NodeVec[1]);
+        }
         break;
     }
     if (
@@ -1423,6 +1460,15 @@ const printFunc = (path, options, print) => {
       comma,
     ])
   );
+};
+
+const replaceDatePartWithUpperCase = (node) => {
+  if (node.children.self.Node.token.literal === "(") {
+    node.children.func.Node.children.self.Node.token.literal = node.children.func.Node.children.self.Node.token.literal.toUpperCase(); // WEEK
+    node.children.args.NodeVec[0].children.self.Node.token.literal = node.children.args.NodeVec[0].children.self.Node.token.literal.toUpperCase();
+  } else {
+    node.children.self.Node.token.literal = node.children.self.Node.token.literal.toUpperCase();
+  }
 };
 
 const printLimitClause = (path, options, print) => {
