@@ -8,7 +8,7 @@ select /* following1 */ /* following2 */ func(1) as f, func(2,3) -- following3
 select
   -- this is int64
   1,2,1=1 cond;
-select 1,2,3 from data limit 100 offset 10;
+select 1,2,3 from data tablesample system (10 percent) limit 100 offset 10;
 select date '2020-01-01', 1;
 select 1,(1),((1+1)),not 1=1,col like 'a%',col not like 'a%', 1 between -1 and 1, timestamp r"2020-01-01", 1 in (1,2),1 not in (2,3),
 case col when 1 then 'one' else 'two' end,

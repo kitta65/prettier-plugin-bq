@@ -69,6 +69,10 @@ const printSQL = (path, options, print) => {
       return path.call(print, "children");
     case "schema":
       return printSchema(path, options, print);
+    case "tablesampleClause":
+      return printTablesampleClause(path, options, print);
+    case "tablesamplePercent":
+      return printTablesamplePercent(path, options, print);
     case "procedureArgument":
       return printProcedureArgument(path, options, print);
     case "createFunctionStatement":
@@ -81,6 +85,8 @@ const printSQL = (path, options, print) => {
       return printCreateTableStatement(path, options, print);
     case "createProcedureStatement":
       return printCreateProcedureStatement(path, options, print);
+    case "createSchemaStatement":
+      return printCreateSchemaStatement(path, options, print);
     case "insertStatement":
       return printInsertStatement(path, options, print);
     case "updateStatement":
@@ -218,6 +224,30 @@ const printSQL = (path, options, print) => {
   }
 };
 
+const printTablesampleClause = (path, options, print) => {
+  const node = path.getValue();
+  node.system.Node.children.self.Node.token.literal = node.system.Node.children.self.Node.token.literal.toUpperCase();
+  return concat([
+    printSelf(path, options, print),
+    " ",
+    path.call((p) => p.call(print, "Node"), "system"),
+    " ",
+    path.call((p) => p.call(print, "Node"), "group"),
+  ]);
+};
+
+const printTablesamplePercent = (path, options, print) => {
+  const node = path.getValue();
+  node.percent.Node.children.self.Node.token.literal = node.percent.Node.children.self.Node.token.literal.toUpperCase();
+  return concat([
+    printSelf(path, options, print),
+    path.call((p) => p.call(print, "Node"), "expr"),
+    " ",
+    path.call((p) => p.call(print, "Node"), "percent"),
+    path.call((p) => p.call(print, "Node"), "rparen"),
+  ]);
+};
+
 const printDropStatement = (path, options, print) => {
   const node = path.getValue();
   let semicolon = "";
@@ -246,6 +276,14 @@ const printDropStatement = (path, options, print) => {
       path.call((p) => join(" ", p.map(print, "NodeVec")), "if_exists"),
     ]);
   }
+  let cascadeOrRestrict = "";
+  if ("cascade_or_restrict" in node) {
+    node.cascade_or_restrict.Node.children.self.Node.token.literal = node.cascade_or_restrict.Node.children.self.Node.token.literal.toUpperCase();
+    cascadeOrRestrict = concat([
+      " ",
+      path.call((p) => p.call(print, "Node"), "cascade_or_restrict"),
+    ]);
+  }
   if ("semicolon" in node) {
     semicolon = path.call((p) => p.call(print, "Node"), "semicolon");
   }
@@ -269,6 +307,7 @@ const printDropStatement = (path, options, print) => {
         ifExists,
         " ",
         path.call((p) => p.call(print, "Node"), "ident"),
+        cascadeOrRestrict,
         semicolon,
       ])
     ),
@@ -390,6 +429,49 @@ const printProcedureArgument = (path, options, print) => {
     " ",
     path.call((p) => p.call(print, "Node"), "type"),
     comma,
+  ]);
+};
+
+const printCreateSchemaStatement = (path, options, print) => {
+  const node = path.getValue();
+  node.what.Node.children.self.Node.token.literal = node.what.Node.children.self.Node.token.literal.toUpperCase();
+  let ifNotExists = "";
+  if ("if_not_exists" in node) {
+    ifNotExists = concat([
+      " ",
+      path.call((p) => join(" ", p.map(print, "NodeVec")), "if_not_exists"),
+    ]);
+  }
+  let options_ = "";
+  if ("options" in node) {
+    node.options.Node.children.self.Node.token.literal = node.options.Node.children.self.Node.token.literal.toUpperCase();
+    options = concat([" ", path.call((p) => p.call(print, "Node"), "options")]);
+  }
+  let semicolon = "";
+  if ("semicolon" in node) {
+    semicolon = path.call((p) => p.call(print, "Node"), "semicolon");
+  }
+  // end of statement
+  let endOfStatement = "";
+  if ("semicolon" in node && !node.notRoot) {
+    if ("emptyLines" in node && 0 < node.emptyLines) {
+      endOfStatement = concat([hardline, hardline]);
+    } else {
+      endOfStatement = hardline;
+    }
+  }
+  return concat([
+    concat([
+      printSelf(path, options, print),
+      " ",
+      path.call((p) => p.call(print, "Node"), "what"),
+      ifNotExists,
+      " ",
+      path.call((p) => p.call(print, "Node"), "ident"),
+      options,
+      semicolon,
+    ]),
+    endOfStatement,
   ]);
 };
 
@@ -1718,10 +1800,24 @@ const printBinaryOperator = (path, options, print) => {
 
 const printTableName = (path, options, print) => {
   const node = path.getValue();
+  let forSystemTimeAsOf = "";
+  if ("for_system_time_as_of" in node) {
+    forSystemTimeAsOf = concat([
+      " ",
+      path.call((p) => p.call(print, "Node"), "for_system_time_as_of"),
+    ]);
+  }
+  let tablesample = "";
+  if ("tablesample" in node) {
+    tablesample = concat([
+      " ",
+      path.call((p) => p.call(print, "Node"), "tablesample"),
+    ]);
+  }
   return concat([
     printSelf(path, options, print),
-    " ",
-    path.call((p) => p.call(print, "Node"), "for_system_time_as_of"),
+    forSystemTimeAsOf,
+    tablesample,
   ]);
 };
 
@@ -2663,6 +2759,8 @@ const guess_node_type = (node) => {
   if ("children" in node) {
     return "parent";
   } else {
+    if ("system" in node) return "tablesampleClause";
+    if ("percent" in node) return "tablesamplePercent";
     if ("column" in node) return "addColumnCluase";
     if ("column_definitions" in node) return "columnDefinitions";
     if ("in_out" in node) return "procedureArgument";
@@ -2713,6 +2811,15 @@ const guess_node_type = (node) => {
         "PROCEDURE"
     ) {
       return "createProcedureStatement";
+    }
+    if (
+      "self" in node &&
+      "Node" in node.self &&
+      node.self.Node.token.literal.toUpperCase() === "CREATE" &&
+      "what" in node &&
+      node.what.Node.children.self.Node.token.literal.toUpperCase() == "SCHEMA"
+    ) {
+      return "createSchemaStatement";
     }
     if ("group" in node) return "keywordWithGroupedExprs";
     if ("struct_value" in node) return "asStructOrValue";
@@ -2874,7 +2981,8 @@ const guess_node_type = (node) => {
     if ("unnest_offset" in node) return "withOffset"; // with offset
     if ("offset" in node) return "limitClause";
     if ("window" in node) return "overClause";
-    if ("for_system_time_as_of" in node) return "tableName";
+    if ("for_system_time_as_of" in node || "tablesample" in node)
+      return "tableName";
     if ("system_time_as_of" in node) return "forSystemTimeAsOfClause";
     if ("by" in node && "expr" in node) return "xxxByExpr";
     if ("by" in node && "exprs" in node) return "xxxByExprs";
