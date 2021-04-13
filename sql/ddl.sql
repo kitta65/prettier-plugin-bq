@@ -33,6 +33,7 @@ alter view example set options(dummy='dummy',description='abc');
 alter materialized view example set options(dummy='dummy');
 alter table example add column x int64;
 alter table example add column if not exists x int64 options(description='dummy'),add column y struct<z int64 not null>;
+alter table example drop column if exists x,drop column y;
 drop table example;drop external table if exists example;drop materialized view example;
 drop schema dataset_name restrict;
 -- end comment

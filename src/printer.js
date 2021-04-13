@@ -217,6 +217,8 @@ const printSQL = (path, options, print) => {
       return printAlterStatement(path, options, print);
     case "addColumnCluase":
       return printAddColumnClause(path, options, print);
+    case "dropColumnCluase":
+      return printDropColumnClause(path, options, print);
     case "dropStatement":
       return printDropStatement(path, options, print);
     default:
@@ -346,6 +348,37 @@ const printAddColumnClause = (path, options, print) => {
   ]);
 };
 
+const printDropColumnClause = (path, options, print) => {
+  const node = path.getValue();
+  const config = {
+    printComma: false,
+    printAlias: false,
+    printOrder: false,
+  };
+  node.self.Node.token.literal = node.self.Node.token.literal.toUpperCase();
+  node.column.Node.children.self.Node.token.literal = node.column.Node.children.self.Node.token.literal.toUpperCase();
+  let ifExists = "";
+  if ("if_exists" in node) {
+    ifExists = concat([
+      " ",
+      path.call((p) => join(" ", p.map(print, "NodeVec")), "if_exists"),
+    ]);
+  }
+  let comma = "";
+  if ("comma" in node) {
+    comma = path.call((p) => p.call(print, "Node"), "comma");
+  }
+  return concat([
+    printSelf(path, options, print, config),
+    " ",
+    path.call((p) => p.call(print, "Node"), "column"),
+    ifExists,
+    " ",
+    path.call((p) => p.call(print, "Node"), "column_name"),
+    comma,
+  ]);
+};
+
 const printAlterStatement = (path, options, print) => {
   const node = path.getValue();
   node.self.Node.token.literal = node.self.Node.token.literal.toUpperCase();
@@ -377,6 +410,13 @@ const printAlterStatement = (path, options, print) => {
       path.call((p) => join(line, p.map(print, "NodeVec")), "add_columns"),
     ]);
   }
+  let drop_columns = "";
+  if ("drop_columns" in node) {
+    drop_columns = concat([
+      line,
+      path.call((p) => join(line, p.map(print, "NodeVec")), "drop_columns"),
+    ]);
+  }
   let semicolon = "";
   if ("semicolon" in node) {
     semicolon = path.call((p) => p.call(print, "Node"), "semicolon");
@@ -402,6 +442,7 @@ const printAlterStatement = (path, options, print) => {
         set,
         options_,
         add_columns,
+        drop_columns,
         semicolon,
       ])
     ),
@@ -2761,7 +2802,22 @@ const guess_node_type = (node) => {
   } else {
     if ("system" in node) return "tablesampleClause";
     if ("percent" in node) return "tablesamplePercent";
-    if ("column" in node) return "addColumnCluase";
+    if (
+      "self" in node &&
+      "Node" in node.self &&
+      node.self.Node.token.literal.toUpperCase() === "ADD" &&
+      "column" in node
+    ) {
+      return "addColumnCluase";
+    }
+    if (
+      "self" in node &&
+      "Node" in node.self &&
+      node.self.Node.token.literal.toUpperCase() === "DROP" &&
+      "column" in node
+    ) {
+      return "dropColumnCluase";
+    }
     if ("column_definitions" in node) return "columnDefinitions";
     if ("in_out" in node) return "procedureArgument";
     if ("partition_columns" in node) return "withPartitionColumnsClause";

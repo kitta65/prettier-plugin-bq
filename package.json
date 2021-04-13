@@ -12,7 +12,7 @@
   "license": "MIT",
   "devDependencies": {},
   "dependencies": {
-    "@dr666m1/bq2cst": "0.0.23",
+    "@dr666m1/bq2cst": "0.0.24",
     "prettier": "^2.2.1"
   }
 }
