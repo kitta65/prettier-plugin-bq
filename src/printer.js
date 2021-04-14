@@ -1574,7 +1574,9 @@ const printFunc = (path, options, print) => {
     sep = " ";
   }
   if (
-    globalFunctions.indexOf(node.func.Node.token.literal.toUpperCase()) !== -1
+    globalFunctions.indexOf(node.func.Node.token.literal.toUpperCase()) !==
+      -1 &&
+    !node.notRoot
   ) {
     node.func.Node.children.self.Node.token.literal = node.func.Node.token.literal.toUpperCase();
   }
@@ -1587,7 +1589,7 @@ const printFunc = (path, options, print) => {
     ]);
   }
   let args = "";
-  let rsep = softline;
+  let rsep = "";
   if ("args" in node) {
     switch (node.func.Node.token.literal.toUpperCase()) {
       // NORMALEZE
@@ -1638,12 +1640,12 @@ const printFunc = (path, options, print) => {
       node.args.NodeVec.length === 1 &&
       "func" in node.args.NodeVec[0].children
     ) {
-      rsep = "";
       args = path.call(
         (p) => p.map(print, "NodeVec").map((x) => group(x))[0],
         "args"
       );
     } else {
+      rsep = softline;
       args = indent(
         concat([
           softline,
@@ -1964,6 +1966,9 @@ const printWindowSpecification = (path, options, print) => {
   let rparen = "";
   if ("rparen" in node) {
     rparen = path.call((p) => p.call(print, "Node"), "rparen");
+  }
+  if (contents.length === 0) {
+    return concat([printSelf(path, options, print), rparen])
   }
   return group(
     concat([
