@@ -1,4 +1,4 @@
-insert into table values(1,2);insert table values(1),(2);insert table (col) select 1;
+insert into table values(1,2);insert table values(1),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2);insert table (col) select 1;
 delete table where true;delete table t where true;delete from table as t where not exists (select * from t where true);
 truncate table t;
 update table t set col1=1,col2=2 where true;update table1 as one set one.value=two.value from table2 as two where one.id = two.id;

@@ -29,6 +29,7 @@ select arr[offset(1)], [1, 2], ARRAY[1,2],array<int64>[1],array<struct<array<int
 select (1,2),struct(1,2),struct<int64>(1),struct<int64,x float64>(1,.1),struct<array<int64>>([1]),;
 (select 1, 2);
 select 1 union all select 2;(select 1) union all select 2;select 1 union all (select 2);select 1 union all select 2 union all select 3;
+
 select 1 union all (select 2 union all select 3);(select 1 union all select 2) union all select 3;
 with a as (select 1) select 2;with a as (select 1), b as (select 2 from TooLongTableToPrintInOneLine where TooLongTableToPrintInOneLine=1) select 3;
 select as struct 1;select distinct 1;select all 1;select t.* except (col1), * except(col1, col2), * replace (col1 * 2 as col2), from t;
@@ -78,9 +79,12 @@ select 5;
 
 -- 
 select 6;
+(select 7);
 
 select _partitiondate as dt1,_table_suffix as dt2, from data where _table_suffix = '20200101';
 select myfunc.current_timestamp(), current_timestamp();
 
 select date_diff(date '2020-01-01', date '2020-01-02', day),date_diff(date '2020-01-01', date '2020-01-02', week(monday)),
 date_trunc(date '2020-01-31', month);
+select aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa,bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb,count(*)
+FROM data group by aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa,bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb

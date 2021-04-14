@@ -15,8 +15,6 @@ const {
       literalline,
       lineSuffix,
       lineSuffixBoundary,
-      markAsRoot,
-      dedentToRoot,
     },
   },
 } = require("prettier");
@@ -187,8 +185,8 @@ const printSQL = (path, options, print) => {
       return printCaseArm(path, options, print);
     case "nullOrder":
       return printNullOrder(path, options, print);
-    case "ignoreOrReplaceNulls":
-      return printIgnoreOrReplaceNulls(path, options, print);
+    case "ignoreOrRespectNulls":
+      return printIgnoreOrRespectNulls(path, options, print);
     case "declareStatement":
       return printDeclareStatement(path, options, print);
     case "setStatement":
@@ -557,14 +555,18 @@ const printCreateProcedureStatement = (path, options, print) => {
   }
   return concat([
     concat([
-      printSelf(path, options, print),
-      " ",
-      path.call((p) => p.call(print, "Node"), "what"),
-      ifNotExists,
-      " ",
-      path.call((p) => p.call(print, "Node"), "ident"),
-      path.call((p) => p.call(print, "Node"), "group"),
-      options,
+      group(
+        concat([
+          printSelf(path, options, print),
+          " ",
+          path.call((p) => p.call(print, "Node"), "what"),
+          ifNotExists,
+          " ",
+          path.call((p) => p.call(print, "Node"), "ident"),
+          path.call((p) => p.call(print, "Node"), "group"),
+          options,
+        ])
+      ),
       line,
       path.call((p) => p.call(print, "Node"), "stmt"),
       semicolon,
@@ -1017,12 +1019,12 @@ const printBeginStatement = (path, options, print) => {
       ),
     ]);
   }
-  let exceptionStmt = "";
+  let exceptionStmts = "";
   if ("exception_stmts" in node) {
     node.exception_stmts.NodeVec.map((x) => {
       x.children.notRoot = true;
     });
-    exceptionStmt = indent(
+    exceptionStmts = indent(
       concat([
         line,
         path.call(
@@ -1051,7 +1053,7 @@ const printBeginStatement = (path, options, print) => {
         printSelf(path, options, print),
         stmts,
         exceptionWhenErrorThen,
-        exceptionStmt,
+        exceptionStmts,
         line,
         path.call((p) => p.call(print, "Node"), "end"),
         semicolon,
@@ -1340,9 +1342,9 @@ const printSelectStatement = (path, options, print) => {
     ]);
   }
   // window
-  let window = "";
+  let window_ = "";
   if ("window" in node) {
-    window = concat([line, path.call((p) => p.call(print, "Node"), "window")]);
+    window_ = concat([line, path.call((p) => p.call(print, "Node"), "window")]);
   }
   // where
   let where = "";
@@ -1407,7 +1409,7 @@ const printSelectStatement = (path, options, print) => {
         where,
         groupby,
         having,
-        window,
+        window_,
         orderby,
         limit,
         semicolon,
@@ -1482,10 +1484,17 @@ const printWithOffset = (path, options, print) => {
 const printGroupedStatement = (path, options, print) => {
   const node = path.getValue();
   let semicolon = "";
-  let endOfStatement = "";
   if ("semicolon" in node) {
     semicolon = path.call((p) => p.call(print, "Node"), "semicolon");
-    endOfStatement = hardline;
+  }
+  // end of statement
+  let endOfStatement = "";
+  if ("semicolon" in node && !node.notRoot) {
+    if ("emptyLines" in node && 0 < node.emptyLines) {
+      endOfStatement = concat([hardline, hardline]);
+    } else {
+      endOfStatement = hardline;
+    }
   }
   return concat([
     group(
@@ -1538,8 +1547,12 @@ const printKeywordWithExprs = (path, options, print) => {
   return group(
     concat([
       printSelf(path, options, print),
-      " ",
-      path.call((p) => join(line, p.map(print, "NodeVec")), "exprs"),
+      indent(
+        concat([
+          line,
+          path.call((p) => join(line, p.map(print, "NodeVec")), "exprs"),
+        ])
+      ),
     ])
   );
 };
@@ -1694,16 +1707,20 @@ const printFunc = (path, options, print) => {
   }
   return group(
     concat([
-      path.call((p) => p.call(print, "Node"), "func"),
-      sep,
-      printSelf(path, options, print, config),
-      distinct,
-      args,
-      ignoreNulls,
-      orderBy,
-      limit,
-      rsep,
-      path.call((p) => p.call(print, "Node"), "rparen"),
+      group(
+        concat([
+          path.call((p) => p.call(print, "Node"), "func"),
+          sep,
+          printSelf(path, options, print, config),
+          distinct,
+          args,
+          ignoreNulls,
+          orderBy,
+          limit,
+          rsep,
+          path.call((p) => p.call(print, "Node"), "rparen"),
+        ])
+      ),
       over,
       order,
       as,
@@ -1885,7 +1902,10 @@ const printCaseExpr = (path, options, print) => {
   };
   let expr = "";
   if ("expr" in node) {
-    expr = concat([" ", path.call((p) => p.call(print, "Node"), "expr")]);
+    expr = concat([
+      " ",
+      group(path.call((p) => p.call(print, "Node"), "expr")),
+    ]);
   }
   let comma = "";
   if ("comma" in node) {
@@ -1935,8 +1955,12 @@ const printXXXByExprs = (path, options, print) => {
     printSelf(path, options, print),
     " ",
     path.call((p) => p.call(print, "Node"), "by"),
-    " ",
-    path.call((p) => join(line, p.map(print, "NodeVec")), "exprs"),
+    indent(
+      concat([
+        line,
+        path.call((p) => join(line, p.map(print, "NodeVec")), "exprs"),
+      ])
+    ),
   ]);
 };
 
@@ -1968,7 +1992,7 @@ const printWindowSpecification = (path, options, print) => {
     rparen = path.call((p) => p.call(print, "Node"), "rparen");
   }
   if (contents.length === 0) {
-    return concat([printSelf(path, options, print), rparen])
+    return concat([printSelf(path, options, print), rparen]);
   }
   return group(
     concat([
@@ -2053,11 +2077,7 @@ const printFrameStartOrEnd = (path, options, print) => {
     ]);
     delete node.following;
   }
-  return concat([
-    path.call(print), // TODO refuctoring
-    preceding,
-    following,
-  ]);
+  return concat([path.call(print), preceding, following]);
 };
 
 const printCaseArm = (path, options, print) => {
@@ -2071,10 +2091,15 @@ const printCaseArm = (path, options, print) => {
   if ("expr" in node) {
     // when
     whenExprThen = concat([
-      join(" ", [
-        printSelf(path, options, print, config),
-        path.call((p) => p.call(print, "Node"), "expr"),
-        path.call((p) => p.call(print, "Node"), "then"),
+      concat([
+        group(
+          concat([
+            printSelf(path, options, print, config),
+            " ",
+            group(path.call((p) => p.call(print, "Node"), "expr")),
+          ])
+        ),
+        indent(concat([line, path.call((p) => p.call(print, "Node"), "then")])),
       ]),
       " ",
     ]);
@@ -2082,10 +2107,9 @@ const printCaseArm = (path, options, print) => {
     // else
     whenExprThen = concat([printSelf(path, options, print, config), " "]);
   }
-  return concat([
-    whenExprThen,
-    path.call((p) => p.call(print, "Node"), "result"),
-  ]);
+  return group(
+    concat([whenExprThen, path.call((p) => p.call(print, "Node"), "result")])
+  );
 };
 
 const printUnaryOperator = (path, options, print) => {
@@ -2270,7 +2294,7 @@ const printGroupedExprs = (path, options, print) => {
       indent(
         concat([
           softline,
-          path.call((p) => join(" ", p.map(print, "NodeVec")), "exprs"),
+          path.call((p) => join(line, p.map(print, "NodeVec")), "exprs"),
         ])
       ),
       softline,
@@ -2411,10 +2435,17 @@ const printBetweenOperator = (path, options, print) => {
 const printSetOperator = (path, options, print) => {
   const node = path.getValue();
   let semicolon = "";
-  let endOfStatement = "";
   if ("semicolon" in node) {
     semicolon = path.call((p) => p.call(print, "Node"), "semicolon");
-    endOfStatement = hardline;
+  }
+  // end of statement
+  let endOfStatement = "";
+  if ("semicolon" in node && !node.notRoot) {
+    if ("emptyLines" in node && 0 < node.emptyLines) {
+      endOfStatement = concat([hardline, hardline]);
+    } else {
+      endOfStatement = hardline;
+    }
   }
   return concat([
     group(
@@ -2443,7 +2474,7 @@ const printCastArgument = (path, options, print) => {
   ]);
 };
 
-const printIgnoreOrReplaceNulls = (path, options, print) => {
+const printIgnoreOrRespectNulls = (path, options, print) => {
   return concat([
     printSelf(path, options, print),
     " ",
@@ -2486,7 +2517,7 @@ const printInsertStatement = (path, options, print) => {
   if ("columns" in node) {
     columns = concat([" ", path.call((p) => p.call(print, "Node"), "columns")]);
   }
-  let input = concat([" ", path.call((p) => p.call(print, "Node"), "input")]);
+  let input = concat([line, path.call((p) => p.call(print, "Node"), "input")]);
   let semicolon = "";
   if ("semicolon" in node) {
     semicolon = path.call((p) => p.call(print, "Node"), "semicolon");
@@ -2501,12 +2532,16 @@ const printInsertStatement = (path, options, print) => {
     }
   }
   return concat([
-    printSelf(path, options, print),
-    into,
-    target_name,
-    columns,
-    input,
-    semicolon,
+    group(
+      concat([
+        printSelf(path, options, print),
+        into,
+        target_name,
+        columns,
+        input,
+        semicolon,
+      ])
+    ),
     endOfStatement,
   ]);
 };
@@ -2566,15 +2601,19 @@ const printMergeStatement = (path, options, print) => {
     }
   }
   return concat([
-    printSelf(path, options, print),
-    target_name,
-    into,
-    using,
-    on,
-    line,
-    whens,
-    softline,
-    semicolon,
+    group(
+      concat([
+        printSelf(path, options, print),
+        target_name,
+        into,
+        using,
+        on,
+        line,
+        whens,
+        softline,
+        semicolon,
+      ])
+    ),
     endOfStatement,
   ]);
 };
@@ -2697,11 +2736,15 @@ const printDeleteStatement = (path, options, print) => {
     }
   }
   return concat([
-    printSelf(path, options, print),
-    from,
-    target_name,
-    where,
-    semicolon,
+    group(
+      concat([
+        printSelf(path, options, print),
+        from,
+        target_name,
+        where,
+        semicolon,
+      ])
+    ),
     endOfStatement,
   ]);
 };
@@ -2830,7 +2873,7 @@ const guess_node_type = (node) => {
     if ("partition_columns" in node) return "withPartitionColumnsClause";
     if ("with" in node && "func" in node) return "unnestWithOffset";
     if ("cast_from" in node) return "castArgument";
-    if ("nulls" in node) return "ignoreOrReplaceNulls";
+    if ("nulls" in node) return "ignoreOrRespectNulls";
     if ("func" in node) return "func";
     if ("extract_datepart" in node) return "extractArgument";
     if ("args" in node) return "namedParameter"; // (x int64)
