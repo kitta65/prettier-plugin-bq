@@ -22,6 +22,7 @@ sum() over (partition by a),
 sum() over (order by a),
 sum() over (partition by a order by b, c),
 sum() over (partition by a order by b, c rows between unbounded preceding and unbounded following),
+sum() over (partition by a order by b, c rows between unbounded preceding and current row),
 sum() over (rows 1 + 1 preceding),
 ;
 select arr[offset(1)], [1, 2], ARRAY[1,2],array<int64>[1],array<struct<array<int64>, x int64>>[struct([1])];

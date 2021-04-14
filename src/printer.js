@@ -2032,6 +2032,7 @@ const printFrameStartOrEnd = (path, options, print) => {
   const node = path.getValue();
   let preceding = "";
   if ("preceding" in node) {
+    node.preceding.Node.children.self.Node.token.literal = node.preceding.Node.children.self.Node.token.literal.toUpperCase();
     preceding = concat([
       " ",
       path.call((p) => p.call(print, "Node"), "preceding"),
@@ -2040,6 +2041,7 @@ const printFrameStartOrEnd = (path, options, print) => {
   }
   let following = "";
   if ("following" in node) {
+    node.following.Node.children.self.Node.token.literal = node.following.Node.children.self.Node.token.literal.toUpperCase();
     following = concat([
       " ",
       path.call((p) => p.call(print, "Node"), "following"),
