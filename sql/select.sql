@@ -47,6 +47,8 @@ WINDOW
 a AS (PARTITION BY col1),
 b AS (a ORDER BY col2),
 c AS b;
+select last_value(col3) OVER (c ROWS BETWEEN 2 PRECEDING AND 2 FOLLOWING)
+FROM table WINDOW a AS (PARTITION BY col1);
 select
 cast(abc as string),string_agg(distinct x, y ignore nulls order by z limit 100),array(select 1 union all select 2),
 NORMALIZE_AND_CASEFOLD(a, nFD),
@@ -87,4 +89,17 @@ select myfunc.current_timestamp(), current_timestamp();
 select date_diff(date '2020-01-01', date '2020-01-02', day),date_diff(date '2020-01-01', date '2020-01-02', week(monday)),
 date_trunc(date '2020-01-31', month);
 select aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa,bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb,count(*)
-FROM data group by aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa,bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+FROM data group by aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa,bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb;
+select all 1;select t.* except (col1), * except(col1, col2), * replace (col1 * 2 as col2), from t;
+select a,b,c,d,e,f,g,count(*)
+from data
+group by 1,2,3,4,5,6,7
+order by 1,2,3,4,5,6,7
+;
+select *
+from (
+  select *
+  from data
+  where dt=current_date() and flg1=0 and flg2 is null and flg3=1
+)
+;

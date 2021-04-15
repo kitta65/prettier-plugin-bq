@@ -169,8 +169,8 @@ const printSQL = (path, options, print) => {
       return printWindowFrameClause(path, options, print);
     case "windowClause":
       return printWindowClause(path, options, print);
-    case "windowExprs":
-      return printWindowExprs(path, options, print);
+    case "windowExpr":
+      return printWindowExpr(path, options, print);
     case "frameStartOrEnd":
       return printFrameStartOrEnd(path, options, print);
     case "xxxByExprs":
@@ -1321,7 +1321,7 @@ const printSelectStatement = (path, options, print) => {
     ]);
   }
   // select
-  const select = concat([
+  let select = concat([
     printSelf(path, options, print, config),
     as,
     distinct,
@@ -1333,6 +1333,9 @@ const printSelectStatement = (path, options, print) => {
       )
     ),
   ]);
+  if (node.exprs.NodeVec.length === 1) {
+    select = group(select);
+  }
   // from
   let from = "";
   if ("from" in node) {
@@ -1356,7 +1359,7 @@ const printSelectStatement = (path, options, print) => {
   if ("groupby" in node) {
     groupby = concat([
       line,
-      group(path.call((p) => p.call(print, "Node"), "groupby")),
+      path.call((p) => p.call(print, "Node"), "groupby"),
     ]);
   }
   // having
@@ -1372,7 +1375,7 @@ const printSelectStatement = (path, options, print) => {
   if ("orderby" in node) {
     orderby = concat([
       line,
-      group(path.call((p) => p.call(print, "Node"), "orderby")),
+      path.call((p) => p.call(print, "Node"), "orderby"),
     ]);
   }
   // limit
@@ -1533,6 +1536,15 @@ const printJoinType = (path, options, print) => {
 const printKeywordWithExpr = (path, options, print) => {
   const node = path.getValue();
   node.self.Node.token.literal = node.self.Node.token.literal.toUpperCase();
+  if (node.expr.Node.children.self.Node.token.literal === "(") {
+    return group(
+      concat([
+        printSelf(path, options, print),
+        " ",
+        path.call((p) => p.call(print, "Node"), "expr"),
+      ])
+    );
+  }
   return group(
     concat([
       printSelf(path, options, print),
@@ -1951,6 +1963,20 @@ const printXXXByExpr = (path, options, print) => {
 
 const printXXXByExprs = (path, options, print) => {
   const node = path.getValue();
+  const intOnlyFlg = node.exprs.NodeVec.every((x) =>
+    x.children.self.Node.token.literal.match(/^[0-9]+$/)
+  );
+  if (intOnlyFlg) {
+    return concat([
+      printSelf(path, options, print),
+      " ",
+      path.call((p) => p.call(print, "Node"), "by"),
+      concat([
+        " ",
+        path.call((p) => join(" ", p.map(print, "NodeVec")), "exprs"),
+      ]),
+    ]);
+  }
   return concat([
     printSelf(path, options, print),
     " ",
@@ -2025,6 +2051,13 @@ const printWindowFrameClause = (path, options, print) => {
 
 const printWindowClause = (path, options, print) => {
   const node = path.getValue();
+  if (node.window_exprs.NodeVec.length === 1) {
+    return concat([
+      printSelf(path, options, print),
+      " ",
+      path.call((p) => p.map(print, "NodeVec")[0], "window_exprs"),
+    ]);
+  }
   return concat([
     printSelf(path, options, print),
     indent(
@@ -2036,7 +2069,7 @@ const printWindowClause = (path, options, print) => {
   ]);
 };
 
-const printWindowExprs = (path, options, print) => {
+const printWindowExpr = (path, options, print) => {
   const node = path.getValue();
   const config = {
     printComma: false,
@@ -3078,7 +3111,7 @@ const guess_node_type = (node) => {
     if ("rparen" in node && "stmt" in node) return "groupedStmt"; // (select *)
     if ("then" in node && "stmt" in node) return "whenClause"; // (select *)
     if ("as" in node && "stmt" in node) return "withQuery"; // name as (select *)
-    if ("as" in node && "window" in node) return "windowExprs"; // name as (partition by col1)
+    if ("as" in node && "window" in node) return "windowExpr"; // name as (partition by col1)
     if ("queries" in node) return "withQueries"; // name as (select *)
     if ("rparen" in node) return "windowSpecification"; // (parttion by col1 order by col2)
     if ("arms" in node) return "caseExpr";
