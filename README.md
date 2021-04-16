@@ -9,3 +9,5 @@ japanise article is [here](https://qiita.com/dr666m1/items/48af411bf02ca65662a1)
 ```
 npm install --save-dev --save-exact prettier @dr666m1/prettier-plugin-bq
 ```
+
+
