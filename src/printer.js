@@ -983,7 +983,7 @@ const printIfStatement = (path, options, print) => {
         elseifs,
         else_,
         line,
-        path.call((p) => p.call(print, "Node"), "end"),
+        path.call((p) => join(" ", p.map(print, "NodeVec")), "end_if"),
         semicolon,
       ])
     ),
