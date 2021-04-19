@@ -1,7 +1,7 @@
 # prettier-plugin-bq
 `@dr666m1/prettier-plugin-bq` is a [prettier](https://prettier.io/) plugin for **standardSQL**, which is a dialect of BigQuery.
 
-This plugin is still a work in progress, so the behavior would change frequently.
+⚠️ This plugin is still a work in progress, so the behavior would change frequently.
 
 ## Install
 ```
@@ -25,4 +25,3 @@ because none of them satisfies me.
 
 ## Contributing
 I'm not ready to accept PR, but your feedback is always welcome.
-
