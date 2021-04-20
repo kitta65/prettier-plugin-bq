@@ -2400,8 +2400,8 @@ const printIdentAndType = (path, options, print) => {
   };
   node.type.Node.children.self.Node.token.literal = node.type.Node.children.self.Node.token.literal.toUpperCase();
   let ident = "";
-  if ("self" in node) {
-    ident = printSelf(path, options, print, config);
+  if (node.self) {
+    ident = concat([printSelf(path, options, print, config), " "]);
   }
   let comma = "";
   if ("comma" in node) {
@@ -2409,7 +2409,6 @@ const printIdentAndType = (path, options, print) => {
   }
   return concat([
     ident,
-    " ",
     path.call((p) => p.call(print, "Node"), "type"),
     comma,
   ]);
