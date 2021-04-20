@@ -213,7 +213,7 @@ const printSQL = (path, options, print) => {
       return printColumnDefinitions(path, options, print);
     case "alterStatement":
       return printAlterStatement(path, options, print);
-    case "addColumnCluase":
+    case "addColumnClause":
       return printAddColumnClause(path, options, print);
     case "dropColumnCluase":
       return printDropColumnClause(path, options, print);
@@ -391,7 +391,7 @@ const printAlterStatement = (path, options, print) => {
   }
   let set = "";
   if ("set" in node) {
-    set = concat([" ", path.call((p) => p.call(print, "Node"), "set")]);
+    set = concat([line, path.call((p) => p.call(print, "Node"), "set")]);
   }
   let options_ = "";
   if ("options" in node) {
@@ -431,12 +431,16 @@ const printAlterStatement = (path, options, print) => {
   return concat([
     group(
       concat([
-        printSelf(path, options, print),
-        materialized,
-        " ",
-        path.call((p) => p.call(print, "Node"), "what"),
-        " ",
-        path.call((p) => p.call(print, "Node"), "ident"),
+        group(
+          concat([
+            printSelf(path, options, print),
+            materialized,
+            " ",
+            path.call((p) => p.call(print, "Node"), "what"),
+            " ",
+            path.call((p) => p.call(print, "Node"), "ident"),
+          ])
+        ),
         set,
         options_,
         add_columns,
@@ -484,7 +488,10 @@ const printCreateSchemaStatement = (path, options, print) => {
   let options_ = "";
   if ("options" in node) {
     node.options.Node.children.self.Node.token.literal = node.options.Node.children.self.Node.token.literal.toUpperCase();
-    options = concat([" ", path.call((p) => p.call(print, "Node"), "options")]);
+    options = concat([
+      line,
+      group(path.call((p) => p.call(print, "Node"), "options")),
+    ]);
   }
   let semicolon = "";
   if ("semicolon" in node) {
@@ -500,16 +507,22 @@ const printCreateSchemaStatement = (path, options, print) => {
     }
   }
   return concat([
-    concat([
-      printSelf(path, options, print),
-      " ",
-      path.call((p) => p.call(print, "Node"), "what"),
-      ifNotExists,
-      " ",
-      path.call((p) => p.call(print, "Node"), "ident"),
-      options,
-      semicolon,
-    ]),
+    group(
+      concat([
+        group(
+          concat([
+            printSelf(path, options, print),
+            " ",
+            path.call((p) => p.call(print, "Node"), "what"),
+            ifNotExists,
+            " ",
+            path.call((p) => p.call(print, "Node"), "ident"),
+          ])
+        ),
+        options,
+        semicolon,
+      ])
+    ),
     endOfStatement,
   ]);
 };
@@ -538,7 +551,10 @@ const printCreateProcedureStatement = (path, options, print) => {
   let options_ = "";
   if ("options" in node) {
     node.options.Node.children.self.Node.token.literal = node.options.Node.children.self.Node.token.literal.toUpperCase();
-    options = concat([" ", path.call((p) => p.call(print, "Node"), "options")]);
+    options = concat([
+      line,
+      group(path.call((p) => p.call(print, "Node"), "options")),
+    ]);
   }
   let semicolon = "";
   if ("semicolon" in node) {
@@ -554,23 +570,25 @@ const printCreateProcedureStatement = (path, options, print) => {
     }
   }
   return concat([
-    concat([
-      group(
-        concat([
-          printSelf(path, options, print),
-          " ",
-          path.call((p) => p.call(print, "Node"), "what"),
-          ifNotExists,
-          " ",
-          path.call((p) => p.call(print, "Node"), "ident"),
-          path.call((p) => p.call(print, "Node"), "group"),
-          options,
-        ])
-      ),
-      line,
-      path.call((p) => p.call(print, "Node"), "stmt"),
-      semicolon,
-    ]),
+    group(
+      concat([
+        group(
+          concat([
+            printSelf(path, options, print),
+            " ",
+            path.call((p) => p.call(print, "Node"), "what"),
+            ifNotExists,
+            " ",
+            path.call((p) => p.call(print, "Node"), "ident"),
+            path.call((p) => p.call(print, "Node"), "group"),
+          ])
+        ),
+        options,
+        line,
+        path.call((p) => p.call(print, "Node"), "stmt"),
+        semicolon,
+      ])
+    ),
     endOfStatement,
   ]);
 };
@@ -597,6 +615,7 @@ const printSchema = (path, options, print) => {
   const node = path.getValue();
   let options_ = "";
   if ("options" in node) {
+    node.options.Node.children.self.Node.token.literal = node.options.Node.children.self.Node.token.literal.toUpperCase();
     options = concat([" ", path.call((p) => p.call(print, "Node"), "options")]);
   }
   let notNull = "";
@@ -679,7 +698,7 @@ const printCreateTableStatement = (path, options, print) => {
   if ("partitionby" in node) {
     partitionby = concat([
       line,
-      path.call((p) => p.call(print, "Node"), "partitionby"),
+      group(path.call((p) => p.call(print, "Node"), "partitionby")),
     ]);
   }
   let clusterby = "";
@@ -687,14 +706,14 @@ const printCreateTableStatement = (path, options, print) => {
     node.clusterby.Node.children.self.Node.token.literal = node.clusterby.Node.children.self.Node.token.literal.toUpperCase();
     clusterby = concat([
       line,
-      path.call((p) => p.call(print, "Node"), "clusterby"),
+      group(path.call((p) => p.call(print, "Node"), "clusterby")),
     ]);
   }
   let withPartitionColumns = "";
   if ("with_partition_columns" in node) {
     withPartitionColumns = concat([
       line,
-      path.call((p) => p.call(print, "Node"), "with_partition_columns"),
+      group(path.call((p) => p.call(print, "Node"), "with_partition_columns")),
     ]);
   }
   let options_ = "";
@@ -707,7 +726,7 @@ const printCreateTableStatement = (path, options, print) => {
   }
   let as = "";
   if ("as" in node) {
-    as = concat([" ", path.call((p) => p.call(print, "Node"), "as")]);
+    as = concat([line, group(path.call((p) => p.call(print, "Node"), "as"))]);
   }
   let semicolon = "";
   if ("semicolon" in node) {
@@ -725,17 +744,21 @@ const printCreateTableStatement = (path, options, print) => {
   return concat([
     group(
       concat([
-        printSelf(path, options, print, config),
-        orReplace,
-        temporary,
-        materialized,
-        external,
-        " ",
-        path.call((p) => p.call(print, "Node"), "what"),
-        ifNotExists,
-        " ",
-        path.call((p) => p.call(print, "Node"), "ident"),
-        columnSchemaGroup,
+        group(
+          concat([
+            printSelf(path, options, print, config),
+            orReplace,
+            temporary,
+            materialized,
+            external,
+            " ",
+            path.call((p) => p.call(print, "Node"), "what"),
+            ifNotExists,
+            " ",
+            path.call((p) => p.call(print, "Node"), "ident"),
+            columnSchemaGroup,
+          ])
+        ),
         partitionby,
         clusterby,
         withPartitionColumns,
@@ -765,10 +788,14 @@ const printCallStatement = (path, options, print) => {
     }
   }
   return concat([
-    printSelf(path, options, print),
-    " ",
-    path.call((p) => p.call(print, "Node"), "expr"),
-    semicolon,
+    group(
+      concat([
+        printSelf(path, options, print),
+        " ",
+        path.call((p) => p.call(print, "Node"), "expr"),
+        semicolon,
+      ])
+    ),
     endOfStatement,
   ]);
 };
@@ -796,9 +823,7 @@ const printRaiseStatement = (path, options, print) => {
     }
   }
   return concat([
-    printSelf(path, options, print),
-    using,
-    semicolon,
+    group(concat([printSelf(path, options, print), using, semicolon])),
     endOfStatement,
   ]);
 };
@@ -919,12 +944,10 @@ const printElseifClause = (path, options, print) => {
 const printKeywordWithStmt = (path, options, print) => {
   const node = path.getValue();
   node.stmt.Node.children.notRoot = true;
-  return group(
-    concat([
-      printSelf(path, options, print),
-      indent(concat([line, path.call((p) => p.call(print, "Node"), "stmt")])),
-    ])
-  );
+  return concat([
+    printSelf(path, options, print),
+    indent(concat([line, path.call((p) => p.call(print, "Node"), "stmt")])),
+  ]);
 };
 
 const printKeywordWithStmts = (path, options, print) => {
@@ -1069,7 +1092,10 @@ const printExecuteStatement = (path, options, print) => {
   node.immediate.Node.children.self.Node.token.literal = node.immediate.Node.children.self.Node.token.literal.toUpperCase();
   let using = "";
   if ("using" in node) {
-    using = concat([" ", path.call((p) => p.call(print, "Node"), "using")]);
+    using = concat([
+      line,
+      group(path.call((p) => p.call(print, "Node"), "using")),
+    ]);
   }
   let semicolon = "";
   if ("semicolon" in node) {
@@ -1085,13 +1111,21 @@ const printExecuteStatement = (path, options, print) => {
     }
   }
   return concat([
-    printSelf(path, options, print),
-    " ",
-    path.call((p) => p.call(print, "Node"), "immediate"),
-    " ",
-    path.call((p) => p.call(print, "Node"), "sql_expr"),
-    using,
-    semicolon,
+    group(
+      concat([
+        group(
+          concat([
+            printSelf(path, options, print),
+            " ",
+            path.call((p) => p.call(print, "Node"), "immediate"),
+            " ",
+            path.call((p) => p.call(print, "Node"), "sql_expr"),
+          ])
+        ),
+        using,
+        semicolon,
+      ])
+    ),
     endOfStatement,
   ]);
 };
@@ -1133,10 +1167,9 @@ const printDeclareStatement = (path, options, print) => {
   }
   let default_ = "";
   if ("default" in node) {
-    default_ = concat([
-      " ",
-      path.call((p) => p.call(print, "Node"), "default"),
-    ]);
+    default_ = group(
+      concat([line, path.call((p) => p.call(print, "Node"), "default")])
+    );
   }
   let semicolon = "";
   if ("semicolon" in node) {
@@ -1152,12 +1185,16 @@ const printDeclareStatement = (path, options, print) => {
     }
   }
   return concat([
-    printSelf(path, options, print),
-    " ",
-    path.call((p) => join(" ", p.map(print, "NodeVec")), "idents"),
-    variableType,
-    default_,
-    semicolon,
+    group(
+      concat([
+        printSelf(path, options, print),
+        " ",
+        path.call((p) => join(" ", p.map(print, "NodeVec")), "idents"),
+        variableType,
+        default_,
+        semicolon,
+      ])
+    ),
     endOfStatement,
   ]);
 };
@@ -1230,6 +1267,7 @@ const printCreateFunctionStatement = (path, options, print) => {
   // OPTIONS
   let options_ = "";
   if ("options" in node) {
+    node.options.Node.children.self.Node.token.literal = node.options.Node.children.self.Node.token.literal.toUpperCase();
     options_ = concat([
       " ",
       path.call((p) => p.call(print, "Node"), "options"),
@@ -1339,6 +1377,7 @@ const printSelectStatement = (path, options, print) => {
   // from
   let from = "";
   if ("from" in node) {
+    node.from.Node.children.expr.Node.children.childOfFrom = true;
     from = concat([
       line,
       group(path.call((p) => p.call(print, "Node"), "from")),
@@ -1352,7 +1391,11 @@ const printSelectStatement = (path, options, print) => {
   // where
   let where = "";
   if ("where" in node) {
-    where = concat([line, path.call((p) => p.call(print, "Node"), "where")]);
+    node.where.Node.children.expr.Node.children.childOfWhere = true;
+    where = concat([
+      line,
+      group(path.call((p) => p.call(print, "Node"), "where")),
+    ]);
   }
   // group by
   let groupby = "";
@@ -1454,6 +1497,13 @@ const printWithQuery = (path, options, print) => {
 
 const printWithQueries = (path, options, print) => {
   const node = path.getValue();
+  if (node.queries.NodeVec.length === 1) {
+    return concat([
+      printSelf(path, options, print),
+      " ",
+      path.call((p) => p.map(print, "NodeVec")[0], "queries"),
+    ]);
+  }
   return concat([
     printSelf(path, options, print),
     indent(
@@ -1536,37 +1586,34 @@ const printJoinType = (path, options, print) => {
 const printKeywordWithExpr = (path, options, print) => {
   const node = path.getValue();
   node.self.Node.token.literal = node.self.Node.token.literal.toUpperCase();
-  if (node.expr.Node.children.self.Node.token.literal === "(") {
-    return group(
-      concat([
-        printSelf(path, options, print),
-        " ",
-        path.call((p) => p.call(print, "Node"), "expr"),
-      ])
-    );
-  }
-  return group(
-    concat([
+  if (
+    node.expr.Node.children.self.Node.token.literal === "(" ||
+    node.expr.Node.children.self.Node.token.literal.match(/^'''/)
+  ) {
+    return concat([
       printSelf(path, options, print),
-      indent(concat([line, path.call((p) => p.call(print, "Node"), "expr")])),
-    ])
-  );
+      " ",
+      path.call((p) => p.call(print, "Node"), "expr"),
+    ]);
+  }
+  return concat([
+    printSelf(path, options, print),
+    indent(concat([line, path.call((p) => p.call(print, "Node"), "expr")])),
+  ]);
 };
 
 const printKeywordWithExprs = (path, options, print) => {
   const node = path.getValue();
   node.self.Node.token.literal = node.self.Node.token.literal.toUpperCase();
-  return group(
-    concat([
-      printSelf(path, options, print),
-      indent(
-        concat([
-          line,
-          path.call((p) => join(line, p.map(print, "NodeVec")), "exprs"),
-        ])
-      ),
-    ])
-  );
+  return concat([
+    printSelf(path, options, print),
+    indent(
+      concat([
+        line,
+        path.call((p) => join(line, p.map(print, "NodeVec")), "exprs"),
+      ])
+    ),
+  ]);
 };
 
 const printKeywordWithGroupedExprs = (path, options, print) => {
@@ -1791,7 +1838,7 @@ const printBinaryOperator = (path, options, print) => {
     }
   }
   const noSpaceOperators = ["."];
-  const leftLineOperators = ["OR", "AND"];
+  const leftLineOperators = ["OR", "AND", "JOIN"];
   const leftSoftLineOperators = [","];
   let lsep = " ";
   let rsep = " ";
@@ -1801,11 +1848,21 @@ const printBinaryOperator = (path, options, print) => {
   } else if (
     leftLineOperators.indexOf(node.self.Node.token.literal.toUpperCase()) !== -1
   ) {
-    lsep = line;
+    if (node.childOfFrom || node.childOfWhere) {
+      lsep = hardline;
+    } else {
+      lsep = line;
+    }
   } else if (
-    leftSoftLineOperators.indexOf(node.self.Node.token.literal) !== -1
+    leftSoftLineOperators.indexOf(
+      node.self.Node.token.literal.toUpperCase()
+    ) !== -1
   ) {
-    lsep = softline;
+    if (node.childOfFrom || node.childOfWhere) {
+      lsep = hardline;
+    } else {
+      lsep = softline;
+    }
   }
   let operator;
   if (node.self.Node.token.literal.toUpperCase() === "IS") {
@@ -1834,7 +1891,7 @@ const printBinaryOperator = (path, options, print) => {
   }
   let on = "";
   if ("on" in node) {
-    on = concat([" ", path.call((p) => p.call(print, "Node"), "on")]);
+    on = concat([" ", group(path.call((p) => p.call(print, "Node"), "on"))]);
   }
   let using = "";
   if ("using" in node) {
@@ -1939,13 +1996,15 @@ const printCaseExpr = (path, options, print) => {
         concat([
           line,
           path.call((p) => join(line, p.map(print, "NodeVec")), "arms"),
-          " ",
-          path.call((p) => p.call(print, "Node"), "end"),
-          order,
-          as,
-          comma,
         ])
       ),
+      concat([
+        line,
+        path.call((p) => p.call(print, "Node"), "end"),
+        order,
+        as,
+        comma,
+      ]),
     ])
   );
 };
@@ -1956,8 +2015,8 @@ const printXXXByExpr = (path, options, print) => {
     printSelf(path, options, print),
     " ",
     path.call((p) => p.call(print, "Node"), "by"),
-    " ",
-    path.call((p) => p.call(print, "Node"), "expr"),
+    line,
+    indent(path.call((p) => p.call(print, "Node"), "expr")),
   ]);
 };
 
@@ -2616,8 +2675,16 @@ const printMergeStatement = (path, options, print) => {
   if ("into" in node) {
     into = concat([" ", path.call((p) => p.call(print, "Node"), "into")]);
   }
-  const using = concat([" ", path.call((p) => p.call(print, "Node"), "using")]);
-  const on = concat([" ", path.call((p) => p.call(print, "Node"), "on")]);
+  const using_on = concat([
+    line,
+    group(
+      concat([
+        path.call((p) => p.call(print, "Node"), "using"),
+        line,
+        path.call((p) => p.call(print, "Node"), "on"),
+      ])
+    ),
+  ]);
   const whens = path.call((p) => join(line, p.map(print, "NodeVec")), "whens");
   let semicolon = "";
   if ("semicolon" in node) {
@@ -2635,11 +2702,8 @@ const printMergeStatement = (path, options, print) => {
   return concat([
     group(
       concat([
-        printSelf(path, options, print),
-        target_name,
-        into,
-        using,
-        on,
+        group(concat([printSelf(path, options, print), target_name, into])),
+        using_on,
         line,
         whens,
         softline,
@@ -2698,14 +2762,26 @@ const printUpdateStatement = (path, options, print) => {
       path.call((p) => p.call(print, "Node"), "target_name"),
     ]);
   }
-  const set = concat([line, path.call((p) => p.call(print, "Node"), "set")]);
+  let set = path.call((p) => p.call(print, "Node"), "set");
+  if (node.set.Node.children.exprs.NodeVec.length === 1) {
+    set = group(set);
+  }
+  set = concat([line, set]);
   let from = "";
   if ("from" in node) {
-    from = concat([line, path.call((p) => p.call(print, "Node"), "from")]);
+    node.from.Node.children.expr.Node.children.childOfFrom = true;
+    from = concat([
+      line,
+      group(path.call((p) => p.call(print, "Node"), "from")),
+    ]);
   }
   let where = "";
   if ("where" in node) {
-    where = concat([line, path.call((p) => p.call(print, "Node"), "where")]);
+    node.where.Node.children.expr.Node.children.childOfWhere = true;
+    where = concat([
+      line,
+      group(path.call((p) => p.call(print, "Node"), "where")),
+    ]);
   }
   let semicolon = "";
   if ("semicolon" in node) {
@@ -2752,6 +2828,7 @@ const printDeleteStatement = (path, options, print) => {
   }
   let where = "";
   if ("where" in node) {
+    node.where.Node.children.expr.Node.children.childOfWhere = true;
     where = concat([" ", path.call((p) => p.call(print, "Node"), "where")]);
   }
   let semicolon = "";
@@ -2882,15 +2959,15 @@ const guess_node_type = (node) => {
   if ("children" in node) {
     return "parent";
   } else {
-    if ("system" in node) return "tablesampleClause";
-    if ("percent" in node) return "tablesamplePercent";
+    if ("system" in node) return "tablesampleClause"; // TABLESAMPLE SYSTEM (20 PERCENT)
+    if ("percent" in node) return "tablesamplePercent"; // 20 PERCENT
     if (
       "self" in node &&
       "Node" in node.self &&
       node.self.Node.token.literal.toUpperCase() === "ADD" &&
       "column" in node
     ) {
-      return "addColumnCluase";
+      return "addColumnClause";
     }
     if (
       "self" in node &&
