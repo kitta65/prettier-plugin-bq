@@ -1400,10 +1400,11 @@ const printSelectStatement = (path, options, print) => {
   // group by
   let groupby = "";
   if ("groupby" in node) {
-    groupby = concat([
-      line,
-      path.call((p) => p.call(print, "Node"), "groupby"),
-    ]);
+    groupby = path.call((p) => p.call(print, "Node"), "groupby");
+    if (node.groupby.Node.children.exprs.NodeVec.length === 1) {
+      groupby = group(groupby);
+    }
+    groupby = concat([line, groupby]);
   }
   // having
   let having = "";
@@ -1416,10 +1417,11 @@ const printSelectStatement = (path, options, print) => {
   // order by
   let orderby = "";
   if ("orderby" in node) {
-    orderby = concat([
-      line,
-      path.call((p) => p.call(print, "Node"), "orderby"),
-    ]);
+    orderby = path.call((p) => p.call(print, "Node"), "orderby");
+    if (node.orderby.Node.children.exprs.NodeVec.length === 1) {
+      orderby = group(orderby);
+    }
+    orderby = concat([line, orderby]);
   }
   // limit
   let limit = "";
@@ -2494,10 +2496,6 @@ const printBetweenOperator = (path, options, print) => {
   }
   const min = path.call((p) => p.map(print, "NodeVec")[0], "right");
   const max = path.call((p) => p.map(print, "NodeVec")[1], "right");
-  let comma = "";
-  if ("comma" in node) {
-    comma = path.call((p) => p.call(print, "Node"), "comma");
-  }
   let order = "";
   if ("order" in node) {
     order = concat([" ", path.call((p) => p.call(print, "Node"), "order")]);
@@ -2506,21 +2504,31 @@ const printBetweenOperator = (path, options, print) => {
   if ("as" in node) {
     as = concat([" ", path.call((p) => p.call(print, "Node"), "as")]);
   }
-  return concat([
-    path.call((p) => p.call(print, "Node"), "left"),
-    not,
-    " ",
-    printSelf(path, options, print, config),
-    " ",
-    min,
-    " ",
-    path.call((p) => p.call(print, "Node"), "and"),
-    " ",
-    max,
-    order,
-    as,
-    comma,
-  ]);
+  let comma = "";
+  if ("comma" in node) {
+    comma = path.call((p) => p.call(print, "Node"), "comma");
+  }
+  return group(
+    concat([
+      path.call((p) => p.call(print, "Node"), "left"),
+      not,
+      " ",
+      printSelf(path, options, print, config),
+      indent(
+        concat([
+          line,
+          min,
+          line,
+          path.call((p) => p.call(print, "Node"), "and"),
+          " ",
+          max,
+          order,
+          as,
+          comma,
+        ])
+      ),
+    ])
+  );
 };
 
 const printSetOperator = (path, options, print) => {
