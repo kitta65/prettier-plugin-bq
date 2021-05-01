@@ -2,3 +2,4 @@ node_modules
 result
 work/*
 !work/work.js
+dist/
