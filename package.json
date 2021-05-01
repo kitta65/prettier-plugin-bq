@@ -2,7 +2,7 @@
   "name": "@dr666m1/prettier-plugin-bq",
   "version": "0.1.1",
   "description": "",
-  "main": "src/index.js",
+  "main": "dist/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "sample": "mkdir -p ./result && cp ./sql/* ./result && ./node_modules/.bin/prettier --write --plugin . ./result"

@@ -12,7 +12,7 @@ const languages = [
 
 const parsers = {
   "sql-parse": {
-    parse: (text) => parser.parse(text),
+    parse: (text: string) => parser.parse(text),
     astFormat: "sql-ast",
   },
 };
