@@ -1,6 +1,6 @@
 "use strict";
 
-const reservedKeywords = [
+export const reservedKeywords = [
   "ALL",
   "AND",
   "ANY",
@@ -98,7 +98,7 @@ const reservedKeywords = [
   "WITHIN",
 ];
 
-const globalFunctions = [
+export const globalFunctions = [
   // aggregate functions
   "ANY_VALUE",
   "ARRAY_AGG",
@@ -387,6 +387,7 @@ const globalFunctions = [
   "NULLIF",
 ];
 
+/*
 const hllCountFunctions = [
   // HLL functions
   "INIT",
@@ -394,7 +395,6 @@ const hllCountFunctions = [
   "MERGE_PARTIAL",
   "EXTRACT",
 ];
-
 const keysFunctions = [
   // AEAD encryption functions
   "NEW_KEYSET",
@@ -425,9 +425,5 @@ const netFunctions = [
   "PUBLIC_SUFFIX",
   "REG_DOMAIN",
 ];
+*/
 
-module.exports = {
-  reservedKeywords,
-  globalFunctions,
-  netFunctions,
-};
