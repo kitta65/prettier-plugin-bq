@@ -1,4 +1,3 @@
-"use strict";
 import parser from "@dr666m1/bq2cst";
 import printSQL from "./printer";
 
