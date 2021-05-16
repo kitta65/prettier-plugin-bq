@@ -37,14 +37,14 @@ export const printSQL = (path: FastPath, options: Object, print: (path: FastPath
         // start of statement
         let startNode = node[i + 1];
         while (
-          ["UNION", "INTERSECT", "EXCEPT", "("].indexOf(
+          ["UNION", "INTERSECT", "EXCEPT"].indexOf(
             startNode.token.literal.toUpperCase()
           ) !== -1
         ) {
           if ("left" in startNode.children) {
-            startNode = startNode.children.left;
+            startNode = startNode.children.left.Node;
           } else if ("stmt" in startNode.children) {
-            startNode = startNode.stmt.Node.children;
+            startNode = startNode.children.stmt.Node;
           } else {
             return JSON.stringify(node);
           }
