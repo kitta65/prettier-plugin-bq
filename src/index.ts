@@ -1,5 +1,5 @@
 import parser from "@dr666m1/bq2cst";
-import printSQL from "./printer";
+import { printSQL } from "./printer";
 
 const languages = [
   {
@@ -27,5 +27,3 @@ module.exports = {
   parsers,
   printers,
 };
-
-

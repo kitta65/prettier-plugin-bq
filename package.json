@@ -4,8 +4,8 @@
   "description": "",
   "main": "dist/index.js",
   "scripts": {
-    "test": "./node_modules/.bin/jest",
-    "sample": "mkdir -p ./result && cp ./sql/* ./result && ./node_modules/.bin/prettier --write --plugin . ./result"
+    "test": "npx tsc && ./node_modules/.bin/jest",
+    "sample": "npx tsc && mkdir -p ./result && cp ./sql/* ./result && ./node_modules/.bin/prettier --write --plugin . ./result"
   },
   "keywords": [],
   "author": "dr666m1 <skndr666m1@gmail.com>",
@@ -21,6 +21,6 @@
   },
   "dependencies": {
     "@dr666m1/bq2cst": "^0.1.0",
-    "prettier": "^2.2.1"
+    "prettier": "^2.3.0"
   }
 }

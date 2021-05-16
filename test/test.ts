@@ -20,7 +20,7 @@ Query: ${sql}
   }
 };
 
-async function query(sql: string) {
+const query = async (sql: string) => {
   const client = new BigQuery();
   const options = {
     query: sql,
@@ -36,7 +36,7 @@ Query: ${sql}
   await job.getQueryResults();
 }
 
-async function assertResultDoesNotChange(sql: string) {
+const assertResultDoesNotChange = async (sql: string) => {
   const client = new BigQuery();
   // original sql
   const options = {
