@@ -25,16 +25,18 @@ type Token = {
 
 type Node = {
   token: Token | null;
-  children: { [key: string]: Node | Node[] };
+  children: { [key: string]: {Node: Node} | {NodeVec: Node[]} };
   NodeType: string;
 };
 
 export const printSQL = (
   path: FastPath,
-  options: Object,
+  _: Object, // options
   print: (path: FastPath) => Doc
 ): Doc => {
+  // NOTE the type of `node` is any!
   const node = path.getValue();
+
   if (Array.isArray(node)) {
     for (let i = 0; i < node.length - 2; i++) {
       if ("semicolon" in node[i].children) {
@@ -74,16 +76,11 @@ export const printSQL = (
     }
     return concat(path.map(print));
   }
-  if ("children" in node) {
-    node.children.node_type = node.node_type;
-    node.children.token = node.token;
-    return path.call(print, "children");
-  }
   switch (node.node_type) {
     case "SelectStatement":
-      return printSelf(path, options, print);
+      return printSelf(path, print);
     default:
-      return printSelf(path, options, print);
+      return printSelf(path, print);
   }
 };
 
@@ -97,7 +94,6 @@ const call = (
 
 const printSelf = (
   path: FastPath,
-  options: Object,
   print: (path: FastPath) => Doc
 ): Doc => {
   const node = path.getValue();
@@ -135,31 +131,31 @@ const printSelf = (
   // except
   let except: Doc = "";
   if ("except" in node) {
-    except = concat([" ", path.call((p) => p.call(print, "Node"), "except")]);
+    except = concat([" ", call(path, "except", print)]);
   }
   // replace
   let replace: Doc = "";
   if ("replace" in node) {
     node.replace.Node.token.literal =
       node.replace.Node.token.literal.toUpperCase();
-    replace = concat([" ", path.call((p) => p.call(print, "Node"), "replace")]);
+    replace = concat([" ", call(path, "replace", print)]);
   }
   // order
   let order: Doc = "";
   let null_order: Doc = "";
   if ("order" in node) {
-    order = concat([" ", path.call((p) => p.call(print, "Node"), "order")]);
+    order = concat([" ", call(path, "order", print)]);
   }
   if ("null_order" in node) {
     null_order = concat([
       " ",
-      path.call((p) => p.call(print, "Node"), "null_order"),
+      call(path, "null_order", print),
     ]);
   }
   // comma
   let comma: Doc = "";
   if ("comma" in node) {
-    comma = path.call((p) => p.call(print, "Node"), "comma");
+    comma = call(path, "comma", print);
   }
   // following_comments
   let following_comments: Doc = "";
@@ -176,7 +172,7 @@ const printSelf = (
   // alias
   let alias: Doc[] = [""];
   if ("as" in node) {
-    alias = [" ", path.call((p) => p.call(print, "Node"), "as")];
+    alias = [" ", call(path, "as", print)];
   }
   return concat([
     leading_comments,
