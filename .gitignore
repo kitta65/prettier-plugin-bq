@@ -1,5 +1,10 @@
+dist/
 node_modules
 result
+sql/*
+!sql/ddl.sql
+!sql/dml.sql
+!sql/script.sql
+!sql/select.sql
 work/*
 !work/work.js
-dist/
