@@ -13,7 +13,9 @@ const {
     lineSuffix,
     //lineSuffixBoundary,
     //literalline,
-    //literallineWithoutBreakParent,
+    // TODO update @types/prettier
+    // @ts-ignore
+    literallineWithoutBreakParent,
     //softline,
   },
 } = doc;
@@ -112,10 +114,10 @@ class Node {
         res,
         concat(
           leading_comments.NodeVec.map((x) =>
-            concat([x.token!.literal, hardline])
+            concat([x.token!.literal, literallineWithoutBreakParent])
           )
         ),
-      ]); // literallineWithoutBreakParent may be better
+      ]);
     }
     // self
     let self = this.node.token;
