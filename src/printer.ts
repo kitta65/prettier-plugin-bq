@@ -1,4 +1,4 @@
-import { reservedKeywords, globalFunctions } from "./keywords";
+//import { reservedKeywords, globalFunctions } from "./keywords";
 import { doc } from "prettier";
 import type { Doc, FastPath } from "prettier";
 
@@ -13,7 +13,6 @@ const {
     lineSuffix,
     //lineSuffixBoundary,
     //literalline,
-    //literallineWithoutBreakParent,
     //softline,
   },
 } = doc;
@@ -32,6 +31,7 @@ type RawNode = {
   node_type: string;
   emptyLines?: number;
   notRoot?: Boolean;
+  done?: Boolean;
 };
 
 class Node {
@@ -47,13 +47,30 @@ class Node {
      */
     this.node = path.getValue();
   }
-  assertKey(key: string) {
+  assertKey(key: string, printedOk = false) {
     if (!(key in this.node.children)) {
       throw new Error(`${key} was not found: ${JSON.stringify(this.node)}`);
     }
+    if (!printedOk) {
+      if ("NodeVec" in this.node.children[key]) {
+        const child = this.node.children[key] as { NodeVec: RawNode[] };
+        if (child.NodeVec.some((x: RawNode) => x.done)) {
+          throw new Error(
+            `${key} has already been preinted: ${JSON.stringify(this.node)}`
+          );
+        }
+      } else {
+        const child = this.node.children[key] as { Node: RawNode };
+        if (child.Node.done) {
+          throw new Error(
+            `${key} has already been preinted: ${JSON.stringify(this.node)}`
+          );
+        }
+      }
+    }
   }
   lengthOf(key: string) {
-    this.assertKey(key);
+    this.assertKey(key, true);
     if ("Node" in this.node.children[key]) {
       throw new Error(
         `${key} is not array: ${JSON.stringify(this.node.children[key])}`
@@ -71,10 +88,13 @@ class Node {
   }
   printX(key: string, transform = (x: Doc) => x) {
     this.assertKey(key);
-    return this.path.call(
+    const res = this.path.call(
       (p) => p.call((p) => transform(p.call(this.printFunc, "Node")), key),
       "children"
     );
+    const child = this.node.children[key] as { Node: RawNode };
+    child.Node.done = true;
+    return res;
   }
   printXIfExists(key: string, transform = (x: Doc) => x) {
     try {
@@ -85,7 +105,7 @@ class Node {
   }
   printXs(key: string, sep: Doc, transform = (x: Doc) => x) {
     this.assertKey(key);
-    return this.path.call(
+    const res = this.path.call(
       (p) =>
         p.call(
           (p) => join(sep, p.map(this.printFunc, "NodeVec").map(transform)),
@@ -93,6 +113,9 @@ class Node {
         ),
       "children"
     );
+    const child = this.node.children[key] as { NodeVec: RawNode[] };
+    child.NodeVec.forEach((x: RawNode) => (x.done = true));
+    return res;
   }
   printXsIfExists(key: string, sep: Doc, transform = (x: Doc) => x) {
     try {
@@ -115,7 +138,7 @@ class Node {
             concat([x.token!.literal, hardline])
           )
         ),
-      ]); // literallineWithoutBreakParent may be better
+      ]);
     }
     // self
     let self = this.node.token;
