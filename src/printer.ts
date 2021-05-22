@@ -62,6 +62,7 @@ class Node {
     if (printedOk || !res) {
       return res;
     }
+    // @ts-ignore
     if ("NodeVec" in this.node.children[key]) {
       const child = this.node.children[key] as { NodeVec: RawNode[] };
       return child.NodeVec.every((x) => !x.done);
@@ -72,6 +73,7 @@ class Node {
   }
   lengthOf(key: string) {
     this.assertKey(key, true);
+    // @ts-ignore
     if ("Node" in this.node.children[key]) {
       throw new Error(
         `${key} is not array: ${JSON.stringify(this.node.children[key])}`
@@ -168,8 +170,10 @@ export const printSQL = (
 
   if (Array.isArray(node)) {
     for (let i = 0; i < node.length - 1; i++) {
+      // @ts-ignore
       if ("semicolon" in node[i].children) {
         // end of statement
+        // @ts-ignore
         const semicolon = node[i].children.semicolon as { Node: RawNode };
         let endNode = semicolon.Node;
         const endToken = endNode.token;
@@ -184,6 +188,7 @@ export const printSQL = (
             NodeVec: RawNode[];
           };
           const len = following_comments.NodeVec.length;
+          // @ts-ignore
           endNode = following_comments.NodeVec[len - 1];
           const endLiteral = endToken.literal;
           let newLines = endLiteral.match(/\n/g);
@@ -193,11 +198,14 @@ export const printSQL = (
         }
         // start of statement
         let startNode = node[i + 1];
+        // @ts-ignore
         while (startNode.node_type === "SetOperator") {
+        // @ts-ignore
           const left = startNode.children.left as { Node: RawNode };
           startNode = left.Node;
         }
         let startLine;
+        // @ts-ignore
         let startToken = startNode.token;
         if (startToken) {
           startLine = startToken.line;
@@ -205,10 +213,13 @@ export const printSQL = (
           // EOF
           startLine = endLine + 1;
         }
+        // @ts-ignore
         if ("leading_comments" in startNode.children) {
+          // @ts-ignore
           const leading_comments = startNode.children.leading_comments as {
             NodeVec: RawNode[];
           };
+          // @ts-ignore
           startToken = leading_comments.NodeVec[0].token;
           if (!startToken) {
             throw new Error(
@@ -217,6 +228,7 @@ export const printSQL = (
           }
           startLine = startToken.line;
         }
+        // @ts-ignore
         node[i].emptyLines = startLine - endLine - 1; // >= 0
       }
     }
