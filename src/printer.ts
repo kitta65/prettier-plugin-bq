@@ -1,86 +1,41 @@
 //import { reservedKeywords, globalFunctions } from "./keywords";
 import { doc } from "prettier";
 import type { Doc, FastPath } from "prettier";
+import * as N from "./nodes";
 
 const {
   builders: {
     concat, // TODO remove
-    group,
+    //group,
     hardline,
-    indent,
+    //indent,
     join,
-    line,
-    lineSuffix,
+    //line,
+    //lineSuffix,
     //lineSuffixBoundary,
     //literalline,
     //softline,
   },
 } = doc;
 
-type Token = {
-  line: number;
-  column: number;
-  literal: string;
-};
-
 type PrintFunc = (path: FastPath) => Doc;
 
-type RawNode = {
-  token: Token | null;
-  children: { [key: string]: { Node: RawNode } | { NodeVec: RawNode[] } };
-  node_type: string;
-  emptyLines?: number;
-  notRoot?: Boolean;
-  done?: Boolean;
-};
 
-class Node {
-  private node: RawNode;
+class Printer<T extends N.BaseNode> {
   constructor(
+    // Children<T> is needed because `keyof T["children"]` throws error
+    // https://github.com/microsoft/TypeScript/issues/36631
     private readonly path: FastPath,
-    private readonly printFunc: PrintFunc
-  ) {
-    /**
-     * NOTE
-     * you can assume type of `path.getValue()` to be `Node`
-     * because `Node[]` has been splitted in `printSQL`.
-     */
-    this.node = path.getValue();
-  }
-  assertKey(key: string, printedOk = false) {
-    if (!this.hasKey(key, printedOk)) {
-      if (this.hasKey(key, true)) {
-        throw new Error(`${key} was not found: ${JSON.stringify(this.node)}`);
-      }
-      throw new Error(
-        `${key} has already been printed: ${JSON.stringify(this.node)}`
-      );
+    private readonly printFunc: (path: FastPath) => Doc,
+    private readonly node: T,
+    private readonly children: N.Children<T>
+  ) {}
+  lengthOfX(key: N.NodeVecKeyof<N.Children<T>>) {
+    const nodeVec = this.children[key];
+    if (N.isNodeVec(nodeVec)) {
+      return nodeVec.NodeVec;
     }
-  }
-  hasKey(key: string, printedOk = false) {
-    const res = key in this.node.children;
-    if (printedOk || !res) {
-      return res;
-    }
-    // @ts-ignore
-    if ("NodeVec" in this.node.children[key]) {
-      const child = this.node.children[key] as { NodeVec: RawNode[] };
-      return child.NodeVec.every((x) => !x.done);
-    } else {
-      const child = this.node.children[key] as { Node: RawNode };
-      return !child.Node.done;
-    }
-  }
-  lengthOf(key: string) {
-    this.assertKey(key, true);
-    // @ts-ignore
-    if ("Node" in this.node.children[key]) {
-      throw new Error(
-        `${key} is not array: ${JSON.stringify(this.node.children[key])}`
-      );
-    }
-    const nodeVec = this.node.children[key] as { NodeVec: RawNode[] };
-    return nodeVec.NodeVec.length;
+    throw new Error();
   }
   printNewLine() {
     if (this.node.notRoot) return "";
@@ -89,205 +44,149 @@ class Node {
     }
     return hardline;
   }
-  printX(key: string, transform = (x: Doc) => x) {
-    this.assertKey(key);
-    const res = this.path.call(
-      (p) => p.call((p) => transform(p.call(this.printFunc, "Node")), key),
-      "children"
-    );
-    const child = this.node.children[key] as { Node: RawNode };
-    child.Node.done = true;
-    return res;
-  }
-  printXIfExists(key: string, transform = (x: Doc) => x) {
-    try {
-      return this.printX(key, transform);
-    } catch (e) {
-      return "";
+  printSelf(toUpper=false) {
+    const token = this.node.token
+    if (!token) {
+      return concat([])
     }
-  }
-  printXs(key: string, sep: Doc, transform = (x: Doc) => x) {
-    this.assertKey(key);
-    const res = this.path.call(
-      (p) =>
-        p.call(
-          (p) => join(sep, p.map(this.printFunc, "NodeVec").map(transform)),
-          key
-        ),
-      "children"
-    );
-    const child = this.node.children[key] as { NodeVec: RawNode[] };
-    child.NodeVec.forEach((x: RawNode) => (x.done = true));
-    return res;
-  }
-  printXsIfExists(key: string, sep: Doc, transform = (x: Doc) => x) {
-    try {
-      return this.printXs(key, sep, transform);
-    } catch (e) {
-      return "";
+    let literal = token.literal
+    if (toUpper) {
+      literal = literal.toUpperCase()
     }
+    return literal
   }
-  printSelf(toUpperCase = false) {
-    let res: Doc = "";
-    // leading_comments
-    res = concat([
-      res,
-      this.printXsIfExists("leading_comments", "", (x) =>
-        concat([x, hardline])
-      ),
-    ]);
-    // self
-    let self = this.node.token;
-    if (self) {
-      if (toUpperCase) {
-        res = concat([res, self.literal.toUpperCase()]);
-      } else {
-        res = concat([res, self.literal]);
+  printX(key: N.NodeKeyof<N.Children<T>>, transform?: (x: Doc) => Doc): Doc;
+  printX(
+    key: N.NodeVecKeyof<N.Children<T>>,
+    sep: Doc,
+    transform?: (x: Doc) => Doc
+  ): Doc;
+  printX(
+    key: N.NodeKeyof<N.Children<T>> | N.NodeVecKeyof<N.Children<T>>,
+    sepOrTransform?: Doc | ((x: Doc) => Doc),
+    transform?: (x: Doc) => Doc
+  ): Doc {
+    const children = this.children[key];
+    let f = (x: Doc) => x;
+    if (N.isNode(children)) {
+      if (typeof sepOrTransform === "function") {
+        f = sepOrTransform;
       }
+      return this.path.call(
+        (p) => p.call((p) => f(p.call(this.printFunc, "Node")), key),
+        "children"
+      );
+    } else if (N.isNodeVec(children)) {
+      if (transform) {
+        f = transform;
+      }
+      if (!sepOrTransform || typeof sepOrTransform === "function") {
+        throw new Error(`2nd argument must be Doc`);
+      }
+      return this.path.call(
+        (p) =>
+          p.call(
+            (p) =>
+              join(sepOrTransform, p.map(this.printFunc, "NodeVec").map(f)),
+            key
+          ),
+        "children"
+      );
     }
-    // following_comments
-    res = concat([
-      res,
-      lineSuffix(
-        this.printXsIfExists("traillin_comments", "", (x) => concat([" ", x]))
-      ),
-    ]);
-    return res;
+    // in the case of `children` is undefined
+    return concat([]);
   }
 }
 
 export const printSQL = (
   path: FastPath,
-  _: Object, // options
+  _: object, // options
   print: PrintFunc
 ): Doc => {
   /**
    * NOTE
-   * you can assume type of `path.getValue()` to be `Node | Node[]`.
+   * you can assume type of `path.getValue()` to be `BaseNode | BaseNode[]`.
    * it is tested by `@dr666m1/bq2cst`
    */
-  const node: RawNode | RawNode[] = path.getValue();
+  const node: N.BaseNode | N.BaseNode[] = path.getValue();
 
   if (Array.isArray(node)) {
     for (let i = 0; i < node.length - 1; i++) {
-      // @ts-ignore
-      if ("semicolon" in node[i].children) {
+      const endNode = node[i];
+      if (N.isXXXStatement(endNode)) {
         // end of statement
-        // @ts-ignore
-        const semicolon = node[i].children.semicolon as { Node: RawNode };
-        let endNode = semicolon.Node;
-        const endToken = endNode.token;
-        if (!endToken) {
-          throw new Error(
-            `semicolon must have a \`token\` property but not found!`
-          );
-        }
-        let endLine = endToken.line;
-        if ("following_comments" in endNode.children) {
-          const following_comments = endNode.children.following_comments as {
-            NodeVec: RawNode[];
-          };
-          const len = following_comments.NodeVec.length;
-          // @ts-ignore
-          endNode = following_comments.NodeVec[len - 1];
-          const endLiteral = endToken.literal;
-          let newLines = endLiteral.match(/\n/g);
-          if (newLines) {
-            endLine = endToken.line + newLines.length;
+        const semicolon = endNode.children.semicolon;
+        if (semicolon && N.isSymbol(semicolon.Node)) {
+          let endLine = semicolon.Node.token.line;
+          const trailling_comments = semicolon.Node.children.trailling_comments;
+          if (trailling_comments) {
+            const comments = trailling_comments.NodeVec;
+            const len = comments.length;
+            const last_comments = comments[len - 1];
+            if (N.isComment(last_comments)) {
+              endLine = last_comments.token.line;
+              const endLiteral = last_comments.token.literal;
+              const newLines = endLiteral.match(/\n/g);
+              if (newLines) {
+                endLine += newLines.length;
+              }
+            }
           }
-        }
-        // start of statement
-        let startNode = node[i + 1];
-        // @ts-ignore
-        while (startNode.node_type === "SetOperator") {
-        // @ts-ignore
-          const left = startNode.children.left as { Node: RawNode };
-          startNode = left.Node;
-        }
-        let startLine;
-        // @ts-ignore
-        let startToken = startNode.token;
-        if (startToken) {
-          startLine = startToken.line;
-        } else {
-          // EOF
-          startLine = endLine + 1;
-        }
-        // @ts-ignore
-        if ("leading_comments" in startNode.children) {
-          // @ts-ignore
-          const leading_comments = startNode.children.leading_comments as {
-            NodeVec: RawNode[];
-          };
-          // @ts-ignore
-          startToken = leading_comments.NodeVec[0].token;
-          if (!startToken) {
-            throw new Error(
-              `leading_comments must have a \`token\` property but not found!`
-            );
+          // start of statement
+          let startNode = node[i + 1];
+          while (
+            startNode.node_type === "SetOperator" &&
+            N.isSetOperator(startNode)
+          ) {
+            startNode = startNode.children.left.Node;
           }
-          startLine = startToken.line;
+          let startLine;
+          if (startNode.token) {
+            startLine = startNode.token.line;
+          } else {
+            // EOF
+            startLine = endLine + 1;
+          }
+          const leading_comments = startNode.children.trailling_comments;
+          if (leading_comments) {
+            const comments = leading_comments.NodeVec;
+            const first_comments = comments[0];
+            if (N.isComment(first_comments)) {
+              startLine = first_comments.token.line;
+            }
+          }
+          node[i].emptyLines = startLine - endLine - 1; // >= 0
         }
-        // @ts-ignore
-        node[i].emptyLines = startLine - endLine - 1; // >= 0
       }
     }
     return concat(path.map(print));
   }
   switch (node.node_type) {
-    case "Comment":
-      return printComment(path, print);
-    case "NumericLiteral":
-      return printNumericLiteral(path, print);
     case "SelectStatement":
       return printSelectStatement(path, print);
-    case "Symbol":
-      return printSymbol(path, print);
-    case "EOF":
-      return printEOF(path, print);
     default:
       return "not implemented";
   }
 };
 
-const printComment = (path: FastPath, print: PrintFunc): Doc => {
-  const node = new Node(path, print);
-  return node.printSelf();
-};
-
-const printEOF = (path: FastPath, print: PrintFunc): Doc => {
-  const node = new Node(path, print);
-  return node.printSelf();
-};
-
-const printNumericLiteral = (path: FastPath, print: PrintFunc): Doc => {
-  const node = new Node(path, print);
-  return concat([node.printSelf(), node.printXIfExists("comma")]);
-};
-
 const printSelectStatement = (path: FastPath, print: PrintFunc): Doc => {
-  const node = new Node(path, print);
-  // following comments
-  const leading_comments = node.printXsIfExists(
-    "leading_comments",
-    "",
-    (x) => concat([x, hardline])
-  );
-  // SELECT clause
-  let select: Doc = node.printSelf(true);
-  const exprs = node.printXs("exprs", line, (x: Doc) => group(x));
-  select = concat([select, indent(concat([line, exprs]))]);
-  if (node.lengthOf("exprs") === 1) {
-    select = group(select);
+  const node = path.getValue();
+  if (!N.isSelectStatement(node)) {
+    throw new Error("invalid node for SELECT statement");
   }
-  return concat([
-    leading_comments,
-    group(concat([select])),
-    node.printNewLine(),
-  ]);
-};
-
-const printSymbol = (path: FastPath, print: PrintFunc): Doc => {
-  const node = new Node(path, print);
-  return node.printSelf();
+  const children = node.children;
+  const p = new Printer(path, print, node, children);
+  // following comments
+  //p.printX("exprs", "aa")
+  //const leading_comments = node.printXsIfExists("leading_comments", "", (x) =>
+  //  concat([x, hardline])
+  //);
+  // SELECT clause
+  let select: Doc = p.printSelf(true);
+  //const exprs = node.printXs("exprs", line, (x: Doc) => group(x));
+  //select = concat([select, indent(concat([line, exprs]))]);
+  //if (node.lengthOf("exprs") === 1) {
+  //  select = group(select);
+  //}
+  return concat([select]);
 };
