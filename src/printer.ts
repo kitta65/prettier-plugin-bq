@@ -6,61 +6,45 @@ import * as N from "./nodes";
 const {
   builders: {
     concat, // TODO remove
-    //group,
+    group,
     hardline,
-    //indent,
+    indent,
     join,
-    //line,
-    //lineSuffix,
-    //lineSuffixBoundary,
-    //literalline,
-    //softline,
+    line,
+    lineSuffix,
+    softline,
   },
 } = doc;
 
-type PrintFunc = (path: FastPath) => Doc;
+type PrintFunc = (
+  path: FastPath,
+  _: object,
+  print: (path: FastPath) => Doc
+) => Doc;
+
+type PrintFuncWithoutOptions = (
+  path: FastPath,
+  print: (path: FastPath) => Doc
+) => Doc;
 
 class Printer<T extends N.BaseNode> {
+  /**
+   * Children<T> is needed because `keyof T["children"]` throws error
+   * https://github.com/microsoft/TypeScript/issues/36631
+   */
   constructor(
-    // Children<T> is needed because `keyof T["children"]` throws error
-    // https://github.com/microsoft/TypeScript/issues/36631
     private readonly path: FastPath,
-    private readonly printFunc: (path: FastPath) => Doc,
+    private readonly print: (path: FastPath) => Doc,
     private readonly node: T,
     private readonly children: N.Children<T>
   ) {}
-  lengthOfX(key: N.NodeVecKeyof<N.Children<T>>) {
-    const nodeVec = this.children[key];
-    if (N.isNodeVec(nodeVec)) {
-      return nodeVec.NodeVec;
-    }
-    throw new Error();
-  }
-  printNewLine() {
-    if (this.node.notRoot) return "";
-    if (this.node.emptyLines && 0 < this.node.emptyLines) {
-      return concat([hardline, hardline]);
-    }
-    return hardline;
-  }
-  printSelf(toUpper = false) {
-    const token = this.node.token;
-    if (!token) {
-      return concat([]);
-    }
-    let literal = token.literal;
-    if (toUpper) {
-      literal = literal.toUpperCase();
-    }
-    return literal;
-  }
-  printX(key: N.NodeKeyof<N.Children<T>>, transform?: (x: Doc) => Doc): Doc;
-  printX(
+  child(key: N.NodeKeyof<N.Children<T>>, transform?: (x: Doc) => Doc): Doc;
+  child(
     key: N.NodeVecKeyof<N.Children<T>>,
     sep: Doc,
     transform?: (x: Doc) => Doc
   ): Doc;
-  printX(
+  child(
     key: N.NodeKeyof<N.Children<T>> | N.NodeVecKeyof<N.Children<T>>,
     sepOrTransform?: Doc | ((x: Doc) => Doc),
     transform?: (x: Doc) => Doc
@@ -72,21 +56,21 @@ class Printer<T extends N.BaseNode> {
         f = sepOrTransform;
       }
       return this.path.call(
-        (p) => p.call((p) => f(p.call(this.printFunc, "Node")), key),
+        (p) => p.call((p) => f(p.call(this.print, "Node")), key),
         "children"
       );
     } else if (N.isNodeVec(children)) {
       if (transform) {
         f = transform;
       }
-      if (!sepOrTransform || typeof sepOrTransform === "function") {
+      if (sepOrTransform == null || typeof sepOrTransform === "function") {
         throw new Error(`2nd argument must be Doc`);
       }
       return this.path.call(
         (p) =>
           p.call(
             (p) =>
-              join(sepOrTransform, p.map(this.printFunc, "NodeVec").map(f)),
+              join(sepOrTransform, p.map(this.print, "NodeVec").map(f)),
             key
           ),
         "children"
@@ -95,15 +79,44 @@ class Printer<T extends N.BaseNode> {
     // in the case of `children` is undefined
     return concat([]);
   }
+  has(key: keyof N.Children<T>) {
+    const child = this.children[key];
+    if (child) {
+      return true;
+    }
+    false;
+  }
+  len(key: N.NodeVecKeyof<N.Children<T>>) {
+    const nodeVec = this.children[key];
+    if (N.isNodeVec(nodeVec)) {
+      return nodeVec.NodeVec.length;
+    }
+    throw new Error();
+  }
+  newLine() {
+    if (this.node.notRoot) return concat([]);
+    if (this.node.emptyLines && 0 < this.node.emptyLines) {
+      return concat([hardline, hardline]);
+    }
+    return hardline;
+  }
+  self(upperOrLower?: "upper" | "lower") {
+    const token = this.node.token;
+    if (!token) {
+      return concat([]);
+    }
+    let literal = token.literal;
+    if (upperOrLower === "upper") {
+      literal = literal.toUpperCase();
+    } else if (upperOrLower === "lower") {
+      literal = literal.toLowerCase();
+    }
+    return literal;
+  }
 }
 
-export const printSQL = (
-  path: FastPath,
-  _: object, // options
-  print: PrintFunc
-): Doc => {
+export const printSQL: PrintFunc = (path, _, print) => {
   /**
-   * NOTE
    * you can assume type of `path.getValue()` to be `BaseNode | BaseNode[]`.
    * it is tested by `@dr666m1/bq2cst`
    */
@@ -157,28 +170,130 @@ export const printSQL = (
     return concat(path.map(print));
   }
   switch (node.node_type) {
+    case "Comment":
+      return printComment(path, print);
+    case "EOF":
+      return printEOF(path, print);
+    case "Identifier":
+      return printIdentifier(path, print);
+    case "Keyword":
+      return printKeyword(path, print)
+    case "KeywordWithExpr":
+      return printKeywordWithExpr(path, print);
+    case "NumericLiteral":
+      return printNumericLiteral(path, print);
     case "SelectStatement":
       return printSelectStatement(path, print);
+    case "Symbol":
+      return printSymbol(path, print);
     default:
       return "not implemented";
   }
 };
 
-const printSelectStatement = (path: FastPath, print: PrintFunc): Doc => {
+const printComment: PrintFuncWithoutOptions = (path, print) => {
+  const node: N.Comment = path.getValue();
+  const p = new Printer(path, print, node, node.children);
+  return p.self();
+};
+
+const printEOF: PrintFuncWithoutOptions = (path, print) => {
+  const node: N.EOF = path.getValue();
+  const p = new Printer(path, print, node, node.children);
+  return p.child("leading_comments", hardline);
+};
+
+const printIdentifier: PrintFuncWithoutOptions = (path, print) => {
+  const node: N.Expr = path.getValue();
+  const p = new Printer(path, print, node, node.children);
+  return concat([
+    p.child("leading_comments", "", (x) => concat([x, hardline])),
+    p.self(),
+    lineSuffix(p.child("trailling_comments", "", (x) => concat([" ", x]))),
+    printAlias(path, print),
+    p.child("comma"),
+  ]);
+};
+
+const printKeyword: PrintFuncWithoutOptions = (path, print) => {
+  const node: N.Keyword = path.getValue();
+  const p = new Printer(path, print, node, node.children);
+  return concat([
+    p.child("leading_comments", "", (x) => concat([x, hardline])),
+    p.self("upper"),
+    lineSuffix(p.child("trailling_comments", "", (x) => concat([" ", x]))),
+  ]);
+};
+
+const printKeywordWithExpr: PrintFuncWithoutOptions = (path, print) => {
+  const node: N.KeywordWithExpr = path.getValue();
+  const p = new Printer(path, print, node, node.children);
+  return concat([
+    printKeyword(path, print),
+    p.child("expr", (x) => concat([line, x])),
+  ]);
+};
+
+const printNumericLiteral: PrintFuncWithoutOptions = (path, print) => {
+  const node: N.Expr = path.getValue();
+  const p = new Printer(path, print, node, node.children);
+  return group(concat([
+    p.child("leading_comments", "", (x) => concat([x, hardline])),
+    p.self("lower"), // in the case of `3.14e10`
+    lineSuffix(p.child("trailling_comments", "", (x) => concat([" ", x]))),
+    printAlias(path, print),
+    p.child("comma"),
+  ]));
+};
+
+const printSelectStatement: PrintFuncWithoutOptions = (path, print) => {
   const node: N.SelectStatement = path.getValue();
-  const children = node.children;
-  const p = new Printer(path, print, node, children);
-  // following comments
-  //p.printX("exprs", "aa")
-  //const leading_comments = node.printXsIfExists("leading_comments", "", (x) =>
-  //  concat([x, hardline])
-  //);
+  const p = new Printer(path, print, node, node.children);
   // SELECT clause
-  let select: Doc = p.printSelf(true);
-  //const exprs = node.printXs("exprs", line, (x: Doc) => group(x));
-  //select = concat([select, indent(concat([line, exprs]))]);
-  //if (node.lengthOf("exprs") === 1) {
-  //  select = group(select);
-  //}
-  return concat([select]);
+  let select: Doc = concat([
+    p.self("upper"),
+    lineSuffix(p.child("trailling_comments", "", (x) => concat([" ", x]))),
+    indent(p.child("exprs", "", (x) => concat([line, group(x)]))),
+  ]);
+  if (p.len("exprs") === 1) {
+    select = group(select);
+  }
+  // FROM clause
+  let from: Doc = concat([]);
+  if (p.has("from")) {
+    from = concat([line, group(p.child("from"))]);
+  }
+  return concat([
+    p.child("leading_comments", "", (x) => concat([x, hardline])),
+    group(
+      concat([select, from, p.child("semicolon", (x) => concat([softline, x]))])
+    ),
+    p.newLine(),
+  ]);
+};
+
+const printSymbol: PrintFuncWithoutOptions = (path, print) => {
+  const node: N.Symbol = path.getValue();
+  const p = new Printer(path, print, node, node.children);
+  return concat([
+    p.child("leading_comments", "", (x) => concat([x, hardline])),
+    p.self(),
+    lineSuffix(p.child("trailling_comments", "", (x) => concat([" ", x]))),
+  ]);
+};
+
+// ----- utils -----
+const printAlias: PrintFuncWithoutOptions = (path, print) => {
+  const node: N.Expr = path.getValue();
+  const p = new Printer(path, print, node, node.children);
+  let as_: Doc;
+  if (!p.has("alias")) {
+    return concat([])
+  }
+  if (p.has("as")) {
+    as_ = p.child("as");
+  } else {
+    as_ = "AS";
+  }
+  return concat([line, group(concat([as_, line, p.child("alias")]))]);
 };

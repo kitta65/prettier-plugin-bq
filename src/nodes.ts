@@ -14,7 +14,6 @@ export type BaseNode = {
   node_type: string;
   emptyLines?: number;
   notRoot?: Boolean;
-  done?: Boolean;
 };
 
 export type Children<T extends BaseNode> = T["children"];
@@ -60,28 +59,35 @@ export type Comment = BaseNode & {
   token: Token;
 };
 
-export type XXXStatement = BaseNode & {
+export type EOF = BaseNode & {
+  token: null;
+};
+
+// NOTE NumericLiteral, Identifier are included
+export type Expr = BaseNode & {
   token: Token;
   children: {
-    semicolon?: { Node: Symbol };
+    as?: { Node: BaseNode };
+    alias?: { Node: BaseNode };
+    comma?: { Node: BaseNode };
   };
 };
 
-export const isXXXStatement = (n: BaseNode | undefined): n is XXXStatement => {
-  if (
-    n &&
-    n.node_type.endsWith("Statement") &&
-    !n.node_type.endsWith("WithStatement")
-  ) {
-    return true;
-  }
-  return false;
+export type Keyword = BaseNode & {
+  token: Token;
+}
+
+export type KeywordWithExpr = Keyword & {
+  children: {
+    expr: { Node: BaseNode };
+  };
 };
 
 export type SelectStatement = XXXStatement & {
   token: Token;
   children: {
     exprs: { NodeVec: BaseNode[] };
+    from: { Node: BaseNode };
   };
 };
 
@@ -109,4 +115,22 @@ export const isSetOperator = (n: BaseNode | undefined): n is SetOperator => {
 
 export type Symbol = BaseNode & {
   token: Token;
+};
+
+export type XXXStatement = BaseNode & {
+  token: Token;
+  children: {
+    semicolon?: { Node: Symbol };
+  };
+};
+
+export const isXXXStatement = (n: BaseNode | undefined): n is XXXStatement => {
+  if (
+    n &&
+    n.node_type.endsWith("Statement") &&
+    !n.node_type.endsWith("WithStatement")
+  ) {
+    return true;
+  }
+  return false;
 };
