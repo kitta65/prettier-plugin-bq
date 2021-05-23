@@ -20,7 +20,6 @@ const {
 
 type PrintFunc = (path: FastPath) => Doc;
 
-
 class Printer<T extends N.BaseNode> {
   constructor(
     // Children<T> is needed because `keyof T["children"]` throws error
@@ -44,16 +43,16 @@ class Printer<T extends N.BaseNode> {
     }
     return hardline;
   }
-  printSelf(toUpper=false) {
-    const token = this.node.token
+  printSelf(toUpper = false) {
+    const token = this.node.token;
     if (!token) {
-      return concat([])
+      return concat([]);
     }
-    let literal = token.literal
+    let literal = token.literal;
     if (toUpper) {
-      literal = literal.toUpperCase()
+      literal = literal.toUpperCase();
     }
-    return literal
+    return literal;
   }
   printX(key: N.NodeKeyof<N.Children<T>>, transform?: (x: Doc) => Doc): Doc;
   printX(
@@ -116,20 +115,18 @@ export const printSQL = (
       if (N.isXXXStatement(endNode)) {
         // end of statement
         const semicolon = endNode.children.semicolon;
-        if (semicolon && N.isSymbol(semicolon.Node)) {
+        if (semicolon) {
           let endLine = semicolon.Node.token.line;
           const trailling_comments = semicolon.Node.children.trailling_comments;
           if (trailling_comments) {
             const comments = trailling_comments.NodeVec;
             const len = comments.length;
             const last_comments = comments[len - 1];
-            if (N.isComment(last_comments)) {
-              endLine = last_comments.token.line;
-              const endLiteral = last_comments.token.literal;
-              const newLines = endLiteral.match(/\n/g);
-              if (newLines) {
-                endLine += newLines.length;
-              }
+            endLine = last_comments.token.line;
+            const endLiteral = last_comments.token.literal;
+            const newLines = endLiteral.match(/\n/g);
+            if (newLines) {
+              endLine += newLines.length;
             }
           }
           // start of statement
@@ -151,9 +148,7 @@ export const printSQL = (
           if (leading_comments) {
             const comments = leading_comments.NodeVec;
             const first_comments = comments[0];
-            if (N.isComment(first_comments)) {
-              startLine = first_comments.token.line;
-            }
+            startLine = first_comments.token.line;
           }
           node[i].emptyLines = startLine - endLine - 1; // >= 0
         }
@@ -170,10 +165,7 @@ export const printSQL = (
 };
 
 const printSelectStatement = (path: FastPath, print: PrintFunc): Doc => {
-  const node = path.getValue();
-  if (!N.isSelectStatement(node)) {
-    throw new Error("invalid node for SELECT statement");
-  }
+  const node: N.SelectStatement = path.getValue();
   const children = node.children;
   const p = new Printer(path, print, node, children);
   // following comments

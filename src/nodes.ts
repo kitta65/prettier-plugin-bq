@@ -8,8 +8,8 @@ type Token = {
 export type BaseNode = {
   token: Token | null;
   children: {
-    leading_comments?: { NodeVec: BaseNode[] };
-    trailling_comments?: { NodeVec: BaseNode[] };
+    leading_comments?: { NodeVec: Comment[] };
+    trailling_comments?: { NodeVec: Comment[] };
   };
   node_type: string;
   emptyLines?: number;
@@ -56,34 +56,28 @@ export const isNodeVec = (child: unknown): child is { NodeVec: BaseNode[] } => {
 };
 
 // ----- sub types of BaseNode -----
-// Comment
 export type Comment = BaseNode & {
   token: Token;
 };
 
-export const isComment = (n: BaseNode | undefined): n is Comment => {
-  if (n && Object.keys(n.children).length === 0) {
-    return true;
-  }
-  return false;
-};
-
-// XXXStatement
 export type XXXStatement = BaseNode & {
   token: Token;
   children: {
-    semicolon?: { Node: BaseNode };
+    semicolon?: { Node: Symbol };
   };
 };
 
 export const isXXXStatement = (n: BaseNode | undefined): n is XXXStatement => {
-  if (n) {
+  if (
+    n &&
+    n.node_type.endsWith("Statement") &&
+    !n.node_type.endsWith("WithStatement")
+  ) {
     return true;
   }
   return false;
 };
 
-// SelectStatement
 export type SelectStatement = XXXStatement & {
   token: Token;
   children: {
@@ -91,16 +85,6 @@ export type SelectStatement = XXXStatement & {
   };
 };
 
-export const isSelectStatement = (
-  n: BaseNode | undefined
-): n is SelectStatement => {
-  if (n && "exprs" in n.children) {
-    return true;
-  }
-  return false;
-};
-
-// SetOperator
 export type SetOperator = XXXStatement & {
   token: Token;
   children: {
@@ -113,6 +97,7 @@ export type SetOperator = XXXStatement & {
 export const isSetOperator = (n: BaseNode | undefined): n is SetOperator => {
   if (
     n &&
+    n.node_type === "SetOperator" &&
     "distinct_or_all" in n.children &&
     "left" in n.children &&
     "right" in n.children
@@ -122,15 +107,6 @@ export const isSetOperator = (n: BaseNode | undefined): n is SetOperator => {
   return false;
 };
 
-// Symbol
 export type Symbol = BaseNode & {
   token: Token;
 };
-
-export const isSymbol = (n: BaseNode | undefined): n is Symbol => {
-  if (n) {
-    return true;
-  }
-  return false;
-};
-
