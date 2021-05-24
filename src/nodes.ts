@@ -63,7 +63,12 @@ export type EOF = BaseNode & {
   token: null;
 };
 
-// NOTE NumericLiteral, Identifier are included
+/**
+ * following node_types are included
+ * - BooleanLiteral
+ * - Identifier
+ * - NumericLiteral
+ */
 export type Expr = BaseNode & {
   token: Token;
   children: {
@@ -73,9 +78,16 @@ export type Expr = BaseNode & {
   };
 };
 
+export type GroupedStatement = Expr & XXXStatement & {
+  children: {
+    stmt: { Node: BaseNode };
+    rparen: { Node: BaseNode };
+  };
+};
+
 export type Keyword = BaseNode & {
   token: Token;
-}
+};
 
 export type KeywordWithExpr = Keyword & {
   children: {
@@ -88,6 +100,8 @@ export type SelectStatement = XXXStatement & {
   children: {
     exprs: { NodeVec: BaseNode[] };
     from: { Node: BaseNode };
+    where: { Node: BaseNode };
+    orderby: { Node: BaseNode };
   };
 };
 
@@ -115,6 +129,14 @@ export const isSetOperator = (n: BaseNode | undefined): n is SetOperator => {
 
 export type Symbol = BaseNode & {
   token: Token;
+};
+
+export type XXXByExprs = Keyword & {
+  token: Token;
+  children: {
+    by: { Node: BaseNode };
+    exprs: { NodeVec: BaseNode[] };
+  };
 };
 
 export type XXXStatement = BaseNode & {

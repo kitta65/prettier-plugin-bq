@@ -27,6 +27,11 @@ type PrintFuncWithoutOptions = (
   print: (path: FastPath) => Doc
 ) => Doc;
 
+// used with type assertion
+type FastPathOf<_ extends N.BaseNode> = FastPath & {
+  readonly brand: unique symbol;
+};
+
 class Printer<T extends N.BaseNode> {
   /**
    * Children<T> is needed because `keyof T["children"]` throws error
@@ -49,9 +54,9 @@ class Printer<T extends N.BaseNode> {
     sepOrTransform?: Doc | ((x: Doc) => Doc),
     transform?: (x: Doc) => Doc
   ): Doc {
-    const children = this.children[key];
+    const child = this.children[key];
     let f = (x: Doc) => x;
-    if (N.isNode(children)) {
+    if (N.isNode(child)) {
       if (typeof sepOrTransform === "function") {
         f = sepOrTransform;
       }
@@ -59,7 +64,7 @@ class Printer<T extends N.BaseNode> {
         (p) => p.call((p) => f(p.call(this.print, "Node")), key),
         "children"
       );
-    } else if (N.isNodeVec(children)) {
+    } else if (N.isNodeVec(child)) {
       if (transform) {
         f = transform;
       }
@@ -69,8 +74,7 @@ class Printer<T extends N.BaseNode> {
       return this.path.call(
         (p) =>
           p.call(
-            (p) =>
-              join(sepOrTransform, p.map(this.print, "NodeVec").map(f)),
+            (p) => join(sepOrTransform, p.map(this.print, "NodeVec").map(f)),
             key
           ),
         "children"
@@ -112,6 +116,12 @@ class Printer<T extends N.BaseNode> {
       literal = literal.toLowerCase();
     }
     return literal;
+  }
+  setNotRoot(key: N.NodeKeyof<N.Children<T>>) {
+    const child = this.children[key];
+    if (N.isNode(child)) {
+      child.Node.notRoot = true;
+    }
   }
 }
 
@@ -170,14 +180,18 @@ export const printSQL: PrintFunc = (path, _, print) => {
     return concat(path.map(print));
   }
   switch (node.node_type) {
+    case "BooleanLiteral":
+      return printBooleanLiteral(path, print);
     case "Comment":
       return printComment(path, print);
     case "EOF":
       return printEOF(path, print);
+    case "GroupedStatement":
+      return printGroupedStatement(path, print);
     case "Identifier":
       return printIdentifier(path, print);
     case "Keyword":
-      return printKeyword(path, print)
+      return printKeyword(path as FastPathOf<N.Keyword>, print);
     case "KeywordWithExpr":
       return printKeywordWithExpr(path, print);
     case "NumericLiteral":
@@ -186,9 +200,23 @@ export const printSQL: PrintFunc = (path, _, print) => {
       return printSelectStatement(path, print);
     case "Symbol":
       return printSymbol(path, print);
+    case "XXXByExprs":
+      return printXXXByExprs(path, print);
     default:
       return "not implemented";
   }
+};
+
+const printBooleanLiteral: PrintFuncWithoutOptions = (path, print) => {
+  const node: N.Expr = path.getValue();
+  const p = new Printer(path, print, node, node.children);
+  return concat([
+    p.child("leading_comments", "", (x) => concat([x, hardline])),
+    p.self("upper"),
+    lineSuffix(p.child("trailling_comments", "", (x) => concat([" ", x]))),
+    printAlias(path as FastPathOf<N.Expr>, print),
+    p.child("comma"),
+  ]);
 };
 
 const printComment: PrintFuncWithoutOptions = (path, print) => {
@@ -203,6 +231,26 @@ const printEOF: PrintFuncWithoutOptions = (path, print) => {
   return p.child("leading_comments", hardline);
 };
 
+const printGroupedStatement: PrintFuncWithoutOptions = (path, print) => {
+  const node: N.GroupedStatement = path.getValue();
+  const p = new Printer(path, print, node, node.children);
+  p.setNotRoot("stmt");
+  return concat([
+    p.child("leading_comments", "", (x) => concat([x, hardline])),
+    group(
+      concat([
+        p.self(),
+        lineSuffix(p.child("trailling_comments", "", (x) => concat([" ", x]))),
+        indent(p.child("stmt", (x) => concat([softline, x]))),
+        p.child("rparen", (x) => concat([softline, x])),
+        printAlias(path as FastPathOf<N.GroupedStatement>, print),
+        p.child("semicolon", (x) => concat([softline, x])),
+      ])
+    ),
+    p.newLine(),
+  ]);
+};
+
 const printIdentifier: PrintFuncWithoutOptions = (path, print) => {
   const node: N.Expr = path.getValue();
   const p = new Printer(path, print, node, node.children);
@@ -210,12 +258,15 @@ const printIdentifier: PrintFuncWithoutOptions = (path, print) => {
     p.child("leading_comments", "", (x) => concat([x, hardline])),
     p.self(),
     lineSuffix(p.child("trailling_comments", "", (x) => concat([" ", x]))),
-    printAlias(path, print),
+    printAlias(path as FastPathOf<N.Expr>, print),
     p.child("comma"),
   ]);
 };
 
-const printKeyword: PrintFuncWithoutOptions = (path, print) => {
+const printKeyword = (
+  path: FastPathOf<N.Keyword>,
+  print: (path: FastPath) => Doc
+) => {
   const node: N.Keyword = path.getValue();
   const p = new Printer(path, print, node, node.children);
   return concat([
@@ -229,21 +280,23 @@ const printKeywordWithExpr: PrintFuncWithoutOptions = (path, print) => {
   const node: N.KeywordWithExpr = path.getValue();
   const p = new Printer(path, print, node, node.children);
   return concat([
-    printKeyword(path, print),
-    p.child("expr", (x) => concat([line, x])),
+    printKeyword(path as FastPathOf<N.KeywordWithExpr>, print),
+    indent(p.child("expr", (x) => concat([line, x]))),
   ]);
 };
 
 const printNumericLiteral: PrintFuncWithoutOptions = (path, print) => {
   const node: N.Expr = path.getValue();
   const p = new Printer(path, print, node, node.children);
-  return group(concat([
-    p.child("leading_comments", "", (x) => concat([x, hardline])),
-    p.self("lower"), // in the case of `3.14e10`
-    lineSuffix(p.child("trailling_comments", "", (x) => concat([" ", x]))),
-    printAlias(path, print),
-    p.child("comma"),
-  ]));
+  return group(
+    concat([
+      p.child("leading_comments", "", (x) => concat([x, hardline])),
+      p.self("lower"), // in the case of `3.14e10`
+      lineSuffix(p.child("trailling_comments", "", (x) => concat([" ", x]))),
+      printAlias(path as FastPathOf<N.Expr>, print),
+      p.child("comma"),
+    ])
+  );
 };
 
 const printSelectStatement: PrintFuncWithoutOptions = (path, print) => {
@@ -263,12 +316,43 @@ const printSelectStatement: PrintFuncWithoutOptions = (path, print) => {
   if (p.has("from")) {
     from = concat([line, group(p.child("from"))]);
   }
+  // WHERE clause
+  let where: Doc = concat([]);
+  if (p.has("where")) {
+    where = concat([line, group(p.child("where"))]);
+  }
+  // ORDER BY clause
+  let orderby: Doc = concat([]);
+  if (p.has("orderby")) {
+    orderby = concat([line, group(p.child("orderby"))]);
+  }
   return concat([
     p.child("leading_comments", "", (x) => concat([x, hardline])),
     group(
-      concat([select, from, p.child("semicolon", (x) => concat([softline, x]))])
+      concat([
+        select,
+        from,
+        where,
+        orderby,
+        p.child("semicolon", (x) => concat([softline, x])),
+      ])
     ),
     p.newLine(),
+  ]);
+};
+
+const printXXXByExprs: PrintFuncWithoutOptions = (path, print) => {
+  const node: N.XXXByExprs = path.getValue();
+  const p = new Printer(path, print, node, node.children);
+  return concat([
+    group(
+      concat([
+        printKeyword(path as FastPathOf<N.XXXByExprs>, print),
+        line,
+        p.child("by"),
+      ])
+    ),
+    indent(p.child("exprs", "", (x) => concat([line, x]))),
   ]);
 };
 
@@ -283,12 +367,15 @@ const printSymbol: PrintFuncWithoutOptions = (path, print) => {
 };
 
 // ----- utils -----
-const printAlias: PrintFuncWithoutOptions = (path, print) => {
+const printAlias = (
+  path: FastPathOf<N.Expr>,
+  print: (path: FastPath) => Doc
+): Doc => {
   const node: N.Expr = path.getValue();
   const p = new Printer(path, print, node, node.children);
   let as_: Doc;
   if (!p.has("alias")) {
-    return concat([])
+    return concat([]);
   }
   if (p.has("as")) {
     as_ = p.child("as");
