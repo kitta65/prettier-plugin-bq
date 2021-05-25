@@ -20,7 +20,7 @@
     "typescript": "^4.2.4"
   },
   "dependencies": {
-    "@dr666m1/bq2cst": "^0.1.0",
+    "@dr666m1/bq2cst": "^0.1.3",
     "prettier": "^2.3.0"
   }
 }
