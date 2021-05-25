@@ -18,7 +18,7 @@ const {
 
 type PrintFunc = (
   path: FastPath,
-  _: object,
+  _: Record<string, unknown>,
   print: (path: FastPath) => Doc
 ) => Doc;
 
@@ -357,7 +357,7 @@ const printXXXByExprs: PrintFuncWithoutOptions = (path, print) => {
 };
 
 const printSymbol: PrintFuncWithoutOptions = (path, print) => {
-  const node: N.Symbol = path.getValue();
+  const node: N.Symbol_ = path.getValue();
   const p = new Printer(path, print, node, node.children);
   return concat([
     p.child("leading_comments", "", (x) => concat([x, hardline])),

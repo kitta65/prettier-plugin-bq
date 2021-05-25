@@ -13,7 +13,7 @@ export type BaseNode = {
   };
   node_type: string;
   emptyLines?: number;
-  notRoot?: Boolean;
+  notRoot?: boolean;
 };
 
 export type Children<T extends BaseNode> = T["children"];
@@ -131,7 +131,7 @@ export const isSetOperator = (n: BaseNode | undefined): n is SetOperator => {
   return false;
 };
 
-export type Symbol = BaseNode & {
+export type Symbol_ = BaseNode & {
   token: Token;
 };
 
@@ -146,7 +146,7 @@ export type XXXByExprs = Keyword & {
 export type XXXStatement = BaseNode & {
   token: Token;
   children: {
-    semicolon?: { Node: Symbol };
+    semicolon?: { Node: Symbol_ };
   };
 };
 
