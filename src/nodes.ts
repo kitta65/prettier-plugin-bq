@@ -57,6 +57,10 @@ export const isNodeVec = (child: unknown): child is { NodeVec: BaseNode[] } => {
 // ----- sub types of BaseNode -----
 export type Comment = BaseNode & {
   token: Token;
+  children: {
+    leading_comments: undefined
+    trailling_comments: undefined
+  }
 };
 
 export type EOF = BaseNode & {
