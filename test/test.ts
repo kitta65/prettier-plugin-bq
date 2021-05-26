@@ -96,7 +96,10 @@ SELECT 18, NULL,   18   UNION ALL
 SELECT 19, NULL,   19   UNION ALL
 SELECT 20, NULL,   20`)
   })
-  test("minimum", async () => {
-    await assertResultDoesNotChange(`select 1;`);
+  test("comment", async () => {
+    await assertResultDoesNotChange(`
+#standardSQL
+SELECT /* */ 1; -- end of statement
+`);
   });
 });

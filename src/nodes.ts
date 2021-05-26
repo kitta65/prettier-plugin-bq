@@ -9,11 +9,12 @@ export type BaseNode = {
   token: Token | null;
   children: {
     leading_comments?: { NodeVec: Comment[] };
-    trailling_comments?: { NodeVec: Comment[] };
+    trailing_comments?: { NodeVec: Comment[] };
   };
   node_type: string;
   emptyLines?: number;
   notRoot?: boolean;
+  notGlobal?: boolean;
 };
 
 export type Children<T extends BaseNode> = T["children"];
@@ -58,13 +59,16 @@ export const isNodeVec = (child: unknown): child is { NodeVec: BaseNode[] } => {
 export type Comment = BaseNode & {
   token: Token;
   children: {
-    leading_comments: undefined
-    trailling_comments: undefined
-  }
+    leading_comments: undefined;
+    trailing_comments: undefined;
+  };
 };
 
 export type EOF = BaseNode & {
   token: null;
+  children: {
+    trailing_comments: undefined
+  }
 };
 
 /**
@@ -72,6 +76,7 @@ export type EOF = BaseNode & {
  * - BooleanLiteral
  * - Identifier
  * - NumericLiteral
+ * - StringLiteral
  */
 export type Expr = BaseNode & {
   token: Token;
@@ -82,12 +87,13 @@ export type Expr = BaseNode & {
   };
 };
 
-export type GroupedStatement = Expr & XXXStatement & {
-  children: {
-    stmt: { Node: BaseNode };
-    rparen: { Node: BaseNode };
+export type GroupedStatement = Expr &
+  XXXStatement & {
+    children: {
+      stmt: { Node: BaseNode };
+      rparen: { Node: BaseNode };
+    };
   };
-};
 
 export type Keyword = BaseNode & {
   token: Token;
@@ -133,6 +139,13 @@ export const isSetOperator = (n: BaseNode | undefined): n is SetOperator => {
 
 export type Symbol_ = BaseNode & {
   token: Token;
+};
+
+export type UnaryOperator = Expr & {
+  token: Token;
+  children: {
+    right: { Node: BaseNode };
+  };
 };
 
 export type XXXByExprs = Keyword & {
