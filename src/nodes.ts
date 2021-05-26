@@ -56,6 +56,22 @@ export const isNodeVec = (child: unknown): child is { NodeVec: BaseNode[] } => {
 };
 
 // ----- sub types of BaseNode -----
+export type BinaryOperator = Expr & {
+  children: {
+    left: { Node: BaseNode };
+    right: { Node: BaseNode };
+  };
+};
+
+export type BetweenOperator = Expr & {
+  children: {
+    left: { Node: BaseNode };
+    not: { Node: BaseNode };
+    right: { NodeVec: BaseNode[] };
+    and: { Node: BaseNode };
+  };
+};
+
 export type Comment = BaseNode & {
   token: Token;
   children: {
@@ -67,8 +83,8 @@ export type Comment = BaseNode & {
 export type EOF = BaseNode & {
   token: null;
   children: {
-    trailing_comments: undefined
-  }
+    trailing_comments: undefined;
+  };
 };
 
 /**

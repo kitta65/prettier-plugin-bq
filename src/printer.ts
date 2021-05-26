@@ -205,8 +205,12 @@ export const printSQL: PrintFunc = (path, _, print) => {
     return concat(path.map(print));
   }
   switch (node.node_type) {
+    case "BetweenOperator":
+      return printBetweenOperator(path, print);
     case "BooleanLiteral":
       return printBooleanLiteral(path, print);
+    case "BinaryOperator":
+      return printBinaryOperator(path, print);
     case "Comment":
       return printComment(path, print);
     case "EOF":
@@ -236,6 +240,48 @@ export const printSQL: PrintFunc = (path, _, print) => {
   }
 };
 
+const printBetweenOperator: PrintFuncWithoutOptions = (path, print) => {
+  type ThisNode = N.BetweenOperator;
+  const node: ThisNode = path.getValue();
+  const p = new Printer(path, print, node, node.children);
+  const right = path.call(
+    (p) => p.call((p) => p.map(print, "NodeVec"), "right"),
+    "children"
+  );
+  const right0 = right[0];
+  const right1 = right[1];
+  const docs: { [Key in Docs<ThisNode>]: Doc } = {
+    left: p.child("left", (x) => group(concat([x, line]))),
+    not: p.has("not")
+      ? p.child("not", (x) => group(concat([x, line])))
+      : concat([]),
+    leading_comments: printLeadingComments(path, print),
+    self: p.self(),
+    trailing_comments: printTrailingComments(path, print),
+    right: concat([
+      line,
+      group(
+        concat([right0, line, group(concat([p.child("and"), line, right1]))])
+      ),
+    ]),
+    alias: printAlias(path as FastPathOf<ThisNode>, print),
+    comma: p.child("comma"),
+    // not used
+    and: "",
+    as: "",
+  };
+  docs.and;
+  docs.as;
+  return concat([
+    docs.left,
+    docs.not,
+    docs.leading_comments,
+    docs.self,
+    docs.trailing_comments,
+    indent(concat([docs.right, docs.alias, docs.comma])),
+  ]);
+};
+
 const printBooleanLiteral: PrintFuncWithoutOptions = (path, print) => {
   type ThisNode = N.Expr;
   const node: ThisNode = path.getValue();
@@ -254,6 +300,33 @@ const printBooleanLiteral: PrintFuncWithoutOptions = (path, print) => {
     docs.leading_comments,
     docs.self,
     docs.trailing_comments,
+    docs.alias,
+    docs.comma,
+  ]);
+};
+
+const printBinaryOperator: PrintFuncWithoutOptions = (path, print) => {
+  type ThisNode = N.BinaryOperator;
+  const node: ThisNode = path.getValue();
+  const p = new Printer(path, print, node, node.children);
+  const docs: { [Key in Docs<ThisNode>]: Doc } = {
+    left: p.child("left"),
+    leading_comments: printLeadingComments(path, print),
+    self: p.self(),
+    trailing_comments: printTrailingComments(path, print),
+    right: p.child("right"),
+    alias: printAlias(path as FastPathOf<ThisNode>, print),
+    comma: p.child("comma"),
+    // not used
+    as: "",
+  };
+  docs.as;
+  return concat([
+    docs.left,
+    docs.leading_comments,
+    p.includedIn(["."]) ? docs.self : group(concat([line, docs.self, line])), // NOTE i don't want to use " "
+    docs.trailing_comments,
+    docs.right,
     docs.alias,
     docs.comma,
   ]);
