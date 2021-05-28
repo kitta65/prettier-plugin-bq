@@ -22,8 +22,18 @@ const printers = {
   },
 };
 
+const options = {
+  noUnsafeComment: {
+    type: "boolean",
+    category: "global",
+    default: true,
+    description: "Throw error when some comments are difficult to handle.",
+  },
+};
+
 module.exports = {
   languages,
   parsers,
   printers,
+  options,
 };
