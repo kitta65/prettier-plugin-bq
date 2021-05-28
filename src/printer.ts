@@ -18,7 +18,7 @@ const {
 
 type PrintFunc = (
   path: FastPath,
-  options: Record<string, unknown>,
+  options: Options,
   print: (path: FastPath) => Doc
 ) => Doc;
 
@@ -35,6 +35,8 @@ type Docs<T extends N.BaseNode> =
     }[keyof T["children"]]
   | "self";
 
+type Options = Record<string, unknown>;
+
 class Printer<T extends N.BaseNode> {
   /**
    * N.Children<T> is needed because `keyof T["children"]` throws error
@@ -46,6 +48,21 @@ class Printer<T extends N.BaseNode> {
     private readonly node: T,
     private readonly children: N.Children<T>
   ) {}
+  hasLeadingComments(
+    key: N.NodeKeyof<N.Children<T>> | N.NodeVecKeyof<N.Children<T>>
+  ) {
+    const child = this.children[key];
+    let firstNode;
+    if (N.isNode(child)) {
+      firstNode = getFirstNode(child.Node);
+    } else if (N.isNodeVec(child)) {
+      firstNode = getFirstNode(child.NodeVec[0]);
+      throw new Error();
+    } else {
+      return false;
+    }
+    return "leading_comments" in firstNode.children;
+  }
   child(key: N.NodeKeyof<N.Children<T>>, transform?: (x: Doc) => Doc): Doc;
   child(
     key: N.NodeVecKeyof<N.Children<T>>,
@@ -144,6 +161,37 @@ class Printer<T extends N.BaseNode> {
     }
   }
 }
+
+const getFirstNode = (node: N.BaseNode): N.BaseNode => {
+  const candidates = [];
+  for (const [k, v] of Object.entries(node.children)) {
+    if (["leading_comments", "trailing_comments"].includes(k)) {
+      continue;
+    }
+    if (N.isNode(v)) {
+      candidates.push(getFirstNode(v.Node));
+    } else if (N.isNodeVec(v)) {
+      v.NodeVec.forEach((x) => candidates.push(getFirstNode(x)));
+    }
+  }
+  let res = node;
+  for (const c of candidates) {
+    if (!c.token) {
+      continue;
+    }
+    if (!res.token) {
+      res = c;
+      continue;
+    }
+    if (
+      c.token.line < res.token.line ||
+      (c.token.line === res.token.line && c.token.column < res.token.column)
+    ) {
+      res = c;
+    }
+  }
+  return res;
+};
 
 export const printSQL: PrintFunc = (path, options, print) => {
   /**
@@ -246,17 +294,20 @@ const printBetweenOperator: PrintFunc = (path, options, print) => {
   const right0 = right[0];
   const right1 = right[1];
   const docs: { [Key in Docs<ThisNode>]: Doc } = {
-    left: p.child("left", (x) => group(concat([x, line]))),
+    left: p.child("left"),
     not: p.has("not")
-      ? p.child("not", (x) => group(concat([x, line])))
+      ? p.child("not", (x) => group(concat([line, x])))
       : concat([]),
     leading_comments: printLeadingComments(path, options, print),
-    self: p.self(),
+    self: concat([line, p.self()]),
     trailing_comments: printTrailingComments(path, options, print),
     right: concat([
-      line,
+      group(concat([line, right0])),
       group(
-        concat([right0, line, group(concat([p.child("and"), line, right1]))])
+        concat([
+          group(concat([line, p.child("and")])),
+          group(concat([line, right1])),
+        ])
       ),
     ]),
     alias: printAlias(path as FastPathOf<ThisNode>, options, print),
@@ -319,9 +370,9 @@ const printBinaryOperator: PrintFunc = (path, options, print) => {
   return concat([
     docs.left,
     docs.leading_comments,
-    p.includedIn(["."]) ? docs.self : group(concat([line, docs.self, line])), // NOTE i don't want to use " "
+    p.includedIn(["."]) ? docs.self : group(concat([line, docs.self])), // TODO
     docs.trailing_comments,
-    docs.right,
+    p.includedIn(["."]) ? docs.right : group(concat([line, docs.right])),
     docs.alias,
     docs.comma,
   ]);
@@ -593,7 +644,7 @@ const printSymbol: PrintFunc = (path, options, print) => {
 // ----- utils -----
 const printAlias = (
   path: FastPathOf<N.Expr>,
-  _: Record<string, unknown>,
+  _: Options,
   print: (path: FastPath) => Doc
 ): Doc => {
   type ThisNode = N.Expr;
@@ -608,7 +659,7 @@ const printAlias = (
   } else {
     as_ = "AS";
   }
-  return concat([line, group(concat([as_, line, p.child("alias")]))]);
+  return concat([line, as_, group(concat([line, p.child("alias")]))]);
 };
 
 const printLeadingComments: PrintFunc = (path, _, print) => {
