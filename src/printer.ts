@@ -138,6 +138,27 @@ class Printer<T extends N.BaseNode> {
     const upperCaseArr = arr.map((x) => x.toUpperCase());
     return upperCaseArr.includes(literal);
   }
+  leadingSpace(key: N.NodeKeyof<N.Children<T>>) {
+    const child = this.children[key];
+    let firstNode;
+    if (N.isNode(child)) {
+      firstNode = getFirstNode(child.Node);
+    } else {
+      // if the child is undefined, return nothing
+      return concat([]);
+    }
+    const leading_comments = firstNode.children.leading_comments;
+    if (leading_comments) {
+      const res = leading_comments.NodeVec.map((x) =>
+        lineSuffix(concat([" ", x.token.literal]))
+      );
+      //leading_comments = undefined;
+      delete firstNode.children.leading_comments
+      return concat([" ", concat(res)]);
+    } else {
+      return " ";
+    }
+  }
   len(key: N.NodeVecKeyof<N.Children<T>>) {
     const nodeVec = this.children[key];
     if (N.isNodeVec(nodeVec)) {
@@ -681,13 +702,11 @@ const printAlias = (
     return concat([]);
   }
   if (p.has("as")) {
-    p.assertNoUnsafeComment("as")
-    as_ = p.child("as");
+    as_ = concat([p.leadingSpace("as"), p.child("as")]);
   } else {
-    as_ = "AS";
+    as_ = " AS";
   }
-  //return concat([" ", as_, group(concat([line, p.child("alias")]))]);
-  return group(concat([line, as_, group(concat([line, p.child("alias")]))]));
+  return concat([as_, p.leadingSpace("alias"), p.child("alias")]);
 };
 
 const printLeadingComments: PrintFunc = (path, options, print) => {
