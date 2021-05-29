@@ -67,7 +67,8 @@ export type BetweenOperator = Expr & {
   children: {
     left: { Node: BaseNode };
     not: { Node: BaseNode };
-    right: { NodeVec: BaseNode[] };
+    right_min: { Node: BaseNode };
+    right_max: { Node: BaseNode };
     and: { Node: BaseNode };
   };
 };
