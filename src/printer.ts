@@ -42,7 +42,7 @@ type Options = Record<string, unknown>;
 class UnsafeCommentError extends Error {
   constructor(comment: string) {
     super(
-      `\`${comment}\` is difficult to format. If you want to try anyway, you can set noUnsafeComment false.`
+      `\`${comment}\` is difficult to format. If you want to try anyway, you can set noUnsafeComment to false.`
     );
     this.name = "UnsafeCommentError";
     Object.setPrototypeOf(this, new.target.prototype);
@@ -317,23 +317,26 @@ const printBetweenOperator: PrintFunc = (path, options, print) => {
     not: p.has("not")
       ? p.child("not", (x) => group(concat([line, x])))
       : concat([]),
-    leading_comments: printLeadingComments(path, options, print),
-    self: concat([line, p.self()]),
+    leading_comments: group(
+      concat([line, printLeadingComments(path, options, print)])
+    ),
+    self: p.self(),
     trailing_comments: printTrailingComments(path, options, print),
     right: concat([
-      group(concat([line, right0])),
+      line,
       group(
         concat([
-          group(concat([line, p.child("and")])),
-          group(concat([line, right1])),
+          group(right0),
+          line,
+          group(concat([p.child("and"), group(concat([line, right1]))])),
         ])
       ),
     ]),
     alias: printAlias(path as FastPathOf<ThisNode>, options, print),
     comma: p.child("comma"),
     // not used
-    and: "",
-    as: "",
+    and: concat([]),
+    as: concat([]),
   };
   docs.and;
   docs.as;
@@ -678,11 +681,13 @@ const printAlias = (
     return concat([]);
   }
   if (p.has("as")) {
+    p.assertNoUnsafeComment("as")
     as_ = p.child("as");
   } else {
     as_ = "AS";
   }
-  return concat([line, as_, group(concat([line, p.child("alias")]))]);
+  //return concat([" ", as_, group(concat([line, p.child("alias")]))]);
+  return group(concat([line, as_, group(concat([line, p.child("alias")]))]));
 };
 
 const printLeadingComments: PrintFunc = (path, options, print) => {
