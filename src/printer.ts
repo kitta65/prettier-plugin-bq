@@ -393,22 +393,24 @@ const printBinaryOperator: PrintFunc = (path, options, print) => {
   const p = new Printer(path, print, node, node.children);
   const docs: { [Key in Docs<ThisNode>]: Doc } = {
     left: p.child("left"),
-    self: p.self("asItIs", true),
+    self: p.self("upper", true),
     trailing_comments: printTrailingComments(path, options, print),
-    right: p.child("right"),
+    right: p.child("right", asItIs, true),
     alias: printAlias(path as FastPathOf<ThisNode>, options, print),
     comma: p.child("comma"),
     // not used
     leading_comments: concat([]),
     as: concat([]),
   };
+  docs.leading_comments;
   docs.as;
   return concat([
     docs.left,
-    docs.leading_comments,
-    p.includedIn(["."]) ? docs.self : group(concat([line, docs.self])), // TODO
+    p.includedIn(["."]) ? concat([]) : " ",
+    docs.self,
     docs.trailing_comments,
-    p.includedIn(["."]) ? docs.right : group(concat([line, docs.right])),
+    p.includedIn(["."]) ? concat([]) : " ",
+    docs.right,
     docs.alias,
     docs.comma,
   ]);
@@ -444,11 +446,11 @@ const printGroupedStatement: PrintFunc = (path, options, print) => {
     leading_comments: printLeadingComments(path, options, print),
     self: p.self(),
     trailing_comments: printTrailingComments(path, options, print),
-    stmt: indent(p.child("stmt", (x) => concat([softline, x]))),
-    rparen: p.child("rparen", (x) => concat([softline, x])),
+    stmt: p.child("stmt"),
+    rparen: p.child("rparen"),
     alias: printAlias(path as FastPathOf<ThisNode>, options, print),
     comma: p.child("comma"),
-    semicolon: p.child("semicolon", (x) => concat([softline, x])),
+    semicolon: p.child("semicolon"),
     // not used
     as: concat([]),
   };
@@ -458,8 +460,10 @@ const printGroupedStatement: PrintFunc = (path, options, print) => {
     group(
       concat([
         docs.self,
-        docs.trailing_comments,
-        docs.stmt,
+        indent(
+          concat([softline, group(concat([docs.trailing_comments, docs.stmt]))])
+        ),
+        softline,
         docs.rparen,
         docs.alias,
         docs.comma,
@@ -509,15 +513,18 @@ const printKeywordWithExpr: PrintFunc = (path, options, print) => {
   type ThisNode = N.KeywordWithExpr;
   const node: ThisNode = path.getValue();
   const p = new Printer(path, print, node, node.children);
+  p.setNotRoot("expr")
   const docs: { [Key in Docs<ThisNode>]: Doc } = {
     leading_comments: printLeadingComments(path, options, print),
     self: p.self("upper"),
     trailing_comments: printTrailingComments(path, options, print),
-    expr: indent(p.child("expr", (x) => concat([line, x]))),
+    expr: p.child("expr"),
   };
   return concat([
     docs.leading_comments,
-    concat([docs.self, docs.trailing_comments, docs.expr]),
+    docs.self,
+    docs.trailing_comments,
+    indent(concat([line, docs.expr])),
   ]);
 };
 
@@ -537,7 +544,10 @@ const printNumericLiteral: PrintFunc = (path, options, print) => {
   docs.as;
   return concat([
     docs.leading_comments,
-    group(concat([docs.self, docs.trailing_comments, docs.alias, docs.comma])),
+    docs.self,
+    docs.trailing_comments,
+    docs.alias,
+    docs.comma,
   ]);
 };
 
@@ -550,27 +560,34 @@ const printSelectStatement: PrintFunc = (path, options, print) => {
     // SELECT clause
     self: p.self("upper"),
     trailing_comments: printTrailingComments(path, options, print),
-    exprs: indent(p.child("exprs", (x) => concat([line, group(x)]))),
+    exprs: p.child("exprs", (x) => concat([line, x])),
     // FROM clause
-    from: p.has("from") ? concat([line, p.child("from")]) : concat([]),
+    from: p.child("from"),
     // WHERE clause
-    where: p.has("where") ? concat([line, p.child("where")]) : concat([]),
+    where: p.child("where"),
     // ORDER BY clause
-    orderby: p.has("orderby") ? concat([line, p.child("orderby")]) : concat([]),
-    semicolon: p.child("semicolon", (x) => concat([softline, x])),
+    orderby: p.child("orderby"),
+    semicolon: p.child("semicolon"),
   };
   return concat([
     docs.leading_comments,
     group(
       concat([
+        // SELECT clause
         docs.trailing_comments,
         p.len("exprs") === 1
-          ? group(concat([docs.self, docs.exprs]))
-          : concat([docs.self, docs.exprs]),
-        docs.from,
-        docs.where,
-        docs.orderby,
-        docs.semicolon,
+          ? group(concat([docs.self, indent(docs.exprs)]))
+          : concat([docs.self, indent(docs.exprs)]),
+        // FROM clause
+        p.has("from") ? line : concat([]),
+        group(docs.from),
+        // WHERE clause
+        p.has("where") ? line : concat([]),
+        group(docs.where),
+        // ORDER BY clause
+        p.has("orderby") ? line : concat([]),
+        group(docs.orderby),
+        p.has("semicolon") ? concat([softline, docs.semicolon]) : concat([]),
       ])
     ),
     p.newLine(),
@@ -620,12 +637,7 @@ const printUnaryOperator: PrintFunc = (path, options, print) => {
     leading_comments: printLeadingComments(path, options, print),
     self: p.includedIn(lowerCaseOperators) ? p.self("lower") : p.self("upper"),
     trailing_comments: printTrailingComments(path, options, print),
-    right: p.includedIn(noSpaceOperators)
-      ? concat([p.consumeLeadingCommentsOfX("right"), p.child("right")])
-      : concat([
-          p.consumeLeadingCommentsOfX("right"),
-          p.child("right", (x) => concat([" ", x])),
-        ]),
+    right: p.child("right", asItIs, true),
     alias: printAlias(path as FastPathOf<ThisNode>, options, print),
     comma: p.child("comma"),
     // not used
@@ -636,6 +648,7 @@ const printUnaryOperator: PrintFunc = (path, options, print) => {
     docs.leading_comments,
     docs.self,
     docs.trailing_comments,
+    p.includedIn(noSpaceOperators) ? concat([]) : " ",
     docs.right,
     docs.alias,
     docs.comma,
@@ -650,18 +663,16 @@ const printXXXByExprs: PrintFunc = (path, options, print) => {
     leading_comments: printLeadingComments(path, options, print),
     self: p.self("upper"),
     trailing_comments: printTrailingComments(path, options, print),
-    by: concat([
-      p.consumeLeadingCommentsOfX("by"),
-      p.child("by", (x) => concat([" ", x])),
-    ]),
-    exprs: indent(p.child("exprs", (x) => concat([line, x]))),
+    by: p.child("by", asItIs, true),
+    exprs: p.child("exprs", (x) => concat([line, x])),
   };
   return concat([
     docs.leading_comments,
     docs.self,
     docs.trailing_comments,
+    " ",
     docs.by,
-    docs.exprs,
+    indent(docs.exprs),
   ]);
 };
 
