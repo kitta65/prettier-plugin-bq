@@ -37,6 +37,18 @@ type Docs<T extends N.BaseNode> =
 
 type Options = Record<string, unknown>;
 
+// https://www.typescriptlang.org/docs/handbook/release-notes/typescript-2-2.html#support-for-newtarget
+// https://stackoverflow.com/questions/41102060/typescript-extending-error-class
+class UnsafeCommentError extends Error {
+  constructor(comment: string) {
+    super(
+      `\`${comment}\` is difficult to format. If you want to try anyway, you can set noUnsafeComment false.`
+    );
+    this.name = "UnsafeCommentError";
+    Object.setPrototypeOf(this, new.target.prototype);
+  }
+}
+
 class Printer<T extends N.BaseNode> {
   /**
    * N.Children<T> is needed because `keyof T["children"]` throws error
@@ -44,24 +56,31 @@ class Printer<T extends N.BaseNode> {
    */
   constructor(
     private readonly path: FastPath,
+    private readonly options: Options,
     private readonly print: (path: FastPath) => Doc,
     private readonly node: T,
     private readonly children: N.Children<T>
   ) {}
-  hasLeadingComments(
+  assertNoUnsafeComment(
     key: N.NodeKeyof<N.Children<T>> | N.NodeVecKeyof<N.Children<T>>
-  ) {
+  ): void {
+    if (!this.options.noUnsafeComment) {
+      return;
+    }
     const child = this.children[key];
     let firstNode;
     if (N.isNode(child)) {
       firstNode = getFirstNode(child.Node);
     } else if (N.isNodeVec(child)) {
       firstNode = getFirstNode(child.NodeVec[0]);
-      throw new Error();
     } else {
-      return false;
+      // in the case of child is undefined
+      return;
     }
-    return "leading_comments" in firstNode.children;
+    const leading_comments = firstNode.children.leading_comments;
+    if (leading_comments) {
+      throw new UnsafeCommentError(leading_comments.NodeVec[0].token.literal);
+    }
   }
   child(key: N.NodeKeyof<N.Children<T>>, transform?: (x: Doc) => Doc): Doc;
   child(
@@ -100,7 +119,7 @@ class Printer<T extends N.BaseNode> {
         "children"
       );
     }
-    // in the case of `children` is undefined
+    // in the case of `child` is undefined
     return concat([]);
   }
   has(key: keyof N.Children<T>) {
@@ -286,7 +305,7 @@ export const printSQL: PrintFunc = (path, options, print) => {
 const printBetweenOperator: PrintFunc = (path, options, print) => {
   type ThisNode = N.BetweenOperator;
   const node: ThisNode = path.getValue();
-  const p = new Printer(path, print, node, node.children);
+  const p = new Printer(path, options, print, node, node.children);
   const right = path.call(
     (p) => p.call((p) => p.map(print, "NodeVec"), "right"),
     "children"
@@ -331,7 +350,7 @@ const printBetweenOperator: PrintFunc = (path, options, print) => {
 const printBooleanLiteral: PrintFunc = (path, options, print) => {
   type ThisNode = N.Expr;
   const node: ThisNode = path.getValue();
-  const p = new Printer(path, print, node, node.children);
+  const p = new Printer(path, options, print, node, node.children);
   const docs: { [Key in Docs<ThisNode>]: Doc } = {
     leading_comments: printLeadingComments(path, options, print),
     self: p.self(),
@@ -354,7 +373,11 @@ const printBooleanLiteral: PrintFunc = (path, options, print) => {
 const printBinaryOperator: PrintFunc = (path, options, print) => {
   type ThisNode = N.BinaryOperator;
   const node: ThisNode = path.getValue();
-  const p = new Printer(path, print, node, node.children);
+  const p = new Printer(path, options, print, node, node.children);
+
+  // assertion
+  p.assertNoUnsafeComment("right");
+
   const docs: { [Key in Docs<ThisNode>]: Doc } = {
     left: p.child("left"),
     leading_comments: printLeadingComments(path, options, print),
@@ -378,10 +401,10 @@ const printBinaryOperator: PrintFunc = (path, options, print) => {
   ]);
 };
 
-const printComment: PrintFunc = (path, _, print) => {
+const printComment: PrintFunc = (path, options, print) => {
   type ThisNode = N.Comment;
   const node: ThisNode = path.getValue();
-  const p = new Printer(path, print, node, node.children);
+  const p = new Printer(path, options, print, node, node.children);
   const docs: { [Key in Docs<ThisNode>]: Doc } = {
     self: p.self(),
   };
@@ -402,7 +425,7 @@ const printEOF: PrintFunc = (path, options, print) => {
 const printGroupedStatement: PrintFunc = (path, options, print) => {
   type ThisNode = N.GroupedStatement;
   const node: ThisNode = path.getValue();
-  const p = new Printer(path, print, node, node.children);
+  const p = new Printer(path, options, print, node, node.children);
   p.setNotRoot("stmt");
   const docs: { [Key in Docs<ThisNode>]: Doc } = {
     leading_comments: printLeadingComments(path, options, print),
@@ -437,7 +460,7 @@ const printGroupedStatement: PrintFunc = (path, options, print) => {
 const printIdentifier: PrintFunc = (path, options, print) => {
   type ThisNode = N.Expr;
   const node: ThisNode = path.getValue();
-  const p = new Printer(path, print, node, node.children);
+  const p = new Printer(path, options, print, node, node.children);
   const docs: { [Key in Docs<ThisNode>]: Doc } = {
     leading_comments: printLeadingComments(path, options, print),
     self: p.self(),
@@ -460,7 +483,7 @@ const printIdentifier: PrintFunc = (path, options, print) => {
 const printKeyword: PrintFunc = (path, options, print) => {
   type ThisNode = N.Keyword;
   const node: ThisNode = path.getValue();
-  const p = new Printer(path, print, node, node.children);
+  const p = new Printer(path, options, print, node, node.children);
   const docs: { [Key in Docs<ThisNode>]: Doc } = {
     leading_comments: printLeadingComments(path, options, print),
     self: p.self("upper"),
@@ -472,7 +495,7 @@ const printKeyword: PrintFunc = (path, options, print) => {
 const printKeywordWithExpr: PrintFunc = (path, options, print) => {
   type ThisNode = N.KeywordWithExpr;
   const node: ThisNode = path.getValue();
-  const p = new Printer(path, print, node, node.children);
+  const p = new Printer(path, options, print, node, node.children);
   const docs: { [Key in Docs<ThisNode>]: Doc } = {
     leading_comments: printLeadingComments(path, options, print),
     self: p.self("upper"),
@@ -488,7 +511,7 @@ const printKeywordWithExpr: PrintFunc = (path, options, print) => {
 const printNumericLiteral: PrintFunc = (path, options, print) => {
   type ThisNode = N.Expr;
   const node: ThisNode = path.getValue();
-  const p = new Printer(path, print, node, node.children);
+  const p = new Printer(path, options, print, node, node.children);
   const docs: { [Key in Docs<ThisNode>]: Doc } = {
     leading_comments: printLeadingComments(path, options, print),
     self: p.self("lower"), // in the case of `3.14e10`
@@ -508,7 +531,7 @@ const printNumericLiteral: PrintFunc = (path, options, print) => {
 const printSelectStatement: PrintFunc = (path, options, print) => {
   type ThisNode = N.SelectStatement;
   const node: ThisNode = path.getValue();
-  const p = new Printer(path, print, node, node.children);
+  const p = new Printer(path, options, print, node, node.children);
   const docs: { [Key in Docs<ThisNode>]: Doc } = {
     leading_comments: printLeadingComments(path, options, print),
     // SELECT clause
@@ -544,7 +567,7 @@ const printSelectStatement: PrintFunc = (path, options, print) => {
 const printStringLiteral: PrintFunc = (path, options, print) => {
   type ThisNode = N.Expr;
   const node: ThisNode = path.getValue();
-  const p = new Printer(path, print, node, node.children);
+  const p = new Printer(path, options, print, node, node.children);
   const docs: { [Key in Docs<ThisNode>]: Doc } = {
     leading_comments: printLeadingComments(path, options, print),
     self: p.self(),
@@ -567,7 +590,7 @@ const printStringLiteral: PrintFunc = (path, options, print) => {
 const printUnaryOperator: PrintFunc = (path, options, print) => {
   type ThisNode = N.UnaryOperator;
   const node: ThisNode = path.getValue();
-  const p = new Printer(path, print, node, node.children);
+  const p = new Printer(path, options, print, node, node.children);
   const lowerCaseOperators = ["b", "br", "r", "rb"];
   const noSpaceOperators = [
     "+",
@@ -610,7 +633,7 @@ const printUnaryOperator: PrintFunc = (path, options, print) => {
 const printXXXByExprs: PrintFunc = (path, options, print) => {
   type ThisNode = N.XXXByExprs;
   const node: ThisNode = path.getValue();
-  const p = new Printer(path, print, node, node.children);
+  const p = new Printer(path, options, print, node, node.children);
   const docs: { [Key in Docs<ThisNode>]: Doc } = {
     leading_comments: printLeadingComments(path, options, print),
     self: p.self("upper"),
@@ -632,7 +655,7 @@ const printXXXByExprs: PrintFunc = (path, options, print) => {
 const printSymbol: PrintFunc = (path, options, print) => {
   type ThisNode = N.Symbol_;
   const node: ThisNode = path.getValue();
-  const p = new Printer(path, print, node, node.children);
+  const p = new Printer(path, options, print, node, node.children);
   const docs: { [Key in Docs<ThisNode>]: Doc } = {
     leading_comments: printLeadingComments(path, options, print),
     self: p.self("upper"),
@@ -644,12 +667,12 @@ const printSymbol: PrintFunc = (path, options, print) => {
 // ----- utils -----
 const printAlias = (
   path: FastPathOf<N.Expr>,
-  _: Options,
+  options: Options,
   print: (path: FastPath) => Doc
 ): Doc => {
   type ThisNode = N.Expr;
   const node: ThisNode = path.getValue();
-  const p = new Printer(path, print, node, node.children);
+  const p = new Printer(path, options, print, node, node.children);
   let as_: Doc;
   if (!p.has("alias")) {
     return concat([]);
@@ -662,16 +685,16 @@ const printAlias = (
   return concat([line, as_, group(concat([line, p.child("alias")]))]);
 };
 
-const printLeadingComments: PrintFunc = (path, _, print) => {
+const printLeadingComments: PrintFunc = (path, options, print) => {
   type ThisNode = N.BaseNode;
   const node: ThisNode = path.getValue();
-  const p = new Printer(path, print, node, node.children);
+  const p = new Printer(path, options, print, node, node.children);
   return p.child("leading_comments", "", (x) => concat([x, hardline]));
 };
 
-const printTrailingComments: PrintFunc = (path, _, print) => {
+const printTrailingComments: PrintFunc = (path, options, print) => {
   type ThisNode = N.BaseNode;
   const node: ThisNode = path.getValue();
-  const p = new Printer(path, print, node, node.children);
+  const p = new Printer(path, options, print, node, node.children);
   return lineSuffix(p.child("trailing_comments", "", (x) => concat([" ", x])));
 };
