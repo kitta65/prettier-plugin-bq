@@ -312,6 +312,8 @@ export const printSQL: PrintFunc = (path, options, print) => {
       return printKeyword(path, options, print);
     case "KeywordWithExpr":
       return printKeywordWithExpr(path, options, print);
+    case "NullLiteral":
+      return printNullLiteral(path, options, print);
     case "NumericLiteral":
       return printNumericLiteral(path, options, print);
     case "SelectStatement":
@@ -397,6 +399,7 @@ const printBinaryOperator: PrintFunc = (path, options, print) => {
   const p = new Printer(path, print, node, node.children);
   const docs: { [Key in Docs<ThisNode>]: Doc } = {
     left: p.child("left"),
+    not: p.child("not", asItIs, true),
     self: p.self("upper", true),
     trailing_comments: printTrailingComments(path, options, print),
     right: p.child("right", asItIs, true),
@@ -411,7 +414,11 @@ const printBinaryOperator: PrintFunc = (path, options, print) => {
   return concat([
     docs.left,
     p.includedIn(["."]) ? concat([]) : " ",
+    p.has("not") && !p.includedIn(["IS"])
+      ? concat([docs.not, " "])
+      : concat([]),
     docs.self,
+    p.has("not") && p.includedIn(["IS"]) ? concat([" ", docs.not]) : concat([]),
     docs.trailing_comments,
     p.includedIn(["."]) ? concat([]) : " ",
     docs.right,
@@ -587,6 +594,29 @@ const printKeywordWithExpr: PrintFunc = (path, options, print) => {
     docs.self,
     docs.trailing_comments,
     indent(concat([line, docs.expr])),
+  ]);
+};
+
+const printNullLiteral: PrintFunc = (path, options, print) => {
+  type ThisNode = N.NullLiteral;
+  const node: ThisNode = path.getValue();
+  const p = new Printer(path, print, node, node.children);
+  const docs: { [Key in Docs<ThisNode>]: Doc } = {
+    leading_comments: printLeadingComments(path, options, print),
+    self: p.self("upper"),
+    trailing_comments: printTrailingComments(path, options, print),
+    alias: printAlias(path as FastPathOf<ThisNode>, options, print),
+    comma: p.child("comma", asItIs, true),
+    // not used
+    as: concat([]),
+  };
+  docs.as;
+  return concat([
+    docs.leading_comments,
+    docs.self,
+    docs.trailing_comments,
+    docs.alias,
+    docs.comma,
   ]);
 };
 

@@ -58,6 +58,7 @@ export const isNodeVec = (child: unknown): child is { NodeVec: BaseNode[] } => {
 // ----- sub types of BaseNode -----
 export type BinaryOperator = Expr & {
   children: {
+    not?: { Node: BaseNode };
     left: { Node: BaseNode };
     right: { Node: BaseNode };
   };
@@ -100,12 +101,13 @@ export type Expr = BaseNode & {
 };
 
 export type GroupedExprs = BaseNode & {
+  token: Token;
   children: {
     exprs: { NodeVec: BaseNode[] };
     rparen: { Node: BaseNode };
     // only in UNPIVOT operator
-    as?: {Node: BaseNode};
-    row_value_alias?: {Node: BaseNode}
+    as?: { Node: BaseNode };
+    row_value_alias?: { Node: BaseNode };
     // only in INSERT statement
     comma?: { Node: BaseNode };
   };
@@ -138,6 +140,8 @@ export type KeywordWithExpr = Keyword & {
     expr: { Node: BaseNode };
   };
 };
+
+export type NullLiteral = Expr
 
 export type NumericLiteral = Expr;
 
