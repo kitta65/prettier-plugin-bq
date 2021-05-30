@@ -300,6 +300,8 @@ export const printSQL: PrintFunc = (path, options, print) => {
       return printComment(path, options, print);
     case "EOF":
       return printEOF(path, options, print);
+    case "GroupedExpr":
+      return printGroupedExpr(path, options, print);
     case "GroupedExprs":
       return printGroupedExprs(path, options, print);
     case "GroupedStatement":
@@ -446,6 +448,34 @@ const printEOF: PrintFunc = (path, options, print) => {
   };
   docs.self;
   return docs.leading_comments;
+};
+
+const printGroupedExpr: PrintFunc = (path, options, print) => {
+  type ThisNode = N.GroupedExpr;
+  const node: ThisNode = path.getValue();
+  const p = new Printer(path, print, node, node.children);
+  const docs: { [Key in Docs<ThisNode>]: Doc } = {
+    leading_comments: printLeadingComments(path, options, print),
+    self: p.self(),
+    trailing_comments: printTrailingComments(path, options, print),
+    expr: p.child("expr"),
+    rparen: p.child("rparen"),
+    alias: printAlias(path as FastPathOf<ThisNode>, options, print),
+    comma: p.child("comma", asItIs, true),
+    // not used
+    as: p.has("as") ? p.child("as", asItIs, true) : "AS",
+  };
+  docs.as;
+  return concat([
+    docs.leading_comments,
+    docs.self,
+    docs.trailing_comments,
+    indent(concat([softline, group(docs.expr)])),
+    softline,
+    docs.rparen,
+    docs.alias,
+    docs.comma,
+  ]);
 };
 
 const printGroupedExprs: PrintFunc = (path, options, print) => {

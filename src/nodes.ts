@@ -100,6 +100,13 @@ export type Expr = BaseNode & {
   };
 };
 
+export type GroupedExpr = Expr & {
+  children: {
+    expr: { Node: BaseNode };
+    rparen: { Node: BaseNode };
+  };
+};
+
 export type GroupedExprs = BaseNode & {
   token: Token;
   children: {
@@ -141,7 +148,7 @@ export type KeywordWithExpr = Keyword & {
   };
 };
 
-export type NullLiteral = Expr
+export type NullLiteral = Expr;
 
 export type NumericLiteral = Expr;
 

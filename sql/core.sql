@@ -13,6 +13,7 @@ select
 ;
 ----- binary operator -----
 select 1+2;
+select (1+(-2)) * 3 in (9);
 
 -- BETWEEN
 select
