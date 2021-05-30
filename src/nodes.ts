@@ -5,6 +5,16 @@ type Token = {
   literal: string;
 };
 
+/**
+ * # callable
+ * if it is true and it is `Identifier`, you can assume the node is global function.
+ *
+ * # notGlobal
+ * if it is true, the node follows `.` operator.
+ *
+ * # notRoot
+ * if it is true, the statement is a part of another statement.
+ */
 export type BaseNode = {
   token: Token | null;
   children: {
@@ -13,8 +23,9 @@ export type BaseNode = {
   };
   node_type: string;
   emptyLines?: number;
-  notRoot?: boolean;
-  notGlobal?: boolean;
+  callable?: true
+  notGlobal?: true;
+  notRoot?: true;
 };
 
 export type Children<T extends BaseNode> = T["children"];
@@ -56,6 +67,23 @@ export const isNodeVec = (child: unknown): child is { NodeVec: BaseNode[] } => {
 };
 
 // ----- sub types of BaseNode -----
+export type ArrayAccessing = Expr & {
+  children: {
+    not: undefined;
+    left: { Node: BaseNode };
+    right: { Node: BaseNode };
+    rparen: { Node: BaseNode };
+  };
+};
+
+export type ArrayLiteral = Expr & {
+  children: {
+    type?: { Node: BaseNode };
+    exprs: { NodeVec: BaseNode[] };
+    rparen: { Node: BaseNode };
+  };
+};
+
 export type BinaryOperator = Expr & {
   children: {
     not?: { Node: BaseNode };
@@ -75,6 +103,14 @@ export type BetweenOperator = Expr & {
 };
 
 export type BooleanLiteral = Expr;
+
+export type CallingFunction = Expr & {
+  children: {
+    func: { Node: BaseNode };
+    args?: { NodeVec: BaseNode[] };
+    rparen: { Node: BaseNode };
+  };
+};
 
 export type Comment = BaseNode & {
   token: Token;
@@ -127,6 +163,13 @@ export type GroupedStatement = Expr &
       rparen: { Node: BaseNode };
     };
   };
+
+export type GroupedType = BaseNode & {
+  children: {
+    type: { Node: BaseNode };
+    rparen: { Node: BaseNode };
+  };
+};
 
 export type Keyword = BaseNode & {
   token: Token;
@@ -188,6 +231,13 @@ export const isSetOperator = (n: BaseNode | undefined): n is SetOperator => {
 
 export type Symbol_ = BaseNode & {
   token: Token;
+};
+
+export type Type = BaseNode & {
+  token: Token;
+  children: {
+    type_declaration?: { Node: BaseNode };
+  };
 };
 
 export type UnaryOperator = Expr & {
