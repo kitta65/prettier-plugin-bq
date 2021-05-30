@@ -66,12 +66,14 @@ export type BinaryOperator = Expr & {
 export type BetweenOperator = Expr & {
   children: {
     left: { Node: BaseNode };
-    not: { Node: BaseNode };
+    not?: { Node: BaseNode };
     right_min: { Node: BaseNode };
     right_max: { Node: BaseNode };
     and: { Node: BaseNode };
   };
 };
+
+export type BooleanLiteral = Expr;
 
 export type Comment = BaseNode & {
   token: Token;
@@ -88,18 +90,23 @@ export type EOF = BaseNode & {
   };
 };
 
-/**
- * following node_types are included
- * - BooleanLiteral
- * - Identifier
- * - NumericLiteral
- * - StringLiteral
- */
 export type Expr = BaseNode & {
   token: Token;
   children: {
     as?: { Node: BaseNode };
     alias?: { Node: BaseNode };
+    comma?: { Node: BaseNode };
+  };
+};
+
+export type GroupedExprs = BaseNode & {
+  children: {
+    exprs: { NodeVec: BaseNode[] };
+    rparen: { Node: BaseNode };
+    // only in UNPIVOT operator
+    as?: {Node: BaseNode};
+    row_value_alias?: {Node: BaseNode}
+    // only in INSERT statement
     comma?: { Node: BaseNode };
   };
 };
@@ -116,11 +123,23 @@ export type Keyword = BaseNode & {
   token: Token;
 };
 
+export type Identifier = Expr;
+
+export type InOperator = Expr & {
+  children: {
+    not?: { Node: BaseNode };
+    left: { Node: BaseNode };
+    right: { Node: BaseNode };
+  };
+};
+
 export type KeywordWithExpr = Keyword & {
   children: {
     expr: { Node: BaseNode };
   };
 };
+
+export type NumericLiteral = Expr;
 
 export type SelectStatement = XXXStatement & {
   token: Token;
@@ -140,6 +159,8 @@ export type SetOperator = XXXStatement & {
     right: { Node: BaseNode };
   };
 };
+
+export type StringLiteral = Expr;
 
 export const isSetOperator = (n: BaseNode | undefined): n is SetOperator => {
   if (

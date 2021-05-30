@@ -300,10 +300,14 @@ export const printSQL: PrintFunc = (path, options, print) => {
       return printComment(path, options, print);
     case "EOF":
       return printEOF(path, options, print);
+    case "GroupedExprs":
+      return printGroupedExprs(path, options, print);
     case "GroupedStatement":
       return printGroupedStatement(path, options, print);
     case "Identifier":
       return printIdentifier(path, options, print);
+    case "InOperator":
+      return printInOperator(path, options, print);
     case "Keyword":
       return printKeyword(path, options, print);
     case "KeywordWithExpr":
@@ -338,7 +342,7 @@ const printBetweenOperator: PrintFunc = (path, options, print) => {
     and: p.child("and"),
     right_max: p.child("right_max", asItIs, true),
     alias: printAlias(path as FastPathOf<ThisNode>, options, print),
-    comma: p.child("comma"),
+    comma: p.child("comma", asItIs, true),
     // not used
     leading_comments: concat([]),
     as: concat([]),
@@ -365,7 +369,7 @@ const printBetweenOperator: PrintFunc = (path, options, print) => {
 };
 
 const printBooleanLiteral: PrintFunc = (path, options, print) => {
-  type ThisNode = N.Expr;
+  type ThisNode = N.BooleanLiteral;
   const node: ThisNode = path.getValue();
   const p = new Printer(path, print, node, node.children);
   const docs: { [Key in Docs<ThisNode>]: Doc } = {
@@ -373,7 +377,7 @@ const printBooleanLiteral: PrintFunc = (path, options, print) => {
     self: p.self(),
     trailing_comments: printTrailingComments(path, options, print),
     alias: printAlias(path as FastPathOf<ThisNode>, options, print),
-    comma: p.child("comma"),
+    comma: p.child("comma", asItIs, true),
     // not used
     as: concat([]),
   };
@@ -397,7 +401,7 @@ const printBinaryOperator: PrintFunc = (path, options, print) => {
     trailing_comments: printTrailingComments(path, options, print),
     right: p.child("right", asItIs, true),
     alias: printAlias(path as FastPathOf<ThisNode>, options, print),
-    comma: p.child("comma"),
+    comma: p.child("comma", asItIs, true),
     // not used
     leading_comments: concat([]),
     as: concat([]),
@@ -437,6 +441,33 @@ const printEOF: PrintFunc = (path, options, print) => {
   return docs.leading_comments;
 };
 
+const printGroupedExprs: PrintFunc = (path, options, print) => {
+  type ThisNode = N.GroupedExprs;
+  const node: ThisNode = path.getValue();
+  const p = new Printer(path, print, node, node.children);
+  const docs: { [Key in Docs<ThisNode>]: Doc } = {
+    leading_comments: printLeadingComments(path, options, print),
+    self: p.self(),
+    trailing_comments: printTrailingComments(path, options, print),
+    exprs: p.child("exprs", asItIs, line),
+    rparen: p.child("rparen"),
+    as: p.has("as") ? p.child("as", asItIs, true) : "AS",
+    row_value_alias: p.child("row_value_alias", asItIs, true),
+    comma: p.child("comma", asItIs, true),
+  };
+  return concat([
+    docs.leading_comments,
+    docs.self,
+    docs.trailing_comments,
+    indent(concat([softline, docs.exprs])),
+    softline,
+    docs.rparen,
+    p.has("row_value_alias") ? concat([" ", docs.as]) : concat([]),
+    p.has("row_value_alias") ? concat([" ", docs.row_value_alias]) : concat([]),
+    docs.comma,
+  ]);
+};
+
 const printGroupedStatement: PrintFunc = (path, options, print) => {
   type ThisNode = N.GroupedStatement;
   const node: ThisNode = path.getValue();
@@ -449,8 +480,8 @@ const printGroupedStatement: PrintFunc = (path, options, print) => {
     stmt: p.child("stmt"),
     rparen: p.child("rparen"),
     alias: printAlias(path as FastPathOf<ThisNode>, options, print),
-    comma: p.child("comma"),
-    semicolon: p.child("semicolon"),
+    comma: p.child("comma", asItIs, true),
+    semicolon: p.child("semicolon", asItIs, true),
     // not used
     as: concat([]),
   };
@@ -475,7 +506,7 @@ const printGroupedStatement: PrintFunc = (path, options, print) => {
 };
 
 const printIdentifier: PrintFunc = (path, options, print) => {
-  type ThisNode = N.Expr;
+  type ThisNode = N.Identifier;
   const node: ThisNode = path.getValue();
   const p = new Printer(path, print, node, node.children);
   const docs: { [Key in Docs<ThisNode>]: Doc } = {
@@ -483,7 +514,7 @@ const printIdentifier: PrintFunc = (path, options, print) => {
     self: p.self(),
     trailing_comments: printTrailingComments(path, options, print),
     alias: printAlias(path as FastPathOf<ThisNode>, options, print),
-    comma: p.child("comma"),
+    comma: p.child("comma", asItIs, true),
     // not used
     as: concat([]),
   };
@@ -492,6 +523,37 @@ const printIdentifier: PrintFunc = (path, options, print) => {
     docs.leading_comments,
     docs.self,
     docs.trailing_comments,
+    docs.alias,
+    docs.comma,
+  ]);
+};
+
+const printInOperator: PrintFunc = (path, options, print) => {
+  type ThisNode = N.InOperator;
+  const node: ThisNode = path.getValue();
+  const p = new Printer(path, print, node, node.children);
+  const docs: { [Key in Docs<ThisNode>]: Doc } = {
+    left: p.child("left"),
+    not: p.child("not"),
+    self: p.self("asItIs", true),
+    trailing_comments: printTrailingComments(path, options, print),
+    right: p.child("right", asItIs, true),
+    alias: printAlias(path as FastPathOf<ThisNode>, options, print),
+    comma: p.child("comma", asItIs, true),
+    // not used
+    leading_comments: concat([]),
+    as: concat([]),
+  };
+  docs.leading_comments;
+  docs.as;
+  return concat([
+    docs.left,
+    " ",
+    p.has("not") ? concat([docs.not, " "]) : concat([]),
+    docs.self,
+    docs.trailing_comments,
+    " ",
+    docs.right,
     docs.alias,
     docs.comma,
   ]);
@@ -513,7 +575,7 @@ const printKeywordWithExpr: PrintFunc = (path, options, print) => {
   type ThisNode = N.KeywordWithExpr;
   const node: ThisNode = path.getValue();
   const p = new Printer(path, print, node, node.children);
-  p.setNotRoot("expr")
+  p.setNotRoot("expr");
   const docs: { [Key in Docs<ThisNode>]: Doc } = {
     leading_comments: printLeadingComments(path, options, print),
     self: p.self("upper"),
@@ -529,7 +591,7 @@ const printKeywordWithExpr: PrintFunc = (path, options, print) => {
 };
 
 const printNumericLiteral: PrintFunc = (path, options, print) => {
-  type ThisNode = N.Expr;
+  type ThisNode = N.NumericLiteral;
   const node: ThisNode = path.getValue();
   const p = new Printer(path, print, node, node.children);
   const docs: { [Key in Docs<ThisNode>]: Doc } = {
@@ -537,7 +599,7 @@ const printNumericLiteral: PrintFunc = (path, options, print) => {
     self: p.self("lower"), // in the case of `3.14e10`
     trailing_comments: printTrailingComments(path, options, print),
     alias: printAlias(path as FastPathOf<ThisNode>, options, print),
-    comma: p.child("comma"),
+    comma: p.child("comma", asItIs, true),
     // not used
     as: concat([]),
   };
@@ -560,7 +622,7 @@ const printSelectStatement: PrintFunc = (path, options, print) => {
     // SELECT clause
     self: p.self("upper"),
     trailing_comments: printTrailingComments(path, options, print),
-    exprs: p.child("exprs", (x) => concat([line, x])),
+    exprs: p.child("exprs", (x) => concat([line, group(x)])),
     // FROM clause
     from: p.child("from"),
     // WHERE clause
@@ -595,7 +657,7 @@ const printSelectStatement: PrintFunc = (path, options, print) => {
 };
 
 const printStringLiteral: PrintFunc = (path, options, print) => {
-  type ThisNode = N.Expr;
+  type ThisNode = N.StringLiteral;
   const node: ThisNode = path.getValue();
   const p = new Printer(path, print, node, node.children);
   const docs: { [Key in Docs<ThisNode>]: Doc } = {
@@ -603,7 +665,7 @@ const printStringLiteral: PrintFunc = (path, options, print) => {
     self: p.self(),
     trailing_comments: printTrailingComments(path, options, print),
     alias: printAlias(path as FastPathOf<ThisNode>, options, print),
-    comma: p.child("comma"),
+    comma: p.child("comma", asItIs, true),
     // not used
     as: concat([]),
   };
@@ -639,7 +701,7 @@ const printUnaryOperator: PrintFunc = (path, options, print) => {
     trailing_comments: printTrailingComments(path, options, print),
     right: p.child("right", asItIs, true),
     alias: printAlias(path as FastPathOf<ThisNode>, options, print),
-    comma: p.child("comma"),
+    comma: p.child("comma", asItIs, true),
     // not used
     as: concat([]),
   };
