@@ -22,7 +22,7 @@ select
 
 -- IN
 select
-  1 in (1, 2, 3, 40000000000000000000000000000000000000000000000000000000000000000),
+  1 in (1000000000000000, 2000000000000000, 3000000000000000, 4000000000000000, 5000000000000000),
   1 not in (1, 2, 3) as notOneTwoThree,
 ;
 
@@ -34,13 +34,14 @@ select
 
 -- IS
 select
-  x is null,
-  x is not null,
+  true is null,
+  true is not null,
   true is not false,
 ;
 
 -- '.'
 select
-  t.struct_col.num + 1,
-  1 + t.struct_col.num,
+  nested.int + 1,
+  1 + nested.int,
+from t
 ;

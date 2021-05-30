@@ -4,8 +4,8 @@
   "description": "",
   "main": "dist/index.js",
   "scripts": {
-    "test": "tsc && jest",
-    "sample": "tsc && mkdir -p ./result && cp ./sql/* ./result && prettier --write --plugin . ./result"
+    "test": "tsc && mkdir -p ./result && cp ./sql/* ./result && prettier --write --plugin . ./result && prettier --check --plugin . ./result/core.sql && jest",
+    "sample": "tsc && mkdir -p ./result && cp ./sql/* ./result && prettier --write --plugin . ./result && prettier --check --plugin . ./result/core.sql"
   },
   "keywords": [],
   "author": "dr666m1 <skndr666m1@gmail.com>",
@@ -13,16 +13,16 @@
   "devDependencies": {
     "@google-cloud/bigquery": "^5.6.0",
     "@types/jest": "^26.0.23",
-    "@types/node": "^15.0.1",
+    "@types/node": "^15.6.1",
     "@types/prettier": "^2.2.3",
     "@typescript-eslint/eslint-plugin": "^4.25.0",
     "@typescript-eslint/parser": "^4.25.0",
     "eslint": "^7.27.0",
     "eslint-config-prettier": "^8.3.0",
     "eslint-plugin-unicorn": "^32.0.1",
-    "jest": "^26.6.3",
-    "ts-jest": "^26.5.6",
-    "typescript": "^4.2.4"
+    "jest": "^27.0.3",
+    "ts-jest": "^27.0.1",
+    "typescript": "^4.3.2"
   },
   "dependencies": {
     "@dr666m1/bq2cst": "^0.1.6",
