@@ -23,7 +23,7 @@ export type BaseNode = {
   };
   node_type: string;
   emptyLines?: number;
-  callable?: true
+  callable?: true;
   notGlobal?: true;
   notRoot?: true;
 };
@@ -112,6 +112,22 @@ export type CallingFunction = Expr & {
   };
 };
 
+export type CaseArm = BaseNode & {
+  children: {
+    expr?: { Node: BaseNode };
+    then?: { Node: BaseNode };
+    result: { Node: BaseNode };
+  };
+};
+
+export type CaseExpr = Expr & {
+  children: {
+    expr?: { Node: BaseNode };
+    arms: { NodeVec: BaseNode[] };
+    end: { Node: BaseNode };
+  };
+};
+
 export type Comment = BaseNode & {
   token: Token;
   children: {
@@ -163,6 +179,13 @@ export type GroupedStatement = Expr &
       rparen: { Node: BaseNode };
     };
   };
+
+export type GroupedTypeDeclarations = BaseNode & {
+  children: {
+    declarations: { NodeVec: BaseNode[] };
+    rparen: { Node: BaseNode };
+  };
+};
 
 export type GroupedType = BaseNode & {
   children: {
@@ -229,6 +252,14 @@ export const isSetOperator = (n: BaseNode | undefined): n is SetOperator => {
   return false;
 };
 
+export type StructLiteral = Expr & {
+  children: {
+    type?: { Node: BaseNode };
+    exprs: { NodeVec: BaseNode[] };
+    rparen: { Node: BaseNode };
+  };
+};
+
 export type Symbol_ = BaseNode & {
   token: Token;
 };
@@ -237,6 +268,14 @@ export type Type = BaseNode & {
   token: Token;
   children: {
     type_declaration?: { Node: BaseNode };
+  };
+};
+
+export type TypeDeclaration = BaseNode & {
+  token: Token;
+  children: {
+    type: { Node: BaseNode };
+    comma?: { Node: BaseNode };
   };
 };
 

@@ -54,9 +54,28 @@ select
   array[1,2],
   array<int64>[1],
   nested.arr[offset(1)],
+  array<struct<int64, int64>>[(1,2)]
 from t
 ;
 
 ----- STRUCT -----
--- select array<struct<int64, int64>>[(1,2)]
+select
+  (1,2),
+  struct(1,2),
+  struct<int64>(1),
+  struct<array<int64>, x float64>([1], .1)
+;
+
+----- CASE expr -----
+select
+  case int
+    when 1 then 'one'
+    when 2 then 'two'
+    when 3
+      -- comment
+      then 'three'
+    else null end,
+  case when int = 1 then 'one' else 'other' end as caseExpression
+from t
+;
 
