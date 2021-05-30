@@ -79,3 +79,9 @@ select
 from t
 ;
 
+----- function -----
+select least(1, 2);
+
+-- cast
+select cast('1' as int64),
+

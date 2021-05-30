@@ -128,6 +128,13 @@ export type CaseExpr = Expr & {
   };
 };
 
+export type CastArgument = BaseNode & {
+  children: {
+    cast_from: { Node: BaseNode };
+    cast_to: { Node: BaseNode };
+  };
+};
+
 export type Comment = BaseNode & {
   token: Token;
   children: {

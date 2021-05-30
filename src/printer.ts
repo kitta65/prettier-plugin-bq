@@ -306,12 +306,14 @@ export const printSQL: PrintFunc = (path, options, print) => {
       return printBooleanLiteral(path, options, print);
     case "BinaryOperator":
       return printBinaryOperator(path, options, print);
+    case "CallingFunction":
+      return printCallingFunction(path, options, print);
     case "CaseArm":
       return printCaseArm(path, options, print);
     case "CaseExpr":
       return printCaseExpr(path, options, print);
-    case "CallingFunction":
-      return printCallingFunction(path, options, print);
+    case "CastArgument":
+      return printCastArgument(path, options, print);
     case "Comment":
       return printComment(path, options, print);
     case "EOF":
@@ -517,6 +519,37 @@ const printBinaryOperator: PrintFunc = (path, options, print) => {
   ]);
 };
 
+const printCallingFunction: PrintFunc = (path, options, print) => {
+  type ThisNode = N.CallingFunction;
+  const node: ThisNode = path.getValue();
+  const p = new Printer(path, print, node, node.children);
+  p.setCallable("func");
+  const docs: { [Key in Docs<ThisNode>]: Doc } = {
+    func: p.child("func"),
+    self: p.self("asItIs", true),
+    trailing_comments: printTrailingComments(path, options, print),
+    args: p.child("args", (x) => group(x), line),
+    rparen: p.child("rparen"),
+    alias: printAlias(path as FastPathOf<ThisNode>, options, print),
+    comma: p.child("comma", asItIs, true),
+    // not used
+    leading_comments: concat([]),
+    as: concat([]),
+  };
+  docs.leading_comments;
+  docs.as;
+  return concat([
+    docs.func,
+    docs.self,
+    docs.trailing_comments,
+    indent(concat([softline, docs.args])),
+    softline,
+    docs.rparen,
+    docs.alias,
+    docs.comma,
+  ]);
+};
+
 const printCaseArm: PrintFunc = (path, options, print) => {
   type ThisNode = N.CaseArm;
   const node: ThisNode = path.getValue();
@@ -579,6 +612,29 @@ const printCaseExpr: PrintFunc = (path, options, print) => {
   ]);
 };
 
+const printCastArgument: PrintFunc = (path, options, print) => {
+  type ThisNode = N.CastArgument;
+  const node: ThisNode = path.getValue();
+  const p = new Printer(path, print, node, node.children);
+  const docs: { [Key in Docs<ThisNode>]: Doc } = {
+    cast_from: p.child("cast_from"),
+    self: p.self("upper", true),
+    trailing_comments: printTrailingComments(path, options, print),
+    cast_to: p.child("cast_to", asItIs, true),
+    // not used
+    leading_comments: concat([]),
+  };
+  docs.leading_comments;
+  return concat([
+    docs.cast_from,
+    " ",
+    docs.self,
+    docs.trailing_comments,
+    " ",
+    docs.cast_to,
+  ]);
+};
+
 const printComment: PrintFunc = (path, _, print) => {
   type ThisNode = N.Comment;
   const node: ThisNode = path.getValue();
@@ -587,37 +643,6 @@ const printComment: PrintFunc = (path, _, print) => {
     self: p.self(),
   };
   return docs.self;
-};
-
-const printCallingFunction: PrintFunc = (path, options, print) => {
-  type ThisNode = N.CallingFunction;
-  const node: ThisNode = path.getValue();
-  const p = new Printer(path, print, node, node.children);
-  p.setCallable("func");
-  const docs: { [Key in Docs<ThisNode>]: Doc } = {
-    func: p.child("func"),
-    self: p.self("asItIs", true),
-    trailing_comments: printTrailingComments(path, options, print),
-    args: p.child("args", (x) => group(x), line),
-    rparen: p.child("rparen"),
-    alias: printAlias(path as FastPathOf<ThisNode>, options, print),
-    comma: p.child("comma", asItIs, true),
-    // not used
-    leading_comments: concat([]),
-    as: concat([]),
-  };
-  docs.leading_comments;
-  docs.as;
-  return concat([
-    docs.func,
-    docs.self,
-    docs.trailing_comments,
-    indent(concat([softline, docs.args])),
-    softline,
-    docs.rparen,
-    docs.alias,
-    docs.comma,
-  ]);
 };
 
 const printEOF: PrintFunc = (path, options, print) => {
