@@ -112,6 +112,8 @@ export type CallingFunction = Expr & {
   };
 };
 
+export type CallingDatePartFunction = CallingFunction
+
 export type CaseArm = BaseNode & {
   children: {
     expr?: { Node: BaseNode };
@@ -129,6 +131,7 @@ export type CaseExpr = Expr & {
 };
 
 export type CastArgument = BaseNode & {
+  token: Token;
   children: {
     cast_from: { Node: BaseNode };
     cast_to: { Node: BaseNode };
@@ -156,6 +159,16 @@ export type Expr = BaseNode & {
     as?: { Node: BaseNode };
     alias?: { Node: BaseNode };
     comma?: { Node: BaseNode };
+  };
+};
+
+export type ExtractArgument = BaseNode & {
+  token: Token;
+  children: {
+    extract_datepart: { Node: BaseNode };
+    extract_from: { Node: BaseNode };
+    at_time_zone: { NodeVec: BaseNode[] };
+    time_zone: { Node: BaseNode };
   };
 };
 

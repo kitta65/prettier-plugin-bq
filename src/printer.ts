@@ -204,6 +204,22 @@ class Printer<T extends N.BaseNode> {
       child.Node.notGlobal = true;
     }
   }
+  toUpper(key: keyof N.Children<T>) {
+    const child = this.children[key];
+    if (N.isNode(child)) {
+      const token = child.Node.token;
+      if (token) {
+        token.literal = token.literal.toUpperCase();
+      }
+    } else if (N.isNodeVec(child)) {
+      child.NodeVec.forEach((x) => {
+        const token = x.token;
+        if (token) {
+          token.literal = token.literal.toUpperCase();
+        }
+      });
+    }
+  }
 }
 
 const asItIs = (x: Doc) => {
@@ -307,7 +323,13 @@ export const printSQL: PrintFunc = (path, options, print) => {
     case "BinaryOperator":
       return printBinaryOperator(path, options, print);
     case "CallingFunction":
-      return printCallingFunction(path, options, print);
+      return printCallingFunction(
+        path as FastPathOf<N.CallingFunction>,
+        options,
+        print
+      );
+    case "CallingDatePartFunction":
+      return printCallingDatePartFunction(path, options, print);
     case "CaseArm":
       return printCaseArm(path, options, print);
     case "CaseExpr":
@@ -318,6 +340,8 @@ export const printSQL: PrintFunc = (path, options, print) => {
       return printComment(path, options, print);
     case "EOF":
       return printEOF(path, options, print);
+    case "ExtractArgument":
+      return printExtractArgument(path, options, print);
     case "GroupedExpr":
       return printGroupedExpr(path, options, print);
     case "GroupedExprs":
@@ -519,7 +543,11 @@ const printBinaryOperator: PrintFunc = (path, options, print) => {
   ]);
 };
 
-const printCallingFunction: PrintFunc = (path, options, print) => {
+const printCallingFunction = (
+  path: FastPathOf<N.CallingFunction>,
+  options: Options,
+  print: (path: FastPath) => Doc
+) => {
   type ThisNode = N.CallingFunction;
   const node: ThisNode = path.getValue();
   const p = new Printer(path, print, node, node.children);
@@ -550,6 +578,15 @@ const printCallingFunction: PrintFunc = (path, options, print) => {
   ]);
 };
 
+const printCallingDatePartFunction: PrintFunc = (path, options, print) => {
+  type ThisNode = N.CallingDatePartFunction;
+  const node: ThisNode = path.getValue();
+  const p = new Printer(path, print, node, node.children);
+  p.toUpper("func");
+  p.toUpper("args");
+  return printCallingFunction(path as FastPathOf<ThisNode>, options, print);
+};
+
 const printCaseArm: PrintFunc = (path, options, print) => {
   type ThisNode = N.CaseArm;
   const node: ThisNode = path.getValue();
@@ -569,14 +606,12 @@ const printCaseArm: PrintFunc = (path, options, print) => {
     " ",
     docs.expr,
     indent(
-      group(
-        concat([
-          p.has("expr") ? line : concat([]),
-          docs.then,
-          p.has("then") ? " " : concat([]),
-          docs.result,
-        ])
-      )
+      concat([
+        p.has("expr") ? line : concat([]),
+        group(
+          concat([docs.then, p.has("then") ? " " : concat([]), docs.result])
+        ),
+      ])
     ),
   ]);
 };
@@ -654,6 +689,35 @@ const printEOF: PrintFunc = (path, options, print) => {
   };
   docs.self;
   return docs.leading_comments;
+};
+
+const printExtractArgument: PrintFunc = (path, options, print) => {
+  type ThisNode = N.ExtractArgument;
+  const node: ThisNode = path.getValue();
+  const p = new Printer(path, print, node, node.children);
+  const docs: { [Key in Docs<ThisNode>]: Doc } = {
+    extract_datepart: p.child("extract_datepart"),
+    self: p.self("upper", true),
+    trailing_comments: printTrailingComments(path, options, print),
+    extract_from: p.child("extract_from", asItIs, true),
+    at_time_zone: p.child("at_time_zone", asItIs, " "),
+    time_zone: p.child("time_zone", asItIs, true),
+    // not used
+    leading_comments: concat([]),
+  };
+  docs.leading_comments;
+  return concat([
+    docs.extract_datepart,
+    " ",
+    docs.self,
+    docs.trailing_comments,
+    " ",
+    docs.extract_from,
+    p.has("at_time_zone") ? line : concat([]),
+    docs.at_time_zone,
+    p.has("time_zone") ? " " : concat([]),
+    docs.time_zone,
+  ]);
 };
 
 const printGroupedExpr: PrintFunc = (path, options, print) => {

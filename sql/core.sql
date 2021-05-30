@@ -83,5 +83,15 @@ from t
 select least(1, 2);
 
 -- cast
-select cast('1' as int64),
+select cast('1' as int64);
+
+-- extract
+select
+  extract(day from ts),
+  extract(week(sunday) FROM ts),
+  extract(day from ts at time zone 'UTC'),
+from t
+;
+
+
 
