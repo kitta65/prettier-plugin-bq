@@ -360,6 +360,8 @@ export const printSQL: PrintFunc = (path, options, print) => {
       return printIdentifier(path, options, print);
     case "InOperator":
       return printInOperator(path, options, print);
+    case "IntervalLiteral":
+      return printIntervalLiteral(path, options, print);
     case "Keyword":
       return printKeyword(path, options, print);
     case "KeywordWithExpr":
@@ -950,6 +952,37 @@ const printInOperator: PrintFunc = (path, options, print) => {
     docs.trailing_comments,
     " ",
     docs.right,
+    docs.alias,
+    docs.order,
+    docs.comma,
+  ]);
+};
+
+const printIntervalLiteral: PrintFunc = (path, options, print) => {
+  type ThisNode = N.IntervalLiteral;
+  const node: ThisNode = path.getValue();
+  const p = new Printer(path, print, node, node.children);
+  const docs: { [Key in Docs<ThisNode>]: Doc } = {
+    leading_comments: printLeadingComments(path, options, print),
+    self: p.self("upper"),
+    trailing_comments: printTrailingComments(path, options, print),
+    right: p.child("right", asItIs, true),
+    date_part: p.child("date_part", asItIs, true),
+    alias: printAlias(path as FastPathOf<ThisNode>, options, print),
+    order: p.child("order", (x) => concat([" ", x]), true),
+    comma: p.child("comma", asItIs, true),
+    // not used
+    as: concat([]),
+  };
+  docs.as;
+  return concat([
+    docs.leading_comments,
+    docs.self,
+    docs.trailing_comments,
+    " ",
+    docs.right,
+    " ",
+    docs.date_part,
     docs.alias,
     docs.order,
     docs.comma,

@@ -80,15 +80,12 @@ from t
 ;
 
 ----- function -----
-select
-  least(1, 2),
-  array(select 1 union all select 2),
-;
+select least(1, 2);
 
--- cast
+-- CAST
 select cast('1' as int64);
 
--- extract
+-- EXTRACT
 select
   extract(day from ts),
   extract(week(sunday) FROM ts),
@@ -110,5 +107,13 @@ select
 from t
 ;
 
+-- ARRAY
+select array(select 1 union all select 2);
+
+-- ST_GEOGFROMTEXT
+select st_geogfromtext(str, oriented => true) from t;
+
+-- INTERVAL
+select date_add(dt, interval 1 + 1 day) from t;
 
 

@@ -233,6 +233,13 @@ export type InOperator = Expr & {
   };
 };
 
+export type IntervalLiteral = Expr & {
+  children: {
+    date_part: { Node: BaseNode };
+    right: { Node: BaseNode };
+  };
+};
+
 export type KeywordWithExpr = Keyword & {
   children: {
     expr: { Node: BaseNode };
