@@ -80,7 +80,10 @@ from t
 ;
 
 ----- function -----
-select least(1, 2);
+select
+  least(1, 2),
+  array(select 1 union all select 2),
+;
 
 -- cast
 select cast('1' as int64);
