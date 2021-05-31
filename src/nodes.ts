@@ -113,6 +113,7 @@ export type CallingFunction = Expr & {
     orderby?: { Node: BaseNode };
     limit?: { Node: BaseNode };
     rparen: { Node: BaseNode };
+    over?: { Node: BaseNode };
   };
 };
 
@@ -250,6 +251,13 @@ export type NullLiteral = Expr;
 
 export type NumericLiteral = Expr;
 
+export type OverClause = BaseNode & {
+  token: Token;
+  children: {
+    window: { Node: BaseNode };
+  };
+};
+
 export type SelectStatement = XXXStatement & {
   token: Token;
   children: {
@@ -315,6 +323,26 @@ export type UnaryOperator = Expr & {
   token: Token;
   children: {
     right: { Node: BaseNode };
+  };
+};
+
+export type WindowFrameClause = BaseNode & {
+  token: Token;
+  children: {
+    between?: { Node: BaseNode };
+    start: { NodeVec: BaseNode[] };
+    and?: { Node: BaseNode };
+    end?: { NodeVec: BaseNode[] };
+  };
+};
+
+export type WindowSpecification = BaseNode & {
+  token: Token;
+  children: {
+    partitionby: { Node: BaseNode };
+    orderby: { Node: BaseNode };
+    frame: { Node: BaseNode };
+    rparen: { Node: BaseNode };
   };
 };
 

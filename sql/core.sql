@@ -116,4 +116,16 @@ select st_geogfromtext(str, oriented => true) from t;
 -- INTERVAL
 select date_add(dt, interval 1 + 1 day) from t;
 
-
+----- window function -----
+select
+  sum(int) over (),
+  sum(int) over (partition by str),
+  sum(int) over (order by ts desc),
+  sum(int) over (partition by str order by ts asc, dt),
+  sum(int) over (rows 1 preceding),
+  sum(int) over (partition by str order by ts, dt rows between unbounded preceding and unbounded following),
+  --sum(int) over named_window,
+  --sum(int) over (named_window),
+  --last_value(int) over (named_window rows between 2 preceding and 2 following),
+from t
+;
