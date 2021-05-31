@@ -93,5 +93,19 @@ select
 from t
 ;
 
+-- ARRAY_AGG
+select
+  array_agg(
+    -- break parent
+    distinct
+    int
+    ignore nulls
+    order by int desc
+    limit 100
+  ),
+  array_agg(distinct int ignore nulls order by int desc limit 100),
+from t
+;
+
 
 

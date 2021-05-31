@@ -107,12 +107,16 @@ export type BooleanLiteral = Expr;
 export type CallingFunction = Expr & {
   children: {
     func: { Node: BaseNode };
+    distinct?: { Node: BaseNode };
     args?: { NodeVec: BaseNode[] };
+    ignore_nulls?: { NodeVec: BaseNode[] };
+    orderby?: { Node: BaseNode };
+    limit?: { Node: BaseNode };
     rparen: { Node: BaseNode };
   };
 };
 
-export type CallingDatePartFunction = CallingFunction
+export type CallingDatePartFunction = CallingFunction;
 
 export type CaseArm = BaseNode & {
   children: {
@@ -159,6 +163,7 @@ export type Expr = BaseNode & {
     as?: { Node: BaseNode };
     alias?: { Node: BaseNode };
     comma?: { Node: BaseNode };
+    order?: { Node: BaseNode };
   };
 };
 

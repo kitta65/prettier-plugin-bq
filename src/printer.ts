@@ -396,6 +396,7 @@ const printArrayAccessing: PrintFunc = (path, options, print) => {
     right: p.child("right"),
     rparen: p.child("rparen"),
     alias: printAlias(path as FastPathOf<ThisNode>, options, print),
+    order: p.child("order", (x) => concat([" ", x]), true),
     comma: p.child("comma", asItIs, true),
     // not used
     leading_comments: concat([]),
@@ -411,6 +412,7 @@ const printArrayAccessing: PrintFunc = (path, options, print) => {
     softline,
     docs.rparen,
     docs.alias,
+    docs.order,
     docs.comma,
   ]);
 };
@@ -429,6 +431,7 @@ const printArrayLiteral: PrintFunc = (path, options, print) => {
     exprs: p.child("exprs", (x) => group(x), line),
     rparen: p.child("rparen"),
     alias: printAlias(path as FastPathOf<ThisNode>, options, print),
+    order: p.child("order", (x) => concat([" ", x]), true),
     comma: p.child("comma", asItIs, true),
     // not used
     as: concat([]),
@@ -443,6 +446,7 @@ const printArrayLiteral: PrintFunc = (path, options, print) => {
     softline,
     docs.rparen,
     docs.alias,
+    docs.order,
     docs.comma,
   ]);
 };
@@ -460,6 +464,7 @@ const printBetweenOperator: PrintFunc = (path, options, print) => {
     and: p.child("and"),
     right_max: p.child("right_max", asItIs, true),
     alias: printAlias(path as FastPathOf<ThisNode>, options, print),
+    order: p.child("order", (x) => concat([" ", x]), true),
     comma: p.child("comma", asItIs, true),
     // not used
     leading_comments: concat([]),
@@ -480,6 +485,7 @@ const printBetweenOperator: PrintFunc = (path, options, print) => {
         line,
         group(concat([docs.and, " ", docs.right_max])),
         docs.alias,
+        docs.order,
         docs.comma,
       ])
     ),
@@ -495,6 +501,7 @@ const printBooleanLiteral: PrintFunc = (path, options, print) => {
     self: p.self(),
     trailing_comments: printTrailingComments(path, options, print),
     alias: printAlias(path as FastPathOf<ThisNode>, options, print),
+    order: p.child("order", (x) => concat([" ", x]), true),
     comma: p.child("comma", asItIs, true),
     // not used
     as: concat([]),
@@ -505,6 +512,7 @@ const printBooleanLiteral: PrintFunc = (path, options, print) => {
     docs.self,
     docs.trailing_comments,
     docs.alias,
+    docs.order,
     docs.comma,
   ]);
 };
@@ -520,6 +528,7 @@ const printBinaryOperator: PrintFunc = (path, options, print) => {
     trailing_comments: printTrailingComments(path, options, print),
     right: p.child("right", asItIs, true),
     alias: printAlias(path as FastPathOf<ThisNode>, options, print),
+    order: p.child("order", (x) => concat([" ", x]), true),
     comma: p.child("comma", asItIs, true),
     // not used
     leading_comments: concat([]),
@@ -539,6 +548,7 @@ const printBinaryOperator: PrintFunc = (path, options, print) => {
     p.includedIn(["."]) ? concat([]) : " ",
     docs.right,
     docs.alias,
+    docs.order,
     docs.comma,
   ]);
 };
@@ -556,9 +566,14 @@ const printCallingFunction = (
     func: p.child("func"),
     self: p.self("asItIs", true),
     trailing_comments: printTrailingComments(path, options, print),
+    distinct: p.child("distinct", (x) => concat([x, line])),
     args: p.child("args", (x) => group(x), line),
+    ignore_nulls: p.child("ignore_nulls", asItIs, " "),
+    orderby: p.child("orderby"),
+    limit: p.child("limit"),
     rparen: p.child("rparen"),
     alias: printAlias(path as FastPathOf<ThisNode>, options, print),
+    order: p.child("order", (x) => concat([" ", x]), true),
     comma: p.child("comma", asItIs, true),
     // not used
     leading_comments: concat([]),
@@ -570,10 +585,23 @@ const printCallingFunction = (
     docs.func,
     docs.self,
     docs.trailing_comments,
-    indent(concat([softline, docs.args])),
+    indent(
+      concat([
+        softline,
+        docs.distinct,
+        docs.args,
+        p.has("ignore_nulls") ? line : concat([]),
+        group(docs.ignore_nulls),
+        p.has("orderby") ? line : concat([]),
+        group(docs.orderby),
+        p.has("limit") ? line : concat([]),
+        group(docs.limit),
+      ])
+    ),
     softline,
     docs.rparen,
     docs.alias,
+    docs.order,
     docs.comma,
   ]);
 };
@@ -628,6 +656,7 @@ const printCaseExpr: PrintFunc = (path, options, print) => {
     arms: p.child("arms", (x) => group(x), line),
     end: p.child("end", asItIs, true),
     alias: printAlias(path as FastPathOf<ThisNode>, options, print),
+    order: p.child("order", (x) => concat([" ", x]), true),
     comma: p.child("comma", asItIs, true),
     // not used
     as: concat([]),
@@ -643,6 +672,7 @@ const printCaseExpr: PrintFunc = (path, options, print) => {
     " ",
     docs.end,
     docs.alias,
+    docs.order,
     docs.comma,
   ]);
 };
@@ -731,6 +761,7 @@ const printGroupedExpr: PrintFunc = (path, options, print) => {
     expr: p.child("expr"),
     rparen: p.child("rparen"),
     alias: printAlias(path as FastPathOf<ThisNode>, options, print),
+    order: p.child("order", (x) => concat([" ", x]), true),
     comma: p.child("comma", asItIs, true),
     // not used
     as: p.has("as") ? p.child("as", asItIs, true) : "AS",
@@ -744,6 +775,7 @@ const printGroupedExpr: PrintFunc = (path, options, print) => {
     softline,
     docs.rparen,
     docs.alias,
+    docs.order,
     docs.comma,
   ]);
 };
@@ -787,6 +819,7 @@ const printGroupedStatement: PrintFunc = (path, options, print) => {
     stmt: p.child("stmt"),
     rparen: p.child("rparen"),
     alias: printAlias(path as FastPathOf<ThisNode>, options, print),
+    order: p.child("order", (x) => concat([" ", x]), true),
     comma: p.child("comma", asItIs, true),
     semicolon: p.child("semicolon", asItIs, true),
     // not used
@@ -804,6 +837,7 @@ const printGroupedStatement: PrintFunc = (path, options, print) => {
         softline,
         docs.rparen,
         docs.alias,
+        docs.order,
         docs.comma,
         docs.semicolon,
       ])
@@ -866,6 +900,7 @@ const printIdentifier: PrintFunc = (path, options, print) => {
         : p.self(),
     trailing_comments: printTrailingComments(path, options, print),
     alias: printAlias(path as FastPathOf<ThisNode>, options, print),
+    order: p.child("order", (x) => concat([" ", x]), true),
     comma: p.child("comma", asItIs, true),
     // not used
     as: concat([]),
@@ -876,6 +911,7 @@ const printIdentifier: PrintFunc = (path, options, print) => {
     docs.self,
     docs.trailing_comments,
     docs.alias,
+    docs.order,
     docs.comma,
   ]);
 };
@@ -891,6 +927,7 @@ const printInOperator: PrintFunc = (path, options, print) => {
     trailing_comments: printTrailingComments(path, options, print),
     right: p.child("right", asItIs, true),
     alias: printAlias(path as FastPathOf<ThisNode>, options, print),
+    order: p.child("order", (x) => concat([" ", x]), true),
     comma: p.child("comma", asItIs, true),
     // not used
     leading_comments: concat([]),
@@ -907,6 +944,7 @@ const printInOperator: PrintFunc = (path, options, print) => {
     " ",
     docs.right,
     docs.alias,
+    docs.order,
     docs.comma,
   ]);
 };
@@ -951,6 +989,7 @@ const printNullLiteral: PrintFunc = (path, options, print) => {
     self: p.self("upper"),
     trailing_comments: printTrailingComments(path, options, print),
     alias: printAlias(path as FastPathOf<ThisNode>, options, print),
+    order: p.child("order", (x) => concat([" ", x]), true),
     comma: p.child("comma", asItIs, true),
     // not used
     as: concat([]),
@@ -961,6 +1000,7 @@ const printNullLiteral: PrintFunc = (path, options, print) => {
     docs.self,
     docs.trailing_comments,
     docs.alias,
+    docs.order,
     docs.comma,
   ]);
 };
@@ -974,6 +1014,7 @@ const printNumericLiteral: PrintFunc = (path, options, print) => {
     self: p.self("lower"), // in the case of `3.14e10`
     trailing_comments: printTrailingComments(path, options, print),
     alias: printAlias(path as FastPathOf<ThisNode>, options, print),
+    order: p.child("order", (x) => concat([" ", x]), true),
     comma: p.child("comma", asItIs, true),
     // not used
     as: concat([]),
@@ -984,6 +1025,7 @@ const printNumericLiteral: PrintFunc = (path, options, print) => {
     docs.self,
     docs.trailing_comments,
     docs.alias,
+    docs.order,
     docs.comma,
   ]);
 };
@@ -1040,6 +1082,7 @@ const printStringLiteral: PrintFunc = (path, options, print) => {
     self: p.self(),
     trailing_comments: printTrailingComments(path, options, print),
     alias: printAlias(path as FastPathOf<ThisNode>, options, print),
+    order: p.child("order", (x) => concat([" ", x]), true),
     comma: p.child("comma", asItIs, true),
     // not used
     as: concat([]),
@@ -1050,6 +1093,7 @@ const printStringLiteral: PrintFunc = (path, options, print) => {
     docs.self,
     docs.trailing_comments,
     docs.alias,
+    docs.order,
     docs.comma,
   ]);
 };
@@ -1115,6 +1159,7 @@ const printUnaryOperator: PrintFunc = (path, options, print) => {
     trailing_comments: printTrailingComments(path, options, print),
     right: p.child("right", asItIs, true),
     alias: printAlias(path as FastPathOf<ThisNode>, options, print),
+    order: p.child("order", (x) => concat([" ", x]), true),
     comma: p.child("comma", asItIs, true),
     // not used
     as: concat([]),
@@ -1127,6 +1172,7 @@ const printUnaryOperator: PrintFunc = (path, options, print) => {
     p.includedIn(noSpaceOperators) ? concat([]) : " ",
     docs.right,
     docs.alias,
+    docs.order,
     docs.comma,
   ]);
 };
@@ -1166,6 +1212,7 @@ const printStructLiteral: PrintFunc = (path, options, print) => {
     exprs: p.child("exprs", (x) => group(x), line),
     rparen: p.child("rparen"),
     alias: printAlias(path as FastPathOf<ThisNode>, options, print),
+    order: p.child("order", (x) => concat([" ", x]), true),
     comma: p.child("comma", asItIs, true),
     // not used
     as: concat([]),
@@ -1180,6 +1227,7 @@ const printStructLiteral: PrintFunc = (path, options, print) => {
     softline,
     docs.rparen,
     docs.alias,
+    docs.order,
     docs.comma,
   ]);
 };
