@@ -261,6 +261,7 @@ export type OverClause = BaseNode & {
 export type SelectStatement = XXXStatement & {
   token: Token;
   children: {
+    with: { Node: BaseNode };
     exprs: { NodeVec: BaseNode[] };
     from: { Node: BaseNode };
     where: { Node: BaseNode };
@@ -279,9 +280,8 @@ export type SetOperator = XXXStatement & {
 
 export type StringLiteral = Expr;
 
-export const isSetOperator = (n: BaseNode | undefined): n is SetOperator => {
+export const isSetOperator = (n: BaseNode): n is SetOperator => {
   if (
-    n &&
     n.node_type === "SetOperator" &&
     "distinct_or_all" in n.children &&
     "left" in n.children &&
@@ -346,6 +346,22 @@ export type WindowSpecification = BaseNode & {
   };
 };
 
+export type WithClause = BaseNode & {
+  token: Token;
+  children: {
+    queries: { NodeVec: BaseNode[] };
+  };
+};
+
+export type WithQuery = BaseNode & {
+  token: Token;
+  children: {
+    as: { Node: BaseNode };
+    stmt: { Node: BaseNode };
+    comma: { Node: BaseNode };
+  };
+};
+
 export type XXXByExprs = Keyword & {
   token: Token;
   children: {
@@ -361,9 +377,10 @@ export type XXXStatement = BaseNode & {
   };
 };
 
-export const isXXXStatement = (n: BaseNode | undefined): n is XXXStatement => {
-  if (
-    n &&
+export const isXXXStatement = (n: BaseNode): n is XXXStatement => {
+  if (isSetOperator(n)) {
+    return true;
+  } else if (
     n.node_type.endsWith("Statement") &&
     !n.node_type.endsWith("WithStatement")
   ) {

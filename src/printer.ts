@@ -398,6 +398,10 @@ export const printSQL: PrintFunc = (path, options, print) => {
       return printWindowFrameClause(path, options, print);
     case "WindowSpecification":
       return printWindowSpecification(path, options, print);
+    case "WithClause":
+      return printWithClause(path, options, print);
+    case "WithQuery":
+      return printWithQuery(path, options, print);
     case "XXXByExprs":
       return printXXXByExprs(path, options, print);
     default:
@@ -1024,9 +1028,13 @@ const printKeywordWithExpr: PrintFunc = (path, options, print) => {
   };
   return concat([
     docs.leading_comments,
-    docs.self,
-    docs.trailing_comments,
-    indent(concat([line, docs.expr])),
+    group(
+      concat([
+        docs.self,
+        docs.trailing_comments,
+        indent(concat([line, docs.expr])),
+      ])
+    ),
   ]);
 };
 
@@ -1100,6 +1108,7 @@ const printSelectStatement: PrintFunc = (path, options, print) => {
   const node: ThisNode = path.getValue();
   const p = new Printer(path, print, node, node.children);
   const docs: { [Key in Docs<ThisNode>]: Doc } = {
+    with: p.child("with"),
     leading_comments: printLeadingComments(path, options, print),
     // SELECT clause
     self: p.self("upper"),
@@ -1117,6 +1126,9 @@ const printSelectStatement: PrintFunc = (path, options, print) => {
     docs.leading_comments,
     group(
       concat([
+        // WITH clause
+        docs.with,
+        p.has("with") ? line : "",
         // SELECT clause
         docs.trailing_comments,
         p.len("exprs") === 1
@@ -1124,13 +1136,13 @@ const printSelectStatement: PrintFunc = (path, options, print) => {
           : concat([docs.self, indent(docs.exprs)]),
         // FROM clause
         p.has("from") ? line : "",
-        group(docs.from),
+        docs.from,
         // WHERE clause
         p.has("where") ? line : "",
-        group(docs.where),
+        docs.where,
         // ORDER BY clause
         p.has("orderby") ? line : "",
-        group(docs.orderby),
+        docs.orderby,
         p.has("semicolon") ? concat([softline, docs.semicolon]) : "",
       ])
     ),
@@ -1384,6 +1396,52 @@ const printWindowSpecification: PrintFunc = (path, options, print) => {
     ),
     softline,
     docs.rparen,
+  ]);
+};
+
+const printWithClause: PrintFunc = (path, options, print) => {
+  type ThisNode = N.WithClause;
+  const node: ThisNode = path.getValue();
+  const p = new Printer(path, print, node, node.children);
+  const docs: { [Key in Docs<ThisNode>]: Doc } = {
+    leading_comments: printLeadingComments(path, options, print),
+    self: p.self("upper"),
+    trailing_comments: printTrailingComments(path, options, print),
+    queries:
+      p.len("queries") === 1
+        ? concat([" ", p.child("queries", asItIs, true)])
+        : indent(concat([line, p.child("queries", asItIs, false, line)])),
+  };
+  return concat([
+    docs.leading_comments,
+    docs.self,
+    docs.trailing_comments,
+    docs.queries,
+  ]);
+};
+
+const printWithQuery: PrintFunc = (path, options, print) => {
+  type ThisNode = N.WithQuery;
+  const node: ThisNode = path.getValue();
+  const p = new Printer(path, print, node, node.children);
+  p.setNotRoot("stmt");
+  const docs: { [Key in Docs<ThisNode>]: Doc } = {
+    leading_comments: printLeadingComments(path, options, print),
+    self: p.self("upper"),
+    trailing_comments: printTrailingComments(path, options, print),
+    as: p.child("as", asItIs, true),
+    stmt: p.child("stmt", asItIs, true),
+    comma: p.child("comma", asItIs, true),
+  };
+  return concat([
+    docs.leading_comments,
+    docs.self,
+    docs.trailing_comments,
+    " ",
+    docs.as,
+    " ",
+    docs.stmt,
+    docs.comma,
   ]);
 };
 

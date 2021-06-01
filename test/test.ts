@@ -36,3 +36,8 @@ test("core.sql", async () => {
   const sql = await read("./result/core.sql");
   await dryRun(format(sql));
 });
+
+test("select.sql", async () => {
+  const sql = await read("./result/select.sql");
+  await dryRun(format(sql));
+});
