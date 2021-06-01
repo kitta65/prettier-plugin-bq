@@ -38,3 +38,29 @@ with a as (
 )
 select 3
 ;
+
+----- SELECT clause -----
+-- distinct
+select distinct str from t;
+select all str from t;
+
+-- alias
+select 1 as one, 2 two;
+
+-- except
+select
+  * except (str),
+  t.* except(str, int)
+from t
+;
+
+-- replace
+select
+  * replace (int * 2 as int),
+  t.* replace (
+    -- break parent
+    int * 2 as int
+  ),
+from t
+;
+

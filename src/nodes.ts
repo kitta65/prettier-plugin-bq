@@ -67,6 +67,13 @@ export const isNodeVec = (child: unknown): child is { NodeVec: BaseNode[] } => {
 };
 
 // ----- sub types of BaseNode -----
+export type Asterisk = Expr & {
+  children: {
+    except?: { Node: BaseNode };
+    replace?: { Node: BaseNode };
+  };
+};
+
 export type ArrayAccessing = Expr & {
   children: {
     not: undefined;
@@ -220,10 +227,6 @@ export type GroupedType = BaseNode & {
   };
 };
 
-export type Keyword = BaseNode & {
-  token: Token;
-};
-
 export type Identifier = Expr;
 
 export type InOperator = Expr & {
@@ -241,9 +244,19 @@ export type IntervalLiteral = Expr & {
   };
 };
 
+export type Keyword = BaseNode & {
+  token: Token;
+};
+
 export type KeywordWithExpr = Keyword & {
   children: {
     expr: { Node: BaseNode };
+  };
+};
+
+export type KeywordWithGroupedExprs = Keyword & {
+  children: {
+    group: { Node: BaseNode };
   };
 };
 
@@ -262,6 +275,7 @@ export type SelectStatement = XXXStatement & {
   token: Token;
   children: {
     with: { Node: BaseNode };
+    distinct_or_all: { Node: BaseNode };
     exprs: { NodeVec: BaseNode[] };
     from: { Node: BaseNode };
     where: { Node: BaseNode };

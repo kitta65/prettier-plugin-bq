@@ -322,6 +322,8 @@ export const printSQL: PrintFunc = (path, options, print) => {
     return concat(path.map(print));
   }
   switch (node.node_type) {
+    case "Asterisk":
+      return printAsterisk(path, options, print);
     case "ArrayAccessing":
       return printArrayAccessing(path, options, print);
     case "ArrayLiteral":
@@ -372,6 +374,8 @@ export const printSQL: PrintFunc = (path, options, print) => {
       return printKeyword(path, options, print);
     case "KeywordWithExpr":
       return printKeywordWithExpr(path, options, print);
+    case "KeywordWithGroupedExprs":
+      return printKeywordWithGroupedExprs(path, options, print);
     case "NullLiteral":
       return printNullLiteral(path, options, print);
     case "NumericLiteral":
@@ -407,6 +411,35 @@ export const printSQL: PrintFunc = (path, options, print) => {
     default:
       return "not implemented";
   }
+};
+
+const printAsterisk: PrintFunc = (path, options, print) => {
+  type ThisNode = N.Asterisk;
+  const node: ThisNode = path.getValue();
+  const p = new Printer(path, print, node, node.children);
+  const docs: { [Key in Docs<ThisNode>]: Doc } = {
+    leading_comments: printLeadingComments(path, options, print),
+    self: p.self(),
+    trailing_comments: printTrailingComments(path, options, print),
+    except: p.child("except", (x) => concat([" ", x]), true),
+    replace: p.child("replace", (x) => concat([" ", x]), true),
+    alias: printAlias(path as FastPathOf<ThisNode>, options, print),
+    order: p.child("order", (x) => concat([" ", x]), true),
+    comma: p.child("comma", asItIs, true),
+    // not used
+    as: "",
+  };
+  docs.as;
+  return concat([
+    docs.leading_comments,
+    docs.self,
+    docs.trailing_comments,
+    docs.except,
+    docs.replace,
+    docs.alias,
+    docs.order,
+    docs.comma,
+  ]);
 };
 
 const printArrayAccessing: PrintFunc = (path, options, print) => {
@@ -1038,6 +1071,22 @@ const printKeywordWithExpr: PrintFunc = (path, options, print) => {
   ]);
 };
 
+const printKeywordWithGroupedExprs: PrintFunc = (path, options, print) => {
+  type ThisNode = N.KeywordWithGroupedExprs;
+  const node: ThisNode = path.getValue();
+  const p = new Printer(path, print, node, node.children);
+  const docs: { [Key in Docs<ThisNode>]: Doc } = {
+    leading_comments: printLeadingComments(path, options, print),
+    self: p.self("upper"),
+    trailing_comments: printTrailingComments(path, options, print),
+    group: p.child("group", asItIs, true),
+  };
+  return concat([
+    docs.leading_comments,
+    group(concat([docs.self, docs.trailing_comments, " ", docs.group])),
+  ]);
+};
+
 const printNullLiteral: PrintFunc = (path, options, print) => {
   type ThisNode = N.NullLiteral;
   const node: ThisNode = path.getValue();
@@ -1112,6 +1161,7 @@ const printSelectStatement: PrintFunc = (path, options, print) => {
     leading_comments: printLeadingComments(path, options, print),
     // SELECT clause
     self: p.self("upper"),
+    distinct_or_all: p.child("distinct_or_all"),
     trailing_comments: printTrailingComments(path, options, print),
     exprs: p.child("exprs", (x) => concat([line, group(x)])),
     // FROM clause
@@ -1122,6 +1172,12 @@ const printSelectStatement: PrintFunc = (path, options, print) => {
     orderby: p.child("orderby"),
     semicolon: p.child("semicolon", asItIs, true),
   };
+  const select = concat([
+    docs.self,
+    p.has("distinct_or_all") ? " " : "",
+    docs.distinct_or_all,
+    indent(docs.exprs),
+  ]);
   return concat([
     docs.leading_comments,
     group(
@@ -1131,9 +1187,7 @@ const printSelectStatement: PrintFunc = (path, options, print) => {
         p.has("with") ? line : "",
         // SELECT clause
         docs.trailing_comments,
-        p.len("exprs") === 1
-          ? group(concat([docs.self, indent(docs.exprs)]))
-          : concat([docs.self, indent(docs.exprs)]),
+        p.len("exprs") === 1 ? group(select) : select,
         // FROM clause
         p.has("from") ? line : "",
         docs.from,
