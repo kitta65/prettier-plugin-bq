@@ -64,3 +64,34 @@ select
 from t
 ;
 
+-- AS STRUCT, VALUE
+select (select as struct 1 a, 2 b) ab;
+
+select as value struct(1 as a, 2 as b) xyz;
+
+-- sub query
+select (select 1);
+
+select (select 1 except distinct select 2);
+
+----- FROM clause -----
+-- alias
+select 1
+from t as tmp
+;
+
+-- sub query
+select * from (
+  -- break
+  select 1,2
+);
+
+select tmp.* from (select 1,2) as tmp;
+
+select *
+from t
+where
+  -- break
+  not exists(select 1 from u where u.str = t.str);
+
+

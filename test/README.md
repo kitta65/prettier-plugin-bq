@@ -25,6 +25,9 @@ CREATE OR REPLACE TABLE prettier_plugin_bq_test.t (
     int INT64
   >
 );
+CREATE OR REPLACE TABLE prettier_plugin_bq_test.u AS
+SELECT * FROM prettier_plugin_bq_test.t
+;
 ```
 
 ## How to execute tests?

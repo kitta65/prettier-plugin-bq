@@ -119,13 +119,8 @@ class Printer<T extends N.BaseNode> {
     return "";
   }
   consumeLeadingCommentsOfX(key: keyof N.Children<T>) {
-    const child = this.children[key];
-    let firstNode;
-    if (N.isNode(child)) {
-      firstNode = getFirstNode(child.Node);
-    } else if (N.isNodeVec(child)) {
-      firstNode = getFirstNode(child.NodeVec[0]);
-    } else {
+    const firstNode = this.getFirstNode(key);
+    if (!firstNode) {
       return "";
     }
     const leading_comments = firstNode.children.leading_comments;
@@ -139,12 +134,31 @@ class Printer<T extends N.BaseNode> {
       return "";
     }
   }
+  getFirstNode(key: keyof N.Children<T>) {
+    const child = this.children[key];
+    let firstNode;
+    if (N.isNode(child)) {
+      firstNode = getFirstNode(child.Node);
+    } else if (N.isNodeVec(child)) {
+      firstNode = getFirstNode(child.NodeVec[0]);
+    } else {
+      return null;
+    }
+    return firstNode;
+  }
   has(key: keyof N.Children<T>) {
     const child = this.children[key];
     if (child) {
       return true;
     }
     false;
+  }
+  hasLeadingComments(key: keyof N.Children<T>) {
+    const firstNode = this.getFirstNode(key)
+    if (!firstNode) {
+      return false
+    }
+    return "leading_comments" in firstNode.children
   }
   includedIn(arr: string[]) {
     const token = this.node.token;
@@ -1057,17 +1071,13 @@ const printKeywordWithExpr: PrintFunc = (path, options, print) => {
     leading_comments: printLeadingComments(path, options, print),
     self: p.self("upper"),
     trailing_comments: printTrailingComments(path, options, print),
-    expr: p.child("expr"),
+    expr: p.hasLeadingComments("expr")
+      ? indent(concat([line, p.child("expr")]))
+      : concat([" ", p.child("expr", asItIs, true)]),
   };
   return concat([
     docs.leading_comments,
-    group(
-      concat([
-        docs.self,
-        docs.trailing_comments,
-        indent(concat([line, docs.expr])),
-      ])
-    ),
+    group(concat([docs.self, docs.trailing_comments, docs.expr])),
   ]);
 };
 
@@ -1156,11 +1166,13 @@ const printSelectStatement: PrintFunc = (path, options, print) => {
   type ThisNode = N.SelectStatement;
   const node: ThisNode = path.getValue();
   const p = new Printer(path, print, node, node.children);
+  p.setNotRoot("exprs");
   const docs: { [Key in Docs<ThisNode>]: Doc } = {
     with: p.child("with"),
     leading_comments: printLeadingComments(path, options, print),
     // SELECT clause
     self: p.self("upper"),
+    as_struct_or_value: p.child("as_struct_or_value", asItIs, true, " "),
     distinct_or_all: p.child("distinct_or_all"),
     trailing_comments: printTrailingComments(path, options, print),
     exprs: p.child("exprs", (x) => concat([line, group(x)])),
@@ -1174,6 +1186,8 @@ const printSelectStatement: PrintFunc = (path, options, print) => {
   };
   const select = concat([
     docs.self,
+    p.has("as_struct_or_value") ? " " : "",
+    docs.as_struct_or_value,
     p.has("distinct_or_all") ? " " : "",
     docs.distinct_or_all,
     indent(docs.exprs),
@@ -1462,8 +1476,8 @@ const printWithClause: PrintFunc = (path, options, print) => {
     self: p.self("upper"),
     trailing_comments: printTrailingComments(path, options, print),
     queries:
-      p.len("queries") === 1
-        ? concat([" ", p.child("queries", asItIs, true)])
+      p.len("queries") === 1 && !p.hasLeadingComments("queries")
+        ? concat([" ", p.child("queries", asItIs)])
         : indent(concat([line, p.child("queries", asItIs, false, line)])),
   };
   return concat([

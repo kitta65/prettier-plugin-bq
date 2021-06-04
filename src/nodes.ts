@@ -275,6 +275,7 @@ export type SelectStatement = XXXStatement & {
   token: Token;
   children: {
     with: { Node: BaseNode };
+    as_struct_or_value: { NodeVec: BaseNode[] };
     distinct_or_all: { Node: BaseNode };
     exprs: { NodeVec: BaseNode[] };
     from: { Node: BaseNode };
