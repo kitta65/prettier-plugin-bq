@@ -111,6 +111,7 @@ export type BetweenOperator = Expr & {
 
 export type BooleanLiteral = Expr;
 
+//export type CallingFunction = FromItemExpr & {
 export type CallingFunction = Expr & {
   children: {
     func: { Node: BaseNode };
@@ -158,6 +159,13 @@ export type Comment = BaseNode & {
   };
 };
 
+export type DotOperator = Identifier &
+  BinaryOperator & {
+    children: {
+      not: undefined;
+    };
+  };
+
 export type EOF = BaseNode & {
   token: null;
   children: {
@@ -185,6 +193,22 @@ export type ExtractArgument = BaseNode & {
   };
 };
 
+export type ForSystemTimeAsOfClause = BaseNode & {
+  token: Token;
+  children: {
+    system_time_as_of: { NodeVec: BaseNode[] };
+    expr: { Node: BaseNode };
+  };
+};
+
+//export type FromItemExpr = BaseNode & {
+//  children: {
+//    pivot?: { Node: BaseNode };
+//    unpivot?: { Node: BaseNode };
+//  };
+//};
+
+//export type GroupedExpr = FromItemExpr & {
 export type GroupedExpr = Expr & {
   children: {
     expr: { Node: BaseNode };
@@ -205,6 +229,7 @@ export type GroupedExprs = BaseNode & {
   };
 };
 
+//export type GroupedStatement = FromItemExpr &
 export type GroupedStatement = Expr &
   XXXStatement & {
     children: {
@@ -227,7 +252,13 @@ export type GroupedType = BaseNode & {
   };
 };
 
-export type Identifier = Expr;
+//export type Identifier = FromItemExpr & {
+export type Identifier = Expr & {
+  children: {
+    //tablesample: {Node: BaseNode}
+    for_system_time_as_of: { Node: BaseNode };
+  };
+};
 
 export type InOperator = Expr & {
   children: {
@@ -293,8 +324,6 @@ export type SetOperator = XXXStatement & {
   };
 };
 
-export type StringLiteral = Expr;
-
 export const isSetOperator = (n: BaseNode): n is SetOperator => {
   if (
     n.node_type === "SetOperator" &&
@@ -306,6 +335,8 @@ export const isSetOperator = (n: BaseNode): n is SetOperator => {
   }
   return false;
 };
+
+export type StringLiteral = Expr;
 
 export type StructLiteral = Expr & {
   children: {

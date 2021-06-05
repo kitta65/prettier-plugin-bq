@@ -92,6 +92,17 @@ select *
 from t
 where
   -- break
-  not exists(select 1 from u where u.str = t.str);
+  not exists(select 1 from u where u.str = t.str)
+;
 
+-- FOR SYSTEM_TIME AS OF
+select str from t for system_time as of current_timestamp();
+
+select str from t as tmp for system_time
+  -- unexpected comment
+  as of current_timestamp()
+;
+
+-- PIVOT
+select * FROM t PIVOT (COUNT(*) FOR x IN ('v1', 'v2'))
 

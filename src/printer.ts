@@ -154,11 +154,11 @@ class Printer<T extends N.BaseNode> {
     false;
   }
   hasLeadingComments(key: keyof N.Children<T>) {
-    const firstNode = this.getFirstNode(key)
+    const firstNode = this.getFirstNode(key);
     if (!firstNode) {
-      return false
+      return false;
     }
-    return "leading_comments" in firstNode.children
+    return "leading_comments" in firstNode.children;
   }
   includedIn(arr: string[]) {
     const token = this.node.token;
@@ -364,10 +364,14 @@ export const printSQL: PrintFunc = (path, options, print) => {
       return printCastArgument(path, options, print);
     case "Comment":
       return printComment(path, options, print);
+    case "DotOperator":
+      return printDotOperator(path, options, print);
     case "EOF":
       return printEOF(path, options, print);
     case "ExtractArgument":
       return printExtractArgument(path, options, print);
+    case "ForSystemTimeAsOfClause":
+      return printForSystemTimeAsOfclause(path, options, print);
     case "GroupedExpr":
       return printGroupedExpr(path, options, print);
     case "GroupedExprs":
@@ -609,12 +613,12 @@ const printBinaryOperator: PrintFunc = (path, options, print) => {
   docs.as;
   return concat([
     docs.left,
-    p.includedIn(["."]) ? "" : " ",
+    " ",
     p.has("not") && !p.includedIn(["IS"]) ? concat([docs.not, " "]) : "",
     docs.self,
     p.has("not") && p.includedIn(["IS"]) ? concat([" ", docs.not]) : "",
+    " ",
     docs.trailing_comments,
-    p.includedIn(["."]) ? "" : " ",
     docs.right,
     docs.alias,
     docs.order,
@@ -658,7 +662,7 @@ const printCallingFunction = (
     docs.trailing_comments,
     indent(
       concat([
-        softline,
+        p.has("args") ? softline : "",
         docs.distinct,
         docs.args,
         p.has("ignore_nulls") ? line : "",
@@ -669,7 +673,7 @@ const printCallingFunction = (
         group(docs.limit),
       ])
     ),
-    softline,
+    p.has("args") ? softline : "",
     docs.rparen,
     docs.over,
     docs.alias,
@@ -780,6 +784,39 @@ const printComment: PrintFunc = (path, _, print) => {
   return docs.self;
 };
 
+const printDotOperator: PrintFunc = (path, options, print) => {
+  type ThisNode = N.DotOperator;
+  const node: ThisNode = path.getValue();
+  const p = new Printer(path, print, node, node.children);
+  const docs: { [Key in Docs<ThisNode>]: Doc } = {
+    left: p.child("left"),
+    self: p.self("upper", true),
+    trailing_comments: printTrailingComments(path, options, print),
+    right: p.child("right"),
+    alias: printAlias(path as FastPathOf<ThisNode>, options, print),
+    for_system_time_as_of: p.child("for_system_time_as_of", asItIs, true),
+    order: p.child("order", (x) => concat([" ", x]), true),
+    comma: p.child("comma", asItIs, true),
+    // not used
+    leading_comments: "",
+    as: "",
+  };
+  docs.leading_comments;
+  docs.as;
+  return concat([
+    docs.left,
+    docs.self,
+    docs.trailing_comments,
+    docs.right,
+    docs.alias,
+    p.has("for_system_time_as_of")
+      ? concat([" ", docs.for_system_time_as_of])
+      : "",
+    docs.order,
+    docs.comma,
+  ]);
+};
+
 const printEOF: PrintFunc = (path, options, print) => {
   type ThisNode = N.EOF;
   const docs: { [Key in Docs<ThisNode>]: Doc } = {
@@ -817,6 +854,29 @@ const printExtractArgument: PrintFunc = (path, options, print) => {
     docs.at_time_zone,
     p.has("time_zone") ? " " : "",
     docs.time_zone,
+  ]);
+};
+
+const printForSystemTimeAsOfclause: PrintFunc = (path, options, print) => {
+  type ThisNode = N.ForSystemTimeAsOfClause;
+  const node: ThisNode = path.getValue();
+  const p = new Printer(path, print, node, node.children);
+  const docs: { [Key in Docs<ThisNode>]: Doc } = {
+    leading_comments: printLeadingComments(path, options, print),
+    self: p.self("upper"),
+    trailing_comments: printTrailingComments(path, options, print),
+    system_time_as_of: p.child("system_time_as_of", (x) =>
+      group(concat([line, x]))
+    ),
+    expr: p.child("expr", asItIs, true),
+  };
+  return concat([
+    docs.leading_comments,
+    docs.self,
+    docs.trailing_comments,
+    docs.system_time_as_of,
+    " ",
+    docs.expr,
   ]);
 };
 
@@ -970,6 +1030,7 @@ const printIdentifier: PrintFunc = (path, options, print) => {
         : p.self(),
     trailing_comments: printTrailingComments(path, options, print),
     alias: printAlias(path as FastPathOf<ThisNode>, options, print),
+    for_system_time_as_of: p.child("for_system_time_as_of", asItIs, true),
     order: p.child("order", (x) => concat([" ", x]), true),
     comma: p.child("comma", asItIs, true),
     // not used
@@ -981,6 +1042,9 @@ const printIdentifier: PrintFunc = (path, options, print) => {
     docs.self,
     docs.trailing_comments,
     docs.alias,
+    p.has("for_system_time_as_of")
+      ? concat([" ", docs.for_system_time_as_of])
+      : "",
     docs.order,
     docs.comma,
   ]);
