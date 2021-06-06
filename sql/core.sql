@@ -128,8 +128,11 @@ select
   sum(int) over (partition by str order by ts asc, dt),
   sum(int) over (rows 1 preceding),
   sum(int) over (partition by str order by ts, dt rows between unbounded preceding and unbounded following),
-  --sum(int) over named_window,
-  --sum(int) over (named_window),
-  --last_value(int) over (named_window rows between 2 preceding and 2 following),
+  sum(int) over named_window1,
+  sum(int) over (named_window1),
+  last_value(int) over (named_window2 rows between 2 preceding and 2 following),
 from t
+window
+  named_window1 as (partition by str),
+  named_window2 as (partition by str order by int)
 ;

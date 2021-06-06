@@ -8,7 +8,6 @@ const {
     concat, // TODO remove
     group,
     hardline,
-    ifBreak,
     indent,
     join,
     line,
@@ -439,6 +438,10 @@ export const printSQL: PrintFunc = (path, options, print) => {
       return printUnpivotConfig(path, options, print);
     case "UnpivotOperator":
       return printUnpivotOperator(path, options, print);
+    case "WindowClause":
+      return printWindowClause(path, options, print);
+    case "WindowExpr":
+      return printWindowExpr(path, options, print);
     case "WindowFrameClause":
       return printWindowFrameClause(path, options, print);
     case "WindowSpecification":
@@ -465,7 +468,6 @@ const printAsterisk: PrintFunc = (path, options, print) => {
     except: p.child("except", (x) => concat([" ", x]), true),
     replace: p.child("replace", (x) => concat([" ", x]), true),
     alias: printAlias(path as FastPathOf<ThisNode>, options, print),
-    order: p.child("order", (x) => concat([" ", x]), true),
     comma: p.child("comma", asItIs, true),
     // not used
     as: "",
@@ -478,7 +480,6 @@ const printAsterisk: PrintFunc = (path, options, print) => {
     docs.except,
     docs.replace,
     docs.alias,
-    docs.order,
     docs.comma,
   ]);
 };
@@ -494,14 +495,16 @@ const printArrayAccessing: PrintFunc = (path, options, print) => {
     right: p.child("right"),
     rparen: p.child("rparen"),
     alias: printAlias(path as FastPathOf<ThisNode>, options, print),
-    order: p.child("order", (x) => concat([" ", x]), true),
+    order: printOrder(path as FastPathOf<ThisNode>, options, print),
     comma: p.child("comma", asItIs, true),
     // not used
     leading_comments: "",
     as: "",
+    null_order: "",
   };
   docs.leading_comments;
   docs.as;
+  docs.null_order;
   return concat([
     docs.left,
     docs.self,
@@ -529,12 +532,14 @@ const printArrayLiteral: PrintFunc = (path, options, print) => {
     exprs: p.child("exprs", (x) => group(x), false, line),
     rparen: p.child("rparen"),
     alias: printAlias(path as FastPathOf<ThisNode>, options, print),
-    order: p.child("order", (x) => concat([" ", x]), true),
+    order: printOrder(path as FastPathOf<ThisNode>, options, print),
     comma: p.child("comma", asItIs, true),
     // not used
     as: "",
+    null_order: "",
   };
   docs.as;
+  docs.null_order;
   return concat([
     docs.type,
     docs.leading_comments,
@@ -562,14 +567,16 @@ const printBetweenOperator: PrintFunc = (path, options, print) => {
     and: p.child("and"),
     right_max: p.child("right_max", asItIs, true),
     alias: printAlias(path as FastPathOf<ThisNode>, options, print),
-    order: p.child("order", (x) => concat([" ", x]), true),
+    order: printOrder(path as FastPathOf<ThisNode>, options, print),
     comma: p.child("comma", asItIs, true),
     // not used
     leading_comments: "",
     as: "",
+    null_order: "",
   };
   docs.leading_comments;
   docs.as;
+  docs.null_order;
   return concat([
     docs.left,
     " ",
@@ -599,12 +606,14 @@ const printBooleanLiteral: PrintFunc = (path, options, print) => {
     self: p.self(),
     trailing_comments: printTrailingComments(path, options, print),
     alias: printAlias(path as FastPathOf<ThisNode>, options, print),
-    order: p.child("order", (x) => concat([" ", x]), true),
+    order: printOrder(path as FastPathOf<ThisNode>, options, print),
     comma: p.child("comma", asItIs, true),
     // not used
     as: "",
+    null_order: "",
   };
   docs.as;
+  docs.null_order;
   return concat([
     docs.leading_comments,
     docs.self,
@@ -626,14 +635,16 @@ const printBinaryOperator: PrintFunc = (path, options, print) => {
     trailing_comments: printTrailingComments(path, options, print),
     right: p.child("right", asItIs, true),
     alias: printAlias(path as FastPathOf<ThisNode>, options, print),
-    order: p.child("order", (x) => concat([" ", x]), true),
+    order: printOrder(path as FastPathOf<ThisNode>, options, print),
     comma: p.child("comma", asItIs, true),
     // not used
     leading_comments: "",
     as: "",
+    null_order: "",
   };
   docs.leading_comments;
   docs.as;
+  docs.null_order;
   return concat([
     docs.left,
     p.includedIn(["AND", "OR"])
@@ -675,14 +686,16 @@ const printCallingFunction = (
     rparen: p.child("rparen"),
     over: p.child("over", (x) => concat([" ", x]), true),
     alias: printAlias(path as FastPathOf<ThisNode>, options, print),
-    order: p.child("order", (x) => concat([" ", x]), true),
+    order: printOrder(path as FastPathOf<ThisNode>, options, print),
     comma: p.child("comma", asItIs, true),
     // not used
     leading_comments: "",
     as: "",
+    null_order: "",
   };
   docs.leading_comments;
   docs.as;
+  docs.null_order;
   return concat([
     // func often has leading_comments, so it is placed out of group
     docs.func,
@@ -803,12 +816,14 @@ const printCaseExpr: PrintFunc = (path, options, print) => {
     arms: p.child("arms", (x) => group(x), false, line),
     end: p.child("end", asItIs, true),
     alias: printAlias(path as FastPathOf<ThisNode>, options, print),
-    order: p.child("order", (x) => concat([" ", x]), true),
+    order: printOrder(path as FastPathOf<ThisNode>, options, print),
     comma: p.child("comma", asItIs, true),
     // not used
     as: "",
+    null_order: "",
   };
   docs.as;
+  docs.null_order;
   return concat([
     docs.leading_comments,
     docs.self,
@@ -874,15 +889,18 @@ const printDotOperator: PrintFunc = (path, options, print) => {
       print
     ),
     tablesample: p.child("tablesample", asItIs, true),
-    order: p.child("order", (x) => concat([" ", x]), true),
+    order: printOrder(path as FastPathOf<ThisNode>, options, print),
     comma: p.child("comma", asItIs, true),
     // not used
     leading_comments: "",
     as: "",
+    null_order: "",
     unpivot: "",
   };
   docs.leading_comments;
-  docs.unpivot, docs.as;
+  docs.as;
+  docs.null_order;
+  docs.unpivot;
   return concat([
     docs.left,
     docs.self,
@@ -978,14 +996,16 @@ const printGroupedExpr: PrintFunc = (path, options, print) => {
       options,
       print
     ),
-    order: p.child("order", (x) => concat([" ", x]), true),
+    order: printOrder(path as FastPathOf<ThisNode>, options, print),
     comma: p.child("comma", asItIs, true),
     // not used
     as: "",
+    null_order: "",
     unpivot: "",
   };
   docs.unpivot;
   docs.as;
+  docs.null_order;
   return concat([
     docs.leading_comments,
     group(
@@ -1052,14 +1072,16 @@ const printGroupedStatement: PrintFunc = (path, options, print) => {
       options,
       print
     ),
-    order: p.child("order", (x) => concat([" ", x]), true),
+    order: printOrder(path as FastPathOf<ThisNode>, options, print),
     comma: p.child("comma", asItIs, true),
     semicolon: p.child("semicolon", asItIs, true),
     // not used
     as: "",
+    null_order: "",
     unpivot: "",
   };
   docs.as;
+  docs.null_order;
   docs.unpivot;
   return concat([
     docs.leading_comments,
@@ -1143,14 +1165,16 @@ const printIdentifier: PrintFunc = (path, options, print) => {
       print
     ),
     tablesample: p.child("tablesample", asItIs, true),
-    order: p.child("order", (x) => concat([" ", x]), true),
+    order: printOrder(path as FastPathOf<ThisNode>, options, print),
     comma: p.child("comma", asItIs, true),
     // not used
     unpivot: "",
     as: "",
+    null_order: "",
   };
   docs.unpivot;
   docs.as;
+  docs.null_order;
   return concat([
     docs.leading_comments,
     docs.self,
@@ -1177,14 +1201,16 @@ const printInOperator: PrintFunc = (path, options, print) => {
     trailing_comments: printTrailingComments(path, options, print),
     right: p.child("right", asItIs, true),
     alias: printAlias(path as FastPathOf<ThisNode>, options, print),
-    order: p.child("order", (x) => concat([" ", x]), true),
+    order: printOrder(path as FastPathOf<ThisNode>, options, print),
     comma: p.child("comma", asItIs, true),
     // not used
     leading_comments: "",
     as: "",
+    null_order: "",
   };
   docs.leading_comments;
   docs.as;
+  docs.null_order;
   return concat([
     docs.left,
     " ",
@@ -1210,7 +1236,6 @@ const printIntervalLiteral: PrintFunc = (path, options, print) => {
     right: p.child("right", asItIs, true),
     date_part: p.child("date_part", asItIs, true),
     alias: printAlias(path as FastPathOf<ThisNode>, options, print),
-    order: p.child("order", (x) => concat([" ", x]), true),
     comma: p.child("comma", asItIs, true),
     // not used
     as: "",
@@ -1225,7 +1250,6 @@ const printIntervalLiteral: PrintFunc = (path, options, print) => {
     " ",
     docs.date_part,
     docs.alias,
-    docs.order,
     docs.comma,
   ]);
 };
@@ -1363,12 +1387,14 @@ const printNullLiteral: PrintFunc = (path, options, print) => {
     self: p.self("upper"),
     trailing_comments: printTrailingComments(path, options, print),
     alias: printAlias(path as FastPathOf<ThisNode>, options, print),
-    order: p.child("order", (x) => concat([" ", x]), true),
+    order: printOrder(path as FastPathOf<ThisNode>, options, print),
     comma: p.child("comma", asItIs, true),
     // not used
     as: "",
+    null_order: "",
   };
   docs.as;
+  docs.null_order;
   return concat([
     docs.leading_comments,
     docs.self,
@@ -1388,12 +1414,14 @@ const printNumericLiteral: PrintFunc = (path, options, print) => {
     self: p.self("lower"), // in the case of `3.14e10`
     trailing_comments: printTrailingComments(path, options, print),
     alias: printAlias(path as FastPathOf<ThisNode>, options, print),
-    order: p.child("order", (x) => concat([" ", x]), true),
+    order: printOrder(path as FastPathOf<ThisNode>, options, print),
     comma: p.child("comma", asItIs, true),
     // not used
     as: "",
+    null_order: "",
   };
   docs.as;
+  docs.null_order;
   return concat([
     docs.leading_comments,
     docs.self,
@@ -1489,6 +1517,8 @@ const printSelectStatement: PrintFunc = (path, options, print) => {
     having: p.child("having"),
     // QUALIFY clause
     qualify: p.child("qualify"),
+    // WINDOW clause
+    window: p.child("window"),
     // ORDER BY clause
     orderby: p.child("orderby"),
     semicolon: p.child("semicolon", asItIs, true),
@@ -1526,6 +1556,9 @@ const printSelectStatement: PrintFunc = (path, options, print) => {
         // QUALIFY clause
         p.has("qualify") ? line : "",
         docs.qualify,
+        // WINDOW clause
+        p.has("window") ? line : "",
+        docs.window,
         // ORDER BY clause
         p.has("orderby") ? line : "",
         docs.orderby,
@@ -1581,12 +1614,14 @@ const printStringLiteral: PrintFunc = (path, options, print) => {
     self: p.self(),
     trailing_comments: printTrailingComments(path, options, print),
     alias: printAlias(path as FastPathOf<ThisNode>, options, print),
-    order: p.child("order", (x) => concat([" ", x]), true),
+    order: printOrder(path as FastPathOf<ThisNode>, options, print),
     comma: p.child("comma", asItIs, true),
     // not used
     as: "",
+    null_order: "",
   };
   docs.as;
+  docs.null_order;
   return concat([
     docs.leading_comments,
     docs.self,
@@ -1611,12 +1646,14 @@ const printStructLiteral: PrintFunc = (path, options, print) => {
     exprs: p.child("exprs", (x) => group(x), false, line),
     rparen: p.child("rparen"),
     alias: printAlias(path as FastPathOf<ThisNode>, options, print),
-    order: p.child("order", (x) => concat([" ", x]), true),
+    order: printOrder(path as FastPathOf<ThisNode>, options, print),
     comma: p.child("comma", asItIs, true),
     // not used
     as: "",
+    null_order: "",
   };
   docs.as;
+  docs.null_order;
   return concat([
     docs.type,
     docs.leading_comments,
@@ -1749,12 +1786,14 @@ const printUnaryOperator: PrintFunc = (path, options, print) => {
     trailing_comments: printTrailingComments(path, options, print),
     right: p.child("right", asItIs, true),
     alias: printAlias(path as FastPathOf<ThisNode>, options, print),
-    order: p.child("order", (x) => concat([" ", x]), true),
+    order: printOrder(path as FastPathOf<ThisNode>, options, print),
     comma: p.child("comma", asItIs, true),
     // not used
     as: "",
+    null_order: "",
   };
   docs.as;
+  docs.null_order;
   return concat([
     docs.leading_comments,
     docs.self,
@@ -1818,6 +1857,53 @@ const printUnpivotOperator: PrintFunc = (path, options, print) => {
   ]);
 };
 
+const printWindowClause: PrintFunc = (path, options, print) => {
+  type ThisNode = N.WindowClause;
+  const node: ThisNode = path.getValue();
+  const p = new Printer(path, print, node, node.children);
+  const docs: { [Key in Docs<ThisNode>]: Doc } = {
+    leading_comments: printLeadingComments(path, options, print),
+    self: p.self("upper"),
+    trailing_comments: printTrailingComments(path, options, print),
+    window_exprs:
+      p.len("window_exprs") === 1
+        ? p.child("window_exprs", (x) => concat([" ", group(x)]), true)
+        : p.child("window_exprs", (x) => concat([line, group(x)])),
+  };
+  docs.leading_comments;
+  return concat([
+    docs.leading_comments,
+    docs.self,
+    docs.trailing_comments,
+    indent(docs.window_exprs),
+  ]);
+};
+
+const printWindowExpr: PrintFunc = (path, options, print) => {
+  type ThisNode = N.WindowExpr;
+  const node: ThisNode = path.getValue();
+  const p = new Printer(path, print, node, node.children);
+  const docs: { [Key in Docs<ThisNode>]: Doc } = {
+    leading_comments: printLeadingComments(path, options, print),
+    self: p.self(),
+    trailing_comments: printTrailingComments(path, options, print),
+    as: p.child("as", asItIs, true),
+    window: p.child("window", asItIs, true),
+    comma: p.child("comma", asItIs, true),
+  };
+  docs.leading_comments;
+  return concat([
+    docs.leading_comments,
+    docs.self,
+    docs.trailing_comments,
+    " ",
+    docs.as,
+    " ",
+    docs.window,
+    docs.comma,
+  ]);
+};
+
 const printWindowFrameClause: PrintFunc = (path, options, print) => {
   type ThisNode = N.WindowFrameClause;
   const node: ThisNode = path.getValue();
@@ -1856,6 +1942,7 @@ const printWindowSpecification: PrintFunc = (path, options, print) => {
   const docs: { [Key in Docs<ThisNode>]: Doc } = {
     self: p.self("upper", true),
     trailing_comments: printTrailingComments(path, options, print),
+    name: p.child("name"),
     partitionby: p.child("partitionby", (x) => group(x)),
     orderby: p.child("orderby", (x) => group(x)),
     frame: p.child("frame", (x) => group(x)),
@@ -1872,7 +1959,9 @@ const printWindowSpecification: PrintFunc = (path, options, print) => {
         softline,
         join(
           line,
-          [docs.partitionby, docs.orderby, docs.frame].filter((x) => x)
+          [docs.name, docs.partitionby, docs.orderby, docs.frame].filter(
+            (x) => x
+          )
         ),
       ])
     ),
@@ -1909,7 +1998,7 @@ const printWithQuery: PrintFunc = (path, options, print) => {
   p.setNotRoot("stmt");
   const docs: { [Key in Docs<ThisNode>]: Doc } = {
     leading_comments: printLeadingComments(path, options, print),
-    self: p.self("upper"),
+    self: p.self(),
     trailing_comments: printTrailingComments(path, options, print),
     as: p.child("as", asItIs, true),
     stmt: p.child("stmt", asItIs, true),
@@ -1976,6 +2065,22 @@ const printLeadingComments: PrintFunc = (path, _, print) => {
   const node: ThisNode = path.getValue();
   const p = new Printer(path, print, node, node.children);
   return p.child("leading_comments", (x) => concat([x, hardline]));
+};
+
+const printOrder = (
+  path: FastPathOf<N.Expr>,
+  _: Options,
+  print: (path: FastPath) => Doc
+): Doc => {
+  type ThisNode = N.Expr;
+  const node: ThisNode = path.getValue();
+  const p = new Printer(path, print, node, node.children);
+  return concat([
+    p.has("order") ? concat([" ", p.child("order", asItIs, true)]) : "",
+    p.has("null_order")
+      ? p.child("null_order", (x) => group(concat([line, x])))
+      : "",
+  ]);
 };
 
 const printPivotOrUnpivotOperator = (

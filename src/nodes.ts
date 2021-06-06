@@ -72,6 +72,8 @@ export type Asterisk = Expr & {
   children: {
     except?: { Node: BaseNode };
     replace?: { Node: BaseNode };
+    order: undefined
+    null_order: undefined
   };
 };
 
@@ -137,6 +139,7 @@ export type CallingUnnest = CallingFunction &
       limit: undefined;
       over: undefined;
       order: undefined;
+      null_order: undefined;
       comma: undefined;
     };
   };
@@ -196,6 +199,7 @@ export type Expr = BaseNode & {
     alias?: { Node: BaseNode };
     comma?: { Node: BaseNode };
     order?: { Node: BaseNode };
+    null_order?: { NodeVec: BaseNode[] };
   };
 };
 
@@ -286,6 +290,8 @@ export type IntervalLiteral = Expr & {
   children: {
     date_part: { Node: BaseNode };
     right: { Node: BaseNode };
+    order: undefined;
+    null_order: undefined
   };
 };
 
@@ -298,6 +304,7 @@ export type JoinOperator = FromItemExpr & {
     on: { Node: BaseNode };
     using: { Node: BaseNode };
     order: undefined;
+    null_order: undefined;
     comma: undefined;
   };
 };
@@ -360,6 +367,7 @@ export type SelectStatement = XXXStatement & {
     groupby?: { Node: BaseNode };
     having?: { Node: BaseNode };
     qualify?: { Node: BaseNode };
+    window?: { Node: BaseNode };
     orderby?: { Node: BaseNode };
   };
 };
@@ -458,6 +466,22 @@ export type UnpivotOperator = BaseNode & {
   };
 };
 
+export type WindowClause = BaseNode & {
+  token: Token;
+  children: {
+    window_exprs: { NodeVec: BaseNode[] };
+  };
+};
+
+export type WindowExpr = BaseNode & {
+  token: Token;
+  children: {
+    as: { Node: BaseNode };
+    window: { Node: BaseNode };
+    comma?: { Node: BaseNode };
+  };
+};
+
 export type WindowFrameClause = BaseNode & {
   token: Token;
   children: {
@@ -471,6 +495,7 @@ export type WindowFrameClause = BaseNode & {
 export type WindowSpecification = BaseNode & {
   token: Token;
   children: {
+    name?: { Node: BaseNode };
     partitionby: { Node: BaseNode };
     orderby: { Node: BaseNode };
     frame: { Node: BaseNode };

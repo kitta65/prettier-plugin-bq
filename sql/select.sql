@@ -113,7 +113,7 @@ with
 select *
 from
   tmp pivot(sum(int) for str in ('v1'))
-  --inner join tmp pivot(sum(int) for str in ('v1')) using(dt)
+  inner join tmp pivot(sum(int) for str in ('v1')) using(dt)
 ;
 
 with
@@ -205,3 +205,32 @@ from t
 where true
 qualify row_number() over(partition by str order by ts) = 1
 ;
+
+----- WINDOW clause -----
+select *
+from t
+-- break
+window
+  a as (partition by str),
+  b as (a order by col2)
+;
+
+select *
+from t
+-- break
+window
+  a as (partition by str),
+  b as a
+;
+
+select *
+from t
+-- break
+window a as (partition by str order by ts)
+;
+
+----- ORDER BY clause -----
+select * from t order by int asc, ts;
+
+select * from t order by int nulls first, str desc nulls last;
+
