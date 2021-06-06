@@ -26,6 +26,7 @@ export type BaseNode = {
   callable?: true;
   notGlobal?: true;
   notRoot?: true;
+  breakRecommended?: true;
 };
 
 export type Children<T extends BaseNode> = T["children"];
@@ -130,13 +131,13 @@ export type CallingUnnest = CallingFunction &
       with_offset: { Node: BaseNode };
       offset_alias: { Node: BaseNode };
       offset_as: { Node: BaseNode };
-      distinct: undefined
-      ignore_nulls: undefined
-      orderby: undefined
-      limit: undefined
-      over: undefined
-      order: undefined
-      comma: undefined
+      distinct: undefined;
+      ignore_nulls: undefined;
+      orderby: undefined;
+      limit: undefined;
+      over: undefined;
+      order: undefined;
+      comma: undefined;
     };
   };
 
@@ -290,16 +291,16 @@ export type IntervalLiteral = Expr & {
 
 export type JoinOperator = FromItemExpr & {
   children: {
-    join_type: {Node: BaseNode}
-    outer: {Node: BaseNode}
-    left: {Node: BaseNode}
-    right: {Node:BaseNode}
-    on: {Node: BaseNode}
-    using: {Node: BaseNode}
-    order: undefined
-    comma: undefined
-  }
-}
+    join_type: { Node: BaseNode };
+    outer: { Node: BaseNode };
+    left: { Node: BaseNode };
+    right: { Node: BaseNode };
+    on: { Node: BaseNode };
+    using: { Node: BaseNode };
+    order: undefined;
+    comma: undefined;
+  };
+};
 
 export type Keyword = BaseNode & {
   token: Token;
@@ -516,5 +517,3 @@ export const isXXXStatement = (n: BaseNode): n is XXXStatement => {
   }
   return false;
 };
-
-

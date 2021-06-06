@@ -180,3 +180,8 @@ from
 
 select * from t as t1 , t t2 join (t as t3 full outer join t t4 on t3.dt = t4.dt) on t2.str = t4.str;
 
+----- WHERE clause -----
+select str from t where true;
+
+select str from t where str = 'abc' and ts < current_timestamp() and int < 100 and (float < 100 or 1000 < float);
+

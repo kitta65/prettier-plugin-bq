@@ -205,6 +205,12 @@ class Printer<T extends N.BaseNode> {
     }
     return concat([comments, literal]);
   }
+  setBreakRecommended(key: N.NodeKeyof<N.Children<T>>) {
+    const child = this.children[key];
+    if (N.isNode(child)) {
+      child.Node.breakRecommended = true;
+    }
+  }
   setCallable(key: N.NodeKeyof<N.Children<T>>) {
     const child = this.children[key];
     if (N.isNode(child)) {
@@ -629,7 +635,11 @@ const printBinaryOperator: PrintFunc = (path, options, print) => {
   docs.as;
   return concat([
     docs.left,
-    " ",
+    p.includedIn(["AND", "OR"])
+      ? node.breakRecommended
+        ? hardline
+        : line
+      : " ",
     p.has("not") && !p.includedIn(["IS"]) ? concat([docs.not, " "]) : "",
     docs.self,
     p.has("not") && p.includedIn(["IS"]) ? concat([" ", docs.not]) : "",
@@ -977,11 +987,15 @@ const printGroupedExpr: PrintFunc = (path, options, print) => {
   docs.as;
   return concat([
     docs.leading_comments,
-    docs.self,
-    docs.trailing_comments,
-    indent(concat([softline, docs.expr])),
-    softline,
-    docs.rparen,
+    group(
+      concat([
+        docs.self,
+        docs.trailing_comments,
+        indent(concat([softline, docs.expr])),
+        softline,
+        docs.rparen,
+      ])
+    ),
     docs.alias,
     docs.pivot,
     docs.order,
@@ -1304,6 +1318,7 @@ const printKeywordWithExpr: PrintFunc = (path, options, print) => {
   const node: ThisNode = path.getValue();
   const p = new Printer(path, print, node, node.children);
   p.setNotRoot("expr");
+  p.setBreakRecommended("expr");
   const docs: { [Key in Docs<ThisNode>]: Doc } = {
     leading_comments: printLeadingComments(path, options, print),
     self: p.self("upper"),
