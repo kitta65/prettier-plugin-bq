@@ -7,8 +7,8 @@ assert
 as 'description';
 
 ----- EXPORT statement -----
---export data options(
---  uri = 'gs://bucket/folder/*.csv',
---  format = 'CSV'
---) as select 1;
+export data options(
+  uri = 'gs://bucket/folder/*.csv',
+  format = 'CSV'
+) as select 1;
 

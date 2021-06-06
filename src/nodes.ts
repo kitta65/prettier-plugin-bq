@@ -200,6 +200,14 @@ export type EOF = BaseNode & {
   };
 };
 
+export type ExportStatement = XXXStatement & {
+  children: {
+    data: { Node: BaseNode };
+    options: { Node: BaseNode };
+    as: { Node: BaseNode };
+  };
+};
+
 export type Expr = BaseNode & {
   token: Token;
   children: {
@@ -330,6 +338,12 @@ export type KeywordWithExpr = Keyword & {
 export type KeywordWithGroupedExprs = Keyword & {
   children: {
     group: { Node: BaseNode };
+  };
+};
+
+export type KeywordWithStatement = Keyword & {
+  children: {
+    stmt: { Node: BaseNode };
   };
 };
 
