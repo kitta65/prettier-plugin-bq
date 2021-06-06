@@ -163,5 +163,20 @@ select * from unnest([1]) with offset;
 
 select * from unnest([1]) a with offset as b;
 
+-- JOIN
+select * from (select str from t) as tmp inner join u on tmp.str = u.str;
 
+select * from t as t1 join t t2 on t1.str = t2.str;
+
+select *
+from
+  t as t1
+  left join t t2 using(str)
+  left
+    -- outer
+    outer -- outer
+    join u on t2.dt = u.dt
+;
+
+select * from t as t1 , t t2 join (t as t3 full outer join t t4 on t3.dt = t4.dt) on t2.str = t4.str;
 

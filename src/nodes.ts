@@ -288,6 +288,19 @@ export type IntervalLiteral = Expr & {
   };
 };
 
+export type JoinOperator = FromItemExpr & {
+  children: {
+    join_type: {Node: BaseNode}
+    outer: {Node: BaseNode}
+    left: {Node: BaseNode}
+    right: {Node:BaseNode}
+    on: {Node: BaseNode}
+    using: {Node: BaseNode}
+    order: undefined
+    comma: undefined
+  }
+}
+
 export type Keyword = BaseNode & {
   token: Token;
 };
@@ -503,3 +516,5 @@ export const isXXXStatement = (n: BaseNode): n is XXXStatement => {
   }
   return false;
 };
+
+

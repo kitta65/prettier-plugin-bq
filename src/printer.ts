@@ -390,6 +390,8 @@ export const printSQL: PrintFunc = (path, options, print) => {
       return printInOperator(path, options, print);
     case "IntervalLiteral":
       return printIntervalLiteral(path, options, print);
+    case "JoinOperator":
+      return printJoinOperator(path, options, print);
     case "Keyword":
       return printKeyword(path, options, print);
     case "KeywordWithExpr":
@@ -1213,6 +1215,78 @@ const printIntervalLiteral: PrintFunc = (path, options, print) => {
   ]);
 };
 
+const printJoinOperator: PrintFunc = (path, options, print) => {
+  type ThisNode = N.JoinOperator;
+  const node: ThisNode = path.getValue();
+  const p = new Printer(path, print, node, node.children);
+  p.setNotRoot("left");
+  p.setNotRoot("right");
+  let outer: Doc = "";
+  const outerChild = node.children.outer;
+  if (outerChild) {
+    const leading_comments = outerChild.Node.children.leading_comments;
+    if (leading_comments) {
+      outer = concat([
+        outer,
+        concat(
+          leading_comments.NodeVec.map((x) =>
+            lineSuffix(concat([" ", x.token.literal]))
+          )
+        ),
+      ]);
+    }
+    const trailing_comments = outerChild.Node.children.trailing_comments;
+    if (trailing_comments) {
+      outer = concat([
+        outer,
+        concat(
+          trailing_comments.NodeVec.map((x) =>
+            lineSuffix(concat([" ", x.token.literal]))
+          )
+        ),
+      ]);
+    }
+  }
+  const docs: { [Key in Docs<ThisNode>]: Doc } = {
+    left: p.child("left"),
+    join_type: p.child("join_type"),
+    outer: outer,
+    self: p.self("upper", true),
+    trailing_comments: printTrailingComments(path, options, print),
+    right: p.child("right", asItIs, true),
+    on: p.child("on", asItIs, true),
+    using: p.child("using", asItIs, true),
+    alias: printAlias(path as FastPathOf<ThisNode>, options, print),
+    pivot: printPivotOrUnpivotOperator(
+      path as FastPathOf<ThisNode>,
+      options,
+      print
+    ),
+    // not used
+    leading_comments: "",
+    as: "",
+    unpivot: "",
+  };
+  docs.leading_comments;
+  docs.as;
+  docs.unpivot;
+  return concat([
+    docs.left,
+    hardline,
+    p.includedIn(["JOIN"]) ? concat([docs.join_type || "INNER", " "]) : "",
+    docs.outer,
+    docs.self,
+    docs.trailing_comments,
+    " ",
+    docs.right,
+    p.has("on") || p.has("using") ? " " : "",
+    docs.on,
+    docs.using,
+    docs.alias,
+    docs.pivot,
+  ]);
+};
+
 const printKeyword: PrintFunc = (path, options, print) => {
   type ThisNode = N.Keyword;
   const node: ThisNode = path.getValue();
@@ -1234,9 +1308,13 @@ const printKeywordWithExpr: PrintFunc = (path, options, print) => {
     leading_comments: printLeadingComments(path, options, print),
     self: p.self("upper"),
     trailing_comments: printTrailingComments(path, options, print),
-    expr: p.hasLeadingComments("expr")
-      ? indent(concat([line, p.child("expr")]))
-      : concat([" ", p.child("expr", asItIs, true)]),
+    expr:
+      !p.hasLeadingComments("expr") &&
+      ["GroupedExpr", "GroupedStatement", "CallingFunction"].includes(
+        node.children.expr.Node.node_type
+      )
+        ? concat([" ", p.child("expr", asItIs, true)])
+        : indent(concat([line, p.child("expr")])),
   };
   return concat([
     docs.leading_comments,
