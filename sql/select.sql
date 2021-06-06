@@ -185,3 +185,23 @@ select str from t where true;
 
 select str from t where str = 'abc' and ts < current_timestamp() and int < 100 and (float < 100 or 1000 < float);
 
+----- GROUP BY clause -----
+select str, int
+-- break
+from t group by 1, 2
+;
+
+select str, int
+-- break
+from t group by str, int
+;
+
+----- HAVING clause -----
+select str, count(*) cnt from t group by 1 having cnt < 10;
+
+---- QUALIFY clause -----
+select int
+from t
+where true
+qualify row_number() over(partition by str order by ts) = 1
+;

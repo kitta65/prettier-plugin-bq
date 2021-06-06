@@ -351,13 +351,16 @@ export type PivotConfig = BaseNode & {
 export type SelectStatement = XXXStatement & {
   token: Token;
   children: {
-    with: { Node: BaseNode };
-    as_struct_or_value: { NodeVec: BaseNode[] };
-    distinct_or_all: { Node: BaseNode };
+    with?: { Node: BaseNode };
+    as_struct_or_value?: { NodeVec: BaseNode[] };
+    distinct_or_all?: { Node: BaseNode };
     exprs: { NodeVec: BaseNode[] };
-    from: { Node: BaseNode };
-    where: { Node: BaseNode };
-    orderby: { Node: BaseNode };
+    from?: { Node: BaseNode };
+    where?: { Node: BaseNode };
+    groupby?: { Node: BaseNode };
+    having?: { Node: BaseNode };
+    qualify?: { Node: BaseNode };
+    orderby?: { Node: BaseNode };
   };
 };
 
@@ -495,7 +498,7 @@ export type XXXByExprs = Keyword & {
   token: Token;
   children: {
     by: { Node: BaseNode };
-    exprs: { NodeVec: BaseNode[] };
+    exprs: { NodeVec: Expr[] };
   };
 };
 

@@ -8,6 +8,7 @@ const {
     concat, // TODO remove
     group,
     hardline,
+    ifBreak,
     indent,
     join,
     line,
@@ -1482,6 +1483,12 @@ const printSelectStatement: PrintFunc = (path, options, print) => {
     from: p.child("from"),
     // WHERE clause
     where: p.child("where"),
+    // GROUP BY clause
+    groupby: p.child("groupby"),
+    // HAVING clause
+    having: p.child("having"),
+    // QUALIFY clause
+    qualify: p.child("qualify"),
     // ORDER BY clause
     orderby: p.child("orderby"),
     semicolon: p.child("semicolon", asItIs, true),
@@ -1510,6 +1517,15 @@ const printSelectStatement: PrintFunc = (path, options, print) => {
         // WHERE clause
         p.has("where") ? line : "",
         docs.where,
+        // GROUP BY clause
+        p.has("groupby") ? line : "",
+        docs.groupby,
+        // HAVING clause
+        p.has("having") ? line : "",
+        docs.having,
+        // QUALIFY clause
+        p.has("qualify") ? line : "",
+        docs.qualify,
         // ORDER BY clause
         p.has("orderby") ? line : "",
         docs.orderby,
@@ -1920,7 +1936,7 @@ const printXXXByExprs: PrintFunc = (path, options, print) => {
     self: p.self("upper"),
     trailing_comments: printTrailingComments(path, options, print),
     by: p.child("by", asItIs, true),
-    exprs: p.child("exprs", (x) => concat([line, x])),
+    exprs: indent(p.child("exprs", (x) => concat([line, x]))),
   };
   return concat([
     docs.leading_comments,
@@ -1928,7 +1944,9 @@ const printXXXByExprs: PrintFunc = (path, options, print) => {
     docs.trailing_comments,
     " ",
     docs.by,
-    indent(docs.exprs),
+    node.children.exprs.NodeVec.every((x) => x.token.literal.match(/^[0-9]+$/))
+      ? group(docs.exprs)
+      : docs.exprs,
   ]);
 };
 
