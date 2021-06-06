@@ -401,9 +401,15 @@ export const printSQL: PrintFunc = (path, options, print) => {
     case "Keyword":
       return printKeyword(path, options, print);
     case "KeywordWithExpr":
-      return printKeywordWithExpr(path, options, print);
+      return printKeywordWithExpr(
+        path as FastPathOf<N.KeywordWithExpr>,
+        options,
+        print
+      );
     case "KeywordWithGroupedExprs":
       return printKeywordWithGroupedExprs(path, options, print);
+    case "LimitClause":
+      return printLimitClause(path, options, print);
     case "NullLiteral":
       return printNullLiteral(path, options, print);
     case "NumericLiteral":
@@ -1338,7 +1344,11 @@ const printKeyword: PrintFunc = (path, options, print) => {
   return concat([docs.leading_comments, docs.self, docs.trailing_comments]);
 };
 
-const printKeywordWithExpr: PrintFunc = (path, options, print) => {
+const printKeywordWithExpr = (
+  path: FastPathOf<N.KeywordWithExpr>,
+  options: Options,
+  print: (path: FastPath) => Doc
+): Doc => {
   type ThisNode = N.KeywordWithExpr;
   const node: ThisNode = path.getValue();
   const p = new Printer(path, print, node, node.children);
@@ -1375,6 +1385,17 @@ const printKeywordWithGroupedExprs: PrintFunc = (path, options, print) => {
   return concat([
     docs.leading_comments,
     group(concat([docs.self, docs.trailing_comments, " ", docs.group])),
+  ]);
+};
+
+const printLimitClause: PrintFunc = (path, options, print) => {
+  type ThisNode = N.LimitClause;
+  const node: ThisNode = path.getValue();
+  const p = new Printer(path, print, node, node.children);
+  return concat([
+    printKeywordWithExpr(path as FastPathOf<ThisNode>, options, print),
+    " ",
+    p.child("offset", asItIs, true),
   ]);
 };
 
@@ -1521,6 +1542,8 @@ const printSelectStatement: PrintFunc = (path, options, print) => {
     window: p.child("window"),
     // ORDER BY clause
     orderby: p.child("orderby"),
+    // LIMIT clause
+    limit: p.child("limit"),
     semicolon: p.child("semicolon", asItIs, true),
   };
   const select = concat([
@@ -1562,6 +1585,9 @@ const printSelectStatement: PrintFunc = (path, options, print) => {
         // ORDER BY clause
         p.has("orderby") ? line : "",
         docs.orderby,
+        // LIMIT clause
+        p.has("limit") ? line : "",
+        docs.limit,
         p.has("semicolon") ? concat([softline, docs.semicolon]) : "",
       ])
     ),

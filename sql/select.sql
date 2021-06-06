@@ -234,3 +234,8 @@ select * from t order by int asc, ts;
 
 select * from t order by int nulls first, str desc nulls last;
 
+----- LIMIT clause -----
+select * from t limit 100;
+
+select * from t limit 100 offset 10;
+

@@ -72,8 +72,8 @@ export type Asterisk = Expr & {
   children: {
     except?: { Node: BaseNode };
     replace?: { Node: BaseNode };
-    order: undefined
-    null_order: undefined
+    order: undefined;
+    null_order: undefined;
   };
 };
 
@@ -291,7 +291,7 @@ export type IntervalLiteral = Expr & {
     date_part: { Node: BaseNode };
     right: { Node: BaseNode };
     order: undefined;
-    null_order: undefined
+    null_order: undefined;
   };
 };
 
@@ -322,6 +322,12 @@ export type KeywordWithExpr = Keyword & {
 export type KeywordWithGroupedExprs = Keyword & {
   children: {
     group: { Node: BaseNode };
+  };
+};
+
+export type LimitClause = KeywordWithExpr & {
+  children: {
+    offset?: { Node: BaseNode };
   };
 };
 
@@ -369,6 +375,7 @@ export type SelectStatement = XXXStatement & {
     qualify?: { Node: BaseNode };
     window?: { Node: BaseNode };
     orderby?: { Node: BaseNode };
+    limit?: { Node: BaseNode };
   };
 };
 
