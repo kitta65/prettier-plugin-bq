@@ -153,4 +153,6 @@ from tmp unpivot include nulls (
 ) AS unpivot
 ;
 
+-- TABLESAMPLE
+select * from t tablesample system (20 percent);
 

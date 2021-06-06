@@ -252,7 +252,7 @@ export type GroupedType = BaseNode & {
 export type Identifier = FromItemExpr & {
   children: {
     // TABLESAMPLE SYSTEM can only be applied directly to base tables
-    //tablesample: {Node: BaseNode}
+    tablesample: { Node: BaseNode };
     for_system_time_as_of: { Node: BaseNode };
   };
 };
@@ -364,6 +364,23 @@ export type StructLiteral = Expr & {
 
 export type Symbol_ = BaseNode & {
   token: Token;
+};
+
+export type TableSampleClause = BaseNode & {
+  token: Token;
+  children: {
+    system: { Node: BaseNode };
+    group: { Node: BaseNode };
+  };
+};
+
+export type TableSampleRatio = BaseNode & {
+  token: Token;
+  children: {
+    expr: { Node: BaseNode };
+    percent: { Node: BaseNode };
+    rparen: { Node: BaseNode };
+  };
 };
 
 export type Type = BaseNode & {

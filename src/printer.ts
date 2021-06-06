@@ -414,6 +414,10 @@ export const printSQL: PrintFunc = (path, options, print) => {
       return printStructLiteral(path, options, print);
     case "Symbol":
       return printSymbol(path, options, print);
+    case "TableSampleClause":
+      return printTableSampleClause(path, options, print);
+    case "TableSampleRatio":
+      return printTableSampleRatio(path, options, print);
     case "Type":
       return printType(path, options, print);
     case "TypeDeclaration":
@@ -813,12 +817,13 @@ const printDotOperator: PrintFunc = (path, options, print) => {
       options,
       print
     ),
+    tablesample: p.child("tablesample", asItIs, true),
     order: p.child("order", (x) => concat([" ", x]), true),
     comma: p.child("comma", asItIs, true),
     // not used
     leading_comments: "",
-    unpivot: "",
     as: "",
+    unpivot: "",
   };
   docs.leading_comments;
   docs.unpivot, docs.as;
@@ -832,6 +837,7 @@ const printDotOperator: PrintFunc = (path, options, print) => {
       ? concat([" ", docs.for_system_time_as_of])
       : "",
     docs.pivot,
+    p.has("tablesample") ? concat([" ", docs.tablesample]) : "",
     docs.order,
     docs.comma,
   ]);
@@ -1076,6 +1082,7 @@ const printIdentifier: PrintFunc = (path, options, print) => {
       options,
       print
     ),
+    tablesample: p.child("tablesample", asItIs, true),
     order: p.child("order", (x) => concat([" ", x]), true),
     comma: p.child("comma", asItIs, true),
     // not used
@@ -1093,6 +1100,7 @@ const printIdentifier: PrintFunc = (path, options, print) => {
       ? concat([" ", docs.for_system_time_as_of])
       : "",
     docs.pivot,
+    p.has("tablesample") ? concat([" ", docs.tablesample]) : "",
     docs.order,
     docs.comma,
   ]);
@@ -1481,6 +1489,51 @@ const printSymbol: PrintFunc = (path, options, print) => {
     trailing_comments: printTrailingComments(path, options, print),
   };
   return concat([docs.leading_comments, docs.self, docs.trailing_comments]);
+};
+
+const printTableSampleClause: PrintFunc = (path, options, print) => {
+  type ThisNode = N.TableSampleClause;
+  const node: ThisNode = path.getValue();
+  const p = new Printer(path, print, node, node.children);
+  const docs: { [Key in Docs<ThisNode>]: Doc } = {
+    leading_comments: printLeadingComments(path, options, print),
+    self: p.self("upper"),
+    system: p.child("system", asItIs, true),
+    trailing_comments: printTrailingComments(path, options, print),
+    group: p.child("group", asItIs, true),
+  };
+  return concat([
+    docs.leading_comments,
+    docs.self,
+    docs.trailing_comments,
+    " ",
+    docs.system,
+    " ",
+    docs.group,
+  ]);
+};
+
+const printTableSampleRatio: PrintFunc = (path, options, print) => {
+  type ThisNode = N.TableSampleRatio;
+  const node: ThisNode = path.getValue();
+  const p = new Printer(path, print, node, node.children);
+  const docs: { [Key in Docs<ThisNode>]: Doc } = {
+    leading_comments: printLeadingComments(path, options, print),
+    self: p.self("upper"),
+    expr: p.child("expr", asItIs, true),
+    trailing_comments: printTrailingComments(path, options, print),
+    percent: p.child("percent", asItIs, true),
+    rparen: p.child("rparen", asItIs, true),
+  };
+  return concat([
+    docs.leading_comments,
+    docs.self,
+    docs.trailing_comments,
+    docs.expr,
+    " ",
+    docs.percent,
+    docs.rparen,
+  ]);
 };
 
 const printType: PrintFunc = (path, options, print) => {
