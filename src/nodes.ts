@@ -124,6 +124,22 @@ export type CallingFunction = Expr & {
   };
 };
 
+export type CallingUnnest = CallingFunction &
+  FromItemExpr & {
+    children: {
+      with_offset: { Node: BaseNode };
+      offset_alias: { Node: BaseNode };
+      offset_as: { Node: BaseNode };
+      distinct: undefined
+      ignore_nulls: undefined
+      orderby: undefined
+      limit: undefined
+      over: undefined
+      order: undefined
+      comma: undefined
+    };
+  };
+
 export type CallingDatePartFunction = CallingFunction;
 
 export type CaseArm = BaseNode & {

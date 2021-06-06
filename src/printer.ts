@@ -356,6 +356,8 @@ export const printSQL: PrintFunc = (path, options, print) => {
       );
     case "CallingDatePartFunction":
       return printCallingDatePartFunction(path, options, print);
+    case "CallingUnnest":
+      return printCallingUnnest(path, options, print);
     case "CaseArm":
       return printCaseArm(path, options, print);
     case "CaseExpr":
@@ -696,6 +698,47 @@ const printCallingFunction = (
     docs.alias,
     docs.order,
     docs.comma,
+  ]);
+};
+
+const printCallingUnnest: PrintFunc = (path, options, print) => {
+  type ThisNode = N.CallingUnnest;
+  const node: ThisNode = path.getValue();
+  const p = new Printer(path, print, node, node.children);
+  const docs: { [Key in Docs<ThisNode>]: Doc } = {
+    func: printCallingFunction(path as FastPathOf<ThisNode>, options, print),
+    with_offset: p.child("with_offset", (x) => group(concat([line, x]))),
+    offset_as: p.child("offset_as", asItIs, true),
+    offset_alias: p.child("offset_alias", asItIs, true),
+    pivot: printPivotOrUnpivotOperator(
+      path as FastPathOf<ThisNode>,
+      options,
+      print
+    ),
+    // not used
+    leading_comments: "",
+    self: "",
+    trailing_comments: "",
+    args: "",
+    rparen: "",
+    alias: "",
+    as: "",
+    unpivot: "",
+  };
+  docs.leading_comments;
+  docs.self;
+  docs.trailing_comments;
+  docs.args;
+  docs.rparen;
+  docs.alias;
+  docs.as;
+  docs.unpivot;
+  return concat([
+    docs.func,
+    docs.with_offset,
+    p.has("offset_alias") ? concat([" ", docs.offset_as || "AS"]) : "",
+    p.has("offset_alias") ? concat([" ", docs.offset_alias]) : "",
+    docs.pivot,
   ]);
 };
 

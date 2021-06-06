@@ -156,3 +156,12 @@ from tmp unpivot include nulls (
 -- TABLESAMPLE
 select * from t tablesample system (20 percent);
 
+-- UNNEST
+select * from unnest([1, 2]);
+
+select * from unnest([1]) with offset;
+
+select * from unnest([1]) a with offset as b;
+
+
+
