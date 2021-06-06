@@ -80,7 +80,11 @@ from t
 ;
 
 ----- function -----
-select least(1, 2);
+select
+  least(1, 2),
+  -- comment
+  least(1, 2),
+;
 
 -- CAST
 select cast('1' as int64);

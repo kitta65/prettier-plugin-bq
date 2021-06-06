@@ -111,7 +111,6 @@ export type BetweenOperator = Expr & {
 
 export type BooleanLiteral = Expr;
 
-//export type CallingFunction = FromItemExpr & {
 export type CallingFunction = Expr & {
   children: {
     func: { Node: BaseNode };
@@ -201,15 +200,14 @@ export type ForSystemTimeAsOfClause = BaseNode & {
   };
 };
 
-//export type FromItemExpr = BaseNode & {
-//  children: {
-//    pivot?: { Node: BaseNode };
-//    unpivot?: { Node: BaseNode };
-//  };
-//};
+export type FromItemExpr = Expr & {
+  children: {
+    pivot?: { Node: BaseNode };
+    unpivot?: { Node: BaseNode };
+  };
+};
 
-//export type GroupedExpr = FromItemExpr & {
-export type GroupedExpr = Expr & {
+export type GroupedExpr = FromItemExpr & {
   children: {
     expr: { Node: BaseNode };
     rparen: { Node: BaseNode };
@@ -229,8 +227,7 @@ export type GroupedExprs = BaseNode & {
   };
 };
 
-//export type GroupedStatement = FromItemExpr &
-export type GroupedStatement = Expr &
+export type GroupedStatement = FromItemExpr &
   XXXStatement & {
     children: {
       stmt: { Node: BaseNode };
@@ -252,9 +249,9 @@ export type GroupedType = BaseNode & {
   };
 };
 
-//export type Identifier = FromItemExpr & {
-export type Identifier = Expr & {
+export type Identifier = FromItemExpr & {
   children: {
+    // TABLESAMPLE SYSTEM can only be applied directly to base tables
     //tablesample: {Node: BaseNode}
     for_system_time_as_of: { Node: BaseNode };
   };
@@ -299,6 +296,25 @@ export type OverClause = BaseNode & {
   token: Token;
   children: {
     window: { Node: BaseNode };
+  };
+};
+
+export type PivotOperator = BaseNode & {
+  token: Token;
+  children: {
+    config: { Node: BaseNode };
+    as?: { Node: BaseNode };
+    alias?: { Node: BaseNode };
+  };
+};
+
+export type PivotConfig = BaseNode & {
+  token: Token;
+  children: {
+    exprs: { NodeVec: BaseNode[] };
+    for: { Node: BaseNode };
+    in: { Node: BaseNode };
+    rparen: { Node: BaseNode };
   };
 };
 
@@ -369,6 +385,26 @@ export type UnaryOperator = Expr & {
   token: Token;
   children: {
     right: { Node: BaseNode };
+  };
+};
+
+export type UnpivotConfig = BaseNode & {
+  token: Token;
+  children: {
+    expr: { Node: BaseNode };
+    for: { Node: BaseNode };
+    in: { Node: BaseNode };
+    rparen: { Node: BaseNode };
+  };
+};
+
+export type UnpivotOperator = BaseNode & {
+  token: Token;
+  children: {
+    include_or_exclude_nulls: { NodeVec: BaseNode[] };
+    config: { Node: BaseNode };
+    as?: { Node: BaseNode };
+    alias?: { Node: BaseNode };
   };
 };
 

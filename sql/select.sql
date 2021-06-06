@@ -104,5 +104,53 @@ select str from t as tmp for system_time
 ;
 
 -- PIVOT
-select * FROM t PIVOT (COUNT(*) FOR x IN ('v1', 'v2'))
+with
+  -- i don't know why but with clause is needed
+  tmp as (
+    select dt, str, int
+    from t
+  )
+select *
+from
+  tmp pivot(sum(int) for str in ('v1'))
+  --inner join tmp pivot(sum(int) for str in ('v1')) using(dt)
+;
+
+with
+  -- i don't know why but with clause is needed
+  tmp as (
+    select dt, str, int
+    from t
+  )
+select *
+from tmp as tmp1 pivot (
+  sum(int) s,
+  count(*) as c
+  for str in ('v1' one, 'v2' AS two)
+) tmp2;
+
+-- UNPIVOT
+with tmp AS (
+  select 'a' as name, 51 as v1, 23 as v2 union all
+  select 'b', 77, 0
+)
+select *
+from tmp unpivot (
+  value
+  for v
+  in (v1 1, v2 as 2)
+)
+;
+
+with tmp AS (
+  select 'a' name, 51 v1, 23 v2, 64 v3, 58 v4 union all
+  select 'b', 77, 0, 32, 44
+)
+select *
+from tmp unpivot include nulls (
+  (value1, value2)
+  for v in ((v1, v2) AS '1-2', (v3, v4) '3-4')
+) AS unpivot
+;
+
 
