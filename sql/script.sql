@@ -1,3 +1,5 @@
+select 1
+/*
 declare x int64;declare x,y default 1;
 set x=5;set (x,y)=(1,2);set (x,y)=(select as struct 1,2);
 execute immediate 'select 1';execute immediate 'select ?,?' into x,y using 1,2;execute immediate 'select @x' into x using 1 as x;
@@ -22,4 +24,4 @@ exception when error then
   select @@error.message;
 end;
 call mydataset.myprocedure(1);
-
+*/

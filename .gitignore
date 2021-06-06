@@ -1,11 +1,5 @@
 dist/
 node_modules
 result
-sql/*
-!sql/core.sql
-!sql/select.sql
-!sql/dml.sql
-!sql/ddl.sql
-!sql/script.sql
 work/*
 !work/work.js

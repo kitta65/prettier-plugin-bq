@@ -4,7 +4,7 @@
   "description": "",
   "main": "dist/index.js",
   "scripts": {
-    "test": "tsc && mkdir -p ./result && cp ./sql/* ./result && prettier --write --plugin . ./result && prettier --check --plugin . ./result/core.sql && prettier --check --plugin . ./result/select.sql && jest",
+    "test": "tsc && mkdir -p ./result && cp ./sql/* ./result && prettier --write --plugin . ./result && prettier --check --plugin . ./result/* && jest",
     "sample": "tsc && mkdir -p ./result && cp ./sql/* ./result && prettier --write --plugin . ./result"
   },
   "keywords": [],

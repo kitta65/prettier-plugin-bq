@@ -41,3 +41,23 @@ test("select.sql", async () => {
   const sql = await read("./result/select.sql");
   await dryRun(format(sql));
 });
+
+test("dml.sql", async () => {
+  const sql = await read("./result/dml.sql");
+  await dryRun(format(sql));
+});
+
+test("ddl.sql", async () => {
+  const sql = await read("./result/ddl.sql");
+  await dryRun(format(sql));
+});
+
+test("script.sql", async () => {
+  const sql = await read("./result/script.sql");
+  await dryRun(format(sql));
+});
+
+test("other.sql", async () => {
+  const sql = await read("./result/select.sql");
+  await dryRun(format(sql));
+});

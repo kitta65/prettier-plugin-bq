@@ -68,15 +68,6 @@ export const isNodeVec = (child: unknown): child is { NodeVec: BaseNode[] } => {
 };
 
 // ----- sub types of BaseNode -----
-export type Asterisk = Expr & {
-  children: {
-    except?: { Node: BaseNode };
-    replace?: { Node: BaseNode };
-    order: undefined;
-    null_order: undefined;
-  };
-};
-
 export type ArrayAccessing = Expr & {
   children: {
     not: undefined;
@@ -91,6 +82,23 @@ export type ArrayLiteral = Expr & {
     type?: { Node: BaseNode };
     exprs: { NodeVec: BaseNode[] };
     rparen: { Node: BaseNode };
+  };
+};
+
+export type AssertStatement = XXXStatement & {
+  children: {
+    expr: { Node: BaseNode };
+    as: { Node: BaseNode };
+    description: { Node: BaseNode };
+  };
+};
+
+export type Asterisk = Expr & {
+  children: {
+    except?: { Node: BaseNode };
+    replace?: { Node: BaseNode };
+    order: undefined;
+    null_order: undefined;
   };
 };
 

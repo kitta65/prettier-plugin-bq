@@ -1,3 +1,5 @@
+select 1
+/*
 insert into table values(1,2);insert table values(1),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2),(2);insert table (col) select 1;
 delete table where true;delete table t where true;delete from table as t where not exists (select * from t where true);
 truncate table t;
@@ -10,4 +12,4 @@ when not matched by target then insert (id,value) values (1,'tooLongStringToPrin
 when not matched by source then update set id=999
 when not matched by source and true then update set id=999,value=999
 ;
-
+*/

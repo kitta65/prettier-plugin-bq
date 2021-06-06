@@ -342,12 +342,14 @@ export const printSQL: PrintFunc = (path, options, print) => {
     return concat(path.map(print));
   }
   switch (node.node_type) {
-    case "Asterisk":
-      return printAsterisk(path, options, print);
     case "ArrayAccessing":
       return printArrayAccessing(path, options, print);
     case "ArrayLiteral":
       return printArrayLiteral(path, options, print);
+    case "AssertStatement":
+      return printAssertStatement(path, options, print);
+    case "Asterisk":
+      return printAsterisk(path, options, print);
     case "BetweenOperator":
       return printBetweenOperator(path, options, print);
     case "BooleanLiteral":
@@ -557,6 +559,44 @@ const printArrayLiteral: PrintFunc = (path, options, print) => {
     docs.alias,
     docs.order,
     docs.comma,
+  ]);
+};
+
+const printAssertStatement: PrintFunc = (path, options, print) => {
+  type ThisNode = N.AssertStatement;
+  const node: ThisNode = path.getValue();
+  const p = new Printer(path, print, node, node.children);
+  const docs: { [Key in Docs<ThisNode>]: Doc } = {
+    leading_comments: printLeadingComments(path, options, print),
+    self: p.self(),
+    trailing_comments: printTrailingComments(path, options, print),
+    expr:
+      !p.hasLeadingComments("expr") &&
+      ["GroupedExpr", "GroupedStatement", "CallingFunction"].includes(
+        node.children.expr.Node.node_type
+      )
+        ? concat([" ", p.child("expr", asItIs, true)])
+        : indent(concat([line, p.child("expr")])),
+    as: p.child("as"),
+    description: p.child("description", asItIs, true),
+    semicolon: p.child("semicolon"),
+  };
+  return concat([
+    docs.leading_comments,
+    group(
+      concat([
+        docs.self,
+        docs.trailing_comments,
+        docs.expr,
+        p.has("as") ? line : "",
+        docs.as,
+        p.has("description") ? " " : "",
+        docs.description,
+        softline,
+        docs.semicolon,
+      ])
+    ),
+    p.newLine(),
   ]);
 };
 

@@ -1,3 +1,5 @@
+select 1
+/*
 create temp function abc(x int64) as (x);
 
 create function if not exists abc(x array<int64>, y int64) returns int64 as (x+y);
@@ -63,3 +65,4 @@ drop table example;drop external table if exists example;drop materialized view 
 
 drop schema dataset_name restrict;
 -- end comment
+*/
