@@ -21,6 +21,19 @@ set
   (b, c) = (select as struct 1, 2)
 ;
 
+----- EXECUTE statement -----
+execute immediate 'SELECT 1';
+
+execute immediate 'SELECT ?' using 1;
+
+execute immediate 'SELECT @a' into a using 1 as a;
+
+execute immediate 'SELECT ?, ?'
+-- break
+into b, c using 1, 2;
+
+
+
 select 1;
 
 /*

@@ -208,6 +208,15 @@ export type EOF = BaseNode & {
   };
 };
 
+export type ExecuteStatement = XXXStatement & {
+  children: {
+    immediate: { Node: BaseNode };
+    sql_expr: { Node: BaseNode };
+    into: {Node: BaseNode}
+    using?: { Node: BaseNode };
+  };
+};
+
 export type ExportStatement = XXXStatement & {
   children: {
     data: { Node: BaseNode };
@@ -340,6 +349,12 @@ export type Keyword = BaseNode & {
 export type KeywordWithExpr = Keyword & {
   children: {
     expr: { Node: BaseNode };
+  };
+};
+
+export type KeywordWithExprs = Keyword & {
+  children: {
+    exprs: { NodeVec: BaseNode[] };
   };
 };
 

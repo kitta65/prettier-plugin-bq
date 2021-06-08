@@ -380,6 +380,8 @@ export const printSQL: PrintFunc = (path, options, print) => {
       return printDotOperator(path, options, print);
     case "EOF":
       return printEOF(path, options, print);
+    case "ExecuteStatement":
+      return printExecuteStatement(path, options, print);
     case "ExportStatement":
       return printExportStatement(path, options, print);
     case "ExtractArgument":
@@ -412,6 +414,8 @@ export const printSQL: PrintFunc = (path, options, print) => {
         options,
         print
       );
+    case "KeywordWithExprs":
+      return printKeywordWithExprs(path, options, print);
     case "KeywordWithGroupedExprs":
       return printKeywordWithGroupedExprs(path, options, print);
     case "KeywordWithStatement":
@@ -1016,6 +1020,42 @@ const printEOF: PrintFunc = (path, options, print) => {
   return docs.leading_comments;
 };
 
+const printExecuteStatement: PrintFunc = (path, options, print) => {
+  type ThisNode = N.ExecuteStatement;
+  const node: ThisNode = path.getValue();
+  const p = new Printer(path, print, node, node.children);
+  const docs: { [Key in Docs<ThisNode>]: Doc } = {
+    leading_comments: printLeadingComments(path, options, print),
+    self: p.self("upper"),
+    trailing_comments: printTrailingComments(path, options, print),
+    immediate: p.child("immediate", asItIs, true),
+    sql_expr: p.child("sql_expr", asItIs, true),
+    into: p.child("into"),
+    using: p.child("using"),
+    semicolon: p.child("semicolon"),
+  };
+  return concat([
+    docs.leading_comments,
+    group(
+      concat([
+        docs.self,
+        docs.trailing_comments,
+        " ",
+        docs.immediate,
+        " ",
+        docs.sql_expr,
+        p.has("into") ? line : "",
+        docs.into,
+        p.has("using") ? line : "",
+        docs.using,
+        softline,
+        docs.semicolon,
+      ])
+    ),
+    p.newLine(),
+  ]);
+};
+
 const printExportStatement: PrintFunc = (path, options, print) => {
   type ThisNode = N.ExportStatement;
   const node: ThisNode = path.getValue();
@@ -1485,6 +1525,24 @@ const printKeywordWithExpr = (
   return concat([
     docs.leading_comments,
     group(concat([docs.self, docs.trailing_comments, docs.expr])),
+  ]);
+};
+
+const printKeywordWithExprs: PrintFunc = (path, options, print) => {
+  type ThisNode = N.KeywordWithExprs;
+  const node: ThisNode = path.getValue();
+  const p = new Printer(path, print, node, node.children);
+  const docs: { [Key in Docs<ThisNode>]: Doc } = {
+    leading_comments: printLeadingComments(path, options, print),
+    self: p.self("upper"),
+    trailing_comments: printTrailingComments(path, options, print),
+    exprs: p.child("exprs", (x) => concat([line, x])),
+  };
+  return concat([
+    docs.leading_comments,
+    group(
+      concat([docs.self, docs.trailing_comments, indent(docs.exprs)])
+    ),
   ]);
 };
 
