@@ -11,6 +11,16 @@ int64
 default 1
 ;
 
+----- SET statement -----
+set a = 5;
+
+set (b, c) = (1,2);
+
+set
+ -- break
+  (b, c) = (select as struct 1, 2)
+;
+
 select 1;
 
 /*

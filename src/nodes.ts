@@ -410,7 +410,6 @@ export type SelectStatement = XXXStatement & {
 };
 
 export type SetOperator = XXXStatement & {
-  token: Token;
   children: {
     distinct_or_all: { Node: BaseNode };
     left: { Node: BaseNode };
@@ -428,6 +427,12 @@ export const isSetOperator = (n: BaseNode): n is SetOperator => {
     return true;
   }
   return false;
+};
+
+export type SetStatement = XXXStatement & {
+  children: {
+    expr: { Node: BaseNode };
+  };
 };
 
 export type StringLiteral = Expr;
