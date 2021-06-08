@@ -374,6 +374,8 @@ export const printSQL: PrintFunc = (path, options, print) => {
       return printCastArgument(path, options, print);
     case "Comment":
       return printComment(path, options, print);
+    case "DeclareStatement":
+      return printDeclareStatement(path, options, print);
     case "DotOperator":
       return printDotOperator(path, options, print);
     case "EOF":
@@ -574,6 +576,7 @@ const printAssertStatement: PrintFunc = (path, options, print) => {
     leading_comments: printLeadingComments(path, options, print),
     self: p.self("upper"),
     trailing_comments: printTrailingComments(path, options, print),
+    // TODO define as function
     expr:
       !p.hasLeadingComments("expr") &&
       ["GroupedExpr", "GroupedStatement", "CallingFunction"].includes(
@@ -920,6 +923,38 @@ const printComment: PrintFunc = (path, _, print) => {
     self: p.self(),
   };
   return docs.self;
+};
+
+const printDeclareStatement: PrintFunc = (path, options, print) => {
+  type ThisNode = N.DeclareStatement;
+  const node: ThisNode = path.getValue();
+  const p = new Printer(path, print, node, node.children);
+  const docs: { [Key in Docs<ThisNode>]: Doc } = {
+    leading_comments: printLeadingComments(path, options, print),
+    self: p.self("upper"),
+    trailing_comments: printTrailingComments(path, options, print),
+    idents: p.child("idents", (x) => concat([line, x])),
+    variable_type: p.child("variable_type"),
+    default: p.child("default"),
+    semicolon: p.child("semicolon"),
+  };
+  return concat([
+    docs.leading_comments,
+    group(
+      concat([
+        docs.self,
+        docs.trailing_comments,
+        indent(docs.idents),
+        p.has("variable_type") ? line : "",
+        docs.variable_type,
+        p.has("default") ? line: "",
+        docs.default,
+        softline,
+        docs.semicolon,
+      ])
+    ),
+    p.newLine()
+  ]);
 };
 
 const printDotOperator: PrintFunc = (path, options, print) => {
@@ -1435,6 +1470,7 @@ const printKeywordWithExpr = (
     leading_comments: printLeadingComments(path, options, print),
     self: p.self("upper"),
     trailing_comments: printTrailingComments(path, options, print),
+    // TODO define as function
     expr:
       !p.hasLeadingComments("expr") &&
       ["GroupedExpr", "GroupedStatement", "CallingFunction"].includes(

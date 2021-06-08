@@ -186,6 +186,14 @@ export type Comment = BaseNode & {
   };
 };
 
+export type DeclareStatement = XXXStatement & {
+  children: {
+    idents: { NodeVec: BaseNode[] };
+    variable_type?: { Node: BaseNode };
+    default?: { Node: BaseNode };
+  };
+};
+
 export type DotOperator = Identifier &
   BinaryOperator & {
     children: {
