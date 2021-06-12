@@ -166,6 +166,12 @@ export type CallingUnnest = CallingFunction &
 
 export type CallingDatePartFunction = CallingFunction;
 
+export type CallStatement = XXXStatement & {
+  children: {
+    procedure: NodeChild;
+  };
+};
+
 export type CaseArm = BaseNode & {
   children: {
     expr?: NodeChild;

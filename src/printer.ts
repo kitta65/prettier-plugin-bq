@@ -368,6 +368,8 @@ export const printSQL: PrintFunc = (path, options, print) => {
       return printCallingDatePartFunction(path, options, print);
     case "CallingUnnest":
       return printCallingUnnest(path, options, print);
+    case "CallStatement":
+      return printCallStatement(path, options, print);
     case "CaseArm":
       return printCaseArm(path, options, print);
     case "CaseExpr":
@@ -882,6 +884,31 @@ const printCallingDatePartFunction: PrintFunc = (path, options, print) => {
   p.toUpper("func");
   p.toUpper("args");
   return printCallingFunction(path as AstPathOf<ThisNode>, options, print);
+};
+
+const printCallStatement: PrintFunc = (path, options, print) => {
+  type ThisNode = N.CallStatement;
+  const node: ThisNode = path.getValue();
+  const p = new Printer(path, print, node, node.children);
+  const docs: { [Key in Docs<ThisNode>]: Doc } = {
+    leading_comments: printLeadingComments(path, options, print),
+    self: p.self(),
+    trailing_comments: printTrailingComments(path, options, print),
+    procedure: p.child("procedure", asItIs, true),
+    semicolon: p.child("semicolon"),
+  };
+  return [
+    docs.leading_comments,
+    group([
+      docs.self,
+      docs.trailing_comments,
+      " ",
+      docs.procedure,
+      softline,
+      docs.semicolon,
+    ]),
+    p.newLine()
+  ];
 };
 
 const printCaseArm: PrintFunc = (path, options, print) => {

@@ -92,6 +92,15 @@ exception when error then
   raise using message = 'error';
 end;
 
+----- CALL statement -----
+call mydataset.myprocedure(1);
+
+call mydataset.myprocedure(
+  -- break
+  1
+)
+;
+
 select 1;
 
 /*
