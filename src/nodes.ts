@@ -214,6 +214,7 @@ export type DeclareStatement = XXXStatement & {
 
 export type DotOperator = Identifier &
   BinaryOperator & {
+    node_type: "Identifier" | "Parameter"
     children: {
       not: undefined;
     };

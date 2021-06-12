@@ -440,6 +440,8 @@ export const printSQL: PrintFunc = (path, options, print) => {
       return printNumericLiteral(path, options, print);
     case "OverClause":
       return printOverClause(path, options, print);
+    case "Parameter":
+      return printIdentifier(path, options, print);
     case "PivotConfig":
       return printPivotConfig(path, options, print);
     case "PivotOperator":
