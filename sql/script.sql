@@ -32,7 +32,19 @@ execute immediate 'SELECT ?, ?'
 -- break
 into b, c using 1, 2;
 
+----- BEGIN statement -----
+begin
+  select 1;
+  select 2;
+end;
 
+begin
+  select 1;
+exception when error then
+  select 2;
+end;
+
+begin exception when error then end;
 
 select 1;
 

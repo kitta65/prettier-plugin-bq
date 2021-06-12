@@ -350,6 +350,8 @@ export const printSQL: PrintFunc = (path, options, print) => {
       return printAssertStatement(path, options, print);
     case "Asterisk":
       return printAsterisk(path, options, print);
+    case "BeginStatement":
+      return printBeginStatement(path, options, print);
     case "BetweenOperator":
       return printBetweenOperator(path, options, print);
     case "BooleanLiteral":
@@ -420,6 +422,8 @@ export const printSQL: PrintFunc = (path, options, print) => {
       return printKeywordWithGroupedExprs(path, options, print);
     case "KeywordWithStatement":
       return printKeywordWithStatement(path, options, print);
+    case "KeywordWithStatements":
+      return printKeywordWithStatements(path, options, print);
     case "LimitClause":
       return printLimitClause(path, options, print);
     case "NullLiteral":
@@ -605,6 +609,44 @@ const printAssertStatement: PrintFunc = (path, options, print) => {
         docs.as,
         p.has("description") ? " " : "",
         docs.description,
+        softline,
+        docs.semicolon,
+      ])
+    ),
+    p.newLine(),
+  ]);
+};
+
+const printBeginStatement: PrintFunc = (path, options, print) => {
+  type ThisNode = N.BeginStataement;
+  const node: ThisNode = path.getValue();
+  const p = new Printer(path, print, node, node.children);
+  p.setNotRoot("stmts");
+  const docs: { [Key in Docs<ThisNode>]: Doc } = {
+    leading_comments: printLeadingComments(path, options, print),
+    self: p.self("upper"),
+    trailing_comments: printTrailingComments(path, options, print),
+    stmts: p.child("stmts", (x) => concat([line, x])),
+    exception_when_error: group(
+      p.child("exception_when_error", asItIs, false, line)
+    ),
+    then: p.child("then", asItIs, true),
+    end: p.child("end"),
+    semicolon: p.child("semicolon"),
+  };
+  return concat([
+    docs.leading_comments,
+    group(
+      concat([
+        docs.self,
+        docs.trailing_comments,
+        indent(docs.stmts),
+        p.has("exception_when_error") ? hardline : "",
+        docs.exception_when_error,
+        p.has("then") ? " " : "",
+        docs.then,
+        line,
+        docs.end,
         softline,
         docs.semicolon,
       ])
@@ -1540,9 +1582,7 @@ const printKeywordWithExprs: PrintFunc = (path, options, print) => {
   };
   return concat([
     docs.leading_comments,
-    group(
-      concat([docs.self, docs.trailing_comments, indent(docs.exprs)])
-    ),
+    group(concat([docs.self, docs.trailing_comments, indent(docs.exprs)])),
   ]);
 };
 
@@ -1576,6 +1616,23 @@ const printKeywordWithStatement: PrintFunc = (path, options, print) => {
   return concat([
     docs.leading_comments,
     group(concat([docs.self, docs.trailing_comments, line, docs.stmt])),
+  ]);
+};
+
+const printKeywordWithStatements: PrintFunc = (path, options, print) => {
+  type ThisNode = N.KeywordWithStatements;
+  const node: ThisNode = path.getValue();
+  const p = new Printer(path, print, node, node.children);
+  p.setNotRoot("stmts");
+  const docs: { [Key in Docs<ThisNode>]: Doc } = {
+    leading_comments: printLeadingComments(path, options, print),
+    self: p.self("upper"),
+    trailing_comments: printTrailingComments(path, options, print),
+    stmts: p.child("stmts", (x) => concat([line, x])),
+  };
+  return concat([
+    docs.leading_comments,
+    concat([docs.self, docs.trailing_comments, indent(docs.stmts)]),
   ]);
 };
 

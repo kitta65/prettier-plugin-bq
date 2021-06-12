@@ -110,6 +110,15 @@ export type BinaryOperator = Expr & {
   };
 };
 
+export type BeginStataement = XXXStatement & {
+  children: {
+    stmts?: { NodeVec: BaseNode[] };
+    exception_when_error?: { NodeVec: BaseNode[] };
+    then?: { Node: BaseNode };
+    end: { Node: BaseNode };
+  };
+};
+
 export type BetweenOperator = Expr & {
   children: {
     left: { Node: BaseNode };
@@ -212,7 +221,7 @@ export type ExecuteStatement = XXXStatement & {
   children: {
     immediate: { Node: BaseNode };
     sql_expr: { Node: BaseNode };
-    into: {Node: BaseNode}
+    into: { Node: BaseNode };
     using?: { Node: BaseNode };
   };
 };
@@ -367,6 +376,12 @@ export type KeywordWithGroupedExprs = Keyword & {
 export type KeywordWithStatement = Keyword & {
   children: {
     stmt: { Node: BaseNode };
+  };
+};
+
+export type KeywordWithStatements = Keyword & {
+  children: {
+    stmts: { NodeVec: BaseNode[] };
   };
 };
 
