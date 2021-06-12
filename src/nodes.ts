@@ -409,6 +409,13 @@ export type LimitClause = KeywordWithExpr & {
   };
 };
 
+export type LoopStatement = XXXStatement & {
+  children: {
+    stmts?: { NodeVec: BaseNode[] };
+    end_loop: { NodeVec: BaseNode[] };
+  };
+};
+
 export type NullLiteral = Expr;
 
 export type NumericLiteral = Expr;
@@ -482,6 +489,8 @@ export type SetStatement = XXXStatement & {
     expr: { Node: BaseNode };
   };
 };
+
+export type SingleTokenStatement = XXXStatement;
 
 export type StringLiteral = Expr;
 

@@ -430,6 +430,8 @@ export const printSQL: PrintFunc = (path, options, print) => {
       return printKeywordWithStatements(path, options, print);
     case "LimitClause":
       return printLimitClause(path, options, print);
+    case "LoopStatement":
+      return printLoopStatement(path, options, print);
     case "NullLiteral":
       return printNullLiteral(path, options, print);
     case "NumericLiteral":
@@ -446,6 +448,8 @@ export const printSQL: PrintFunc = (path, options, print) => {
       return printSetOperator(path, options, print);
     case "SetStatement":
       return printSetStatement(path, options, print);
+    case "SingleTokenStatement":
+      return printSingleTokenStatement(path, options, print);
     case "StringLiteral":
       return printStringLiteral(path, options, print);
     case "StructLiteral":
@@ -1717,6 +1721,39 @@ const printLimitClause: PrintFunc = (path, options, print) => {
   ]);
 };
 
+const printLoopStatement: PrintFunc = (path, options, print) => {
+  type ThisNode = N.LoopStatement;
+  const node: ThisNode = path.getValue();
+  const p = new Printer(path, print, node, node.children);
+  p.setNotRoot("stmts");
+  const docs: { [Key in Docs<ThisNode>]: Doc } = {
+    leading_comments: printLeadingComments(path, options, print),
+    self: p.self("upper"),
+    trailing_comments: printTrailingComments(path, options, print),
+    stmts:
+      p.len("stmts") <= 1
+        ? p.child("stmts", (x) => concat([line, x]))
+        : p.child("stmts", (x) => concat([hardline, x])),
+    end_loop: group(p.child("end_loop", asItIs, false, line)),
+    semicolon: p.child("semicolon"),
+  };
+  return concat([
+    docs.leading_comments,
+    group(
+      concat([
+        docs.self,
+        docs.trailing_comments,
+        indent(docs.stmts),
+        line,
+        docs.end_loop,
+        softline,
+        docs.semicolon,
+      ])
+    ),
+    p.newLine(),
+  ]);
+};
+
 const printNullLiteral: PrintFunc = (path, options, print) => {
   type ThisNode = N.NullLiteral;
   const node: ThisNode = path.getValue();
@@ -1971,6 +2008,25 @@ const printSetStatement: PrintFunc = (path, options, print) => {
         docs.semicolon,
       ])
     ),
+    p.newLine(),
+  ]);
+};
+
+const printSingleTokenStatement: PrintFunc = (path, options, print) => {
+  type ThisNode = N.SingleTokenStatement;
+  const node: ThisNode = path.getValue();
+  const p = new Printer(path, print, node, node.children);
+  const docs: { [Key in Docs<ThisNode>]: Doc } = {
+    leading_comments: printLeadingComments(path, options, print),
+    self: p.self("upper"),
+    trailing_comments: printTrailingComments(path, options, print),
+    semicolon: p.child("semicolon"),
+  };
+  return concat([
+    docs.leading_comments,
+    docs.self,
+    docs.trailing_comments,
+    docs.semicolon,
     p.newLine(),
   ]);
 };
