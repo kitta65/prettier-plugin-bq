@@ -565,6 +565,14 @@ export type UnpivotOperator = BaseNode & {
   };
 };
 
+export type WhileStatement = XXXStatement & {
+  children: {
+    condition: {Node: BaseNode}
+    do: {Node: BaseNode}
+    end_while: {NodeVec: BaseNode[]}
+  };
+};
+
 export type WindowClause = BaseNode & {
   token: Token;
   children: {

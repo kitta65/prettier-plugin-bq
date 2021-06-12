@@ -8,6 +8,7 @@ const {
     concat, // TODO remove
     group,
     hardline,
+    ifBreak,
     indent,
     join,
     line,
@@ -470,6 +471,8 @@ export const printSQL: PrintFunc = (path, options, print) => {
       return printUnpivotConfig(path, options, print);
     case "UnpivotOperator":
       return printUnpivotOperator(path, options, print);
+    case "WhileStatement":
+      return printWhileStatement(path, options, print);
     case "WindowClause":
       return printWindowClause(path, options, print);
     case "WindowExpr":
@@ -2284,6 +2287,43 @@ const printUnpivotOperator: PrintFunc = (path, options, print) => {
     docs.config,
     p.has("alias") ? concat([" ", docs.as || "AS"]) : "",
     p.has("alias") ? concat([" ", docs.alias]) : "",
+  ]);
+};
+
+const printWhileStatement: PrintFunc = (path, options, print) => {
+  type ThisNode = N.WhileStatement;
+  const node: ThisNode = path.getValue();
+  const p = new Printer(path, print, node, node.children);
+  p.setBreakRecommended("condition");
+  const docs: { [Key in Docs<ThisNode>]: Doc } = {
+    leading_comments: printLeadingComments(path, options, print),
+    self: p.self("upper"),
+    trailing_comments: printTrailingComments(path, options, print),
+    condition: p.child("condition"),
+    do: p.child("do", asItIs, true),
+    end_while: group(p.child("end_while", asItIs, false, line)),
+    semicolon: p.child("semicolon"),
+  };
+  return concat([
+    docs.leading_comments,
+    group(
+      concat([
+        group(
+          concat([
+            docs.self,
+            docs.trailing_comments,
+            indent(concat([line, docs.condition])),
+            ifBreak(line, " "),
+          ])
+        ),
+        docs.do,
+        line,
+        docs.end_while,
+        softline,
+        docs.semicolon,
+      ])
+    ),
+    p.newLine(),
   ]);
 };
 

@@ -64,13 +64,27 @@ else
   select 1;
 end if;
 
-select 1;
-
 ----- LOOP statement -----
 loop select 1; end loop;
 
 loop select 1; break; end loop;
 
+----- WHILE statement -----
+while true do
+  iterate;
+  leave;
+  continue;
+end while;
+
+while
+  1 = 1
+  and 2 = 2
+do
+  select 1;
+  select 2;
+end while;
+
+select 1;
 
 /*
 declare x int64;declare x,y default 1;
