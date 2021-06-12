@@ -74,6 +74,7 @@ while true do
   iterate;
   leave;
   continue;
+  return;
 end while;
 
 while
@@ -83,6 +84,13 @@ do
   select 1;
   select 2;
 end while;
+
+----- RAISE statement -----
+begin
+exception when error then
+  raise;
+  raise using message = 'error';
+end;
 
 select 1;
 

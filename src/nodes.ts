@@ -43,9 +43,7 @@ export type NodeKeyof<T> = {
 }[keyof T];
 
 export type NodeVecKeyof<T> = {
-  [k in keyof T]-?: T[k] extends NodeVecChild | undefined
-    ? k
-    : never;
+  [k in keyof T]-?: T[k] extends NodeVecChild | undefined ? k : never;
 }[keyof T];
 
 export const isNodeChild = (child: unknown): child is NodeChild => {
@@ -466,6 +464,12 @@ export type SelectStatement = XXXStatement & {
     window?: NodeChild;
     orderby?: NodeChild;
     limit?: NodeChild;
+  };
+};
+
+export type RaiseStatement = XXXStatement & {
+  children: {
+    using?: NodeChild;
   };
 };
 

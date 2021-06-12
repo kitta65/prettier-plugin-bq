@@ -442,6 +442,8 @@ export const printSQL: PrintFunc = (path, options, print) => {
       return printPivotConfig(path, options, print);
     case "PivotOperator":
       return printPivotOperator(path, options, print);
+    case "RaiseStatement":
+      return printRaiseStatement(path, options, print);
     case "SelectStatement":
       return printSelectStatement(path, options, print);
     case "SetOperator":
@@ -1826,6 +1828,30 @@ const printPivotOperator: PrintFunc = (path, options, print) => {
     docs.config,
     p.has("alias") ? [" ", docs.as || "AS"] : "",
     p.has("alias") ? [" ", docs.alias] : "",
+  ];
+};
+
+const printRaiseStatement: PrintFunc = (path, options, print) => {
+  type ThisNode = N.RaiseStatement;
+  const node: ThisNode = path.getValue();
+  const p = new Printer(path, print, node, node.children);
+  const docs: { [Key in Docs<ThisNode>]: Doc } = {
+    leading_comments: printLeadingComments(path, options, print),
+    self: p.self("upper"),
+    trailing_comments: printTrailingComments(path, options, print),
+    using: p.child("using", asItIs, true),
+    semicolon: p.child("semicolon"),
+  };
+  return [
+    docs.leading_comments,
+    group([
+      docs.self,
+      docs.trailing_comments,
+      " ",
+      docs.using,
+      softline,
+      docs.semicolon,
+    ]),
   ];
 };
 
