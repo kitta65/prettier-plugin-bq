@@ -46,6 +46,24 @@ end;
 
 begin exception when error then end;
 
+
+----- IF statement -----
+if true then
+  select 1;
+end if;
+
+if true then
+  select 1;
+  select 2;
+elseif true then
+  select 1;
+elseif true then
+  select 2;
+  select 3;
+else
+  select 1;
+end if;
+
 select 1;
 
 /*

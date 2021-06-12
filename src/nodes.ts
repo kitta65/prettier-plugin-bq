@@ -210,6 +210,14 @@ export type DotOperator = Identifier &
     };
   };
 
+export type ElseIfClause = BaseNode & {
+  token: Token;
+  children: {
+    condition: { Node: BaseNode };
+    then: { Node: BaseNode };
+  };
+};
+
 export type EOF = BaseNode & {
   token: null;
   children: {
@@ -317,6 +325,16 @@ export type Identifier = FromItemExpr & {
     // TABLESAMPLE SYSTEM can only be applied directly to base tables
     tablesample: { Node: BaseNode };
     for_system_time_as_of: { Node: BaseNode };
+  };
+};
+
+export type IfStatement = XXXStatement & {
+  children: {
+    condition: { Node: BaseNode };
+    then: { Node: BaseNode };
+    elseifs: { NodeVec: BaseNode[] };
+    else: { Node: BaseNode };
+    end_if: { NodeVec: BaseNode[] };
   };
 };
 

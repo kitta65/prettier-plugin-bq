@@ -174,7 +174,7 @@ class Printer<T extends N.BaseNode> {
     if (N.isNodeVec(nodeVec)) {
       return nodeVec.NodeVec.length;
     }
-    throw new Error();
+    return 0;
   }
   newLine() {
     if (this.node.notRoot) return "";
@@ -380,6 +380,8 @@ export const printSQL: PrintFunc = (path, options, print) => {
       return printDeclareStatement(path, options, print);
     case "DotOperator":
       return printDotOperator(path, options, print);
+    case "ElseIfClause":
+      return printElseIfClause(path, options, print);
     case "EOF":
       return printEOF(path, options, print);
     case "ExecuteStatement":
@@ -402,6 +404,8 @@ export const printSQL: PrintFunc = (path, options, print) => {
       return printGroupedTypeDeclarations(path, options, print);
     case "Identifier":
       return printIdentifier(path, options, print);
+    case "IfStatement":
+      return printIfStatement(path, options, print);
     case "InOperator":
       return printInOperator(path, options, print);
     case "IntervalLiteral":
@@ -626,7 +630,10 @@ const printBeginStatement: PrintFunc = (path, options, print) => {
     leading_comments: printLeadingComments(path, options, print),
     self: p.self("upper"),
     trailing_comments: printTrailingComments(path, options, print),
-    stmts: p.child("stmts", (x) => concat([line, x])),
+    stmts:
+      p.len("stmts") <= 1
+        ? p.child("stmts", (x) => concat([line, x]))
+        : p.child("stmts", (x) => concat([hardline, x])),
     exception_when_error: group(
       p.child("exception_when_error", asItIs, false, line)
     ),
@@ -1051,6 +1058,28 @@ const printDotOperator: PrintFunc = (path, options, print) => {
   ]);
 };
 
+const printElseIfClause: PrintFunc = (path, options, print) => {
+  type ThisNode = N.ElseIfClause;
+  const node: ThisNode = path.getValue();
+  const p = new Printer(path, print, node, node.children);
+  const docs: { [Key in Docs<ThisNode>]: Doc } = {
+    leading_comments: printLeadingComments(path, options, print),
+    self: p.self("upper"),
+    trailing_comments: printTrailingComments(path, options, print),
+    condition: p.child("condition", asItIs, true),
+    then: p.child("then", asItIs, true),
+  };
+  return concat([
+    docs.leading_comments,
+    docs.self,
+    docs.trailing_comments,
+    " ",
+    docs.condition,
+    " ",
+    docs.then,
+  ]);
+};
+
 const printEOF: PrintFunc = (path, options, print) => {
   type ThisNode = N.EOF;
   const docs: { [Key in Docs<ThisNode>]: Doc } = {
@@ -1393,6 +1422,44 @@ const printIdentifier: PrintFunc = (path, options, print) => {
   ]);
 };
 
+const printIfStatement: PrintFunc = (path, options, print) => {
+  type ThisNode = N.IfStatement;
+  const node: ThisNode = path.getValue();
+  const p = new Printer(path, print, node, node.children);
+  const docs: { [Key in Docs<ThisNode>]: Doc } = {
+    leading_comments: printLeadingComments(path, options, print),
+    self: p.self("upper"),
+    trailing_comments: printTrailingComments(path, options, print),
+    condition: p.child("condition", asItIs, true),
+    then: p.child("then", asItIs, true),
+    elseifs: p.child("elseifs", (x) => concat([hardline, x])),
+    else: p.child("else"),
+    end_if: group(p.child("end_if", asItIs, false, line)),
+    semicolon: p.child("semicolon"),
+  };
+  return concat([
+    docs.leading_comments,
+    group(
+      concat([
+        docs.self,
+        docs.trailing_comments,
+        " ",
+        docs.condition,
+        " ",
+        docs.then,
+        docs.elseifs,
+        p.has("else") ? hardline : "",
+        docs.else,
+        line,
+        docs.end_if,
+        softline,
+        docs.semicolon,
+      ])
+    ),
+    p.newLine(),
+  ]);
+};
+
 const printInOperator: PrintFunc = (path, options, print) => {
   type ThisNode = N.InOperator;
   const node: ThisNode = path.getValue();
@@ -1628,7 +1695,10 @@ const printKeywordWithStatements: PrintFunc = (path, options, print) => {
     leading_comments: printLeadingComments(path, options, print),
     self: p.self("upper"),
     trailing_comments: printTrailingComments(path, options, print),
-    stmts: p.child("stmts", (x) => concat([line, x])),
+    stmts:
+      p.len("stmts") <= 1
+        ? p.child("stmts", (x) => concat([line, x]))
+        : p.child("stmts", (x) => concat([hardline, x])),
   };
   return concat([
     docs.leading_comments,
