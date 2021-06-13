@@ -44,6 +44,7 @@ class Printer<T extends N.BaseNode> {
    */
   constructor(
     private readonly path: AstPath,
+    private readonly options: Options,
     private readonly print: (path: AstPath) => Doc,
     private readonly node: T,
     private readonly children: N.Children<T>
@@ -192,24 +193,27 @@ class Printer<T extends N.BaseNode> {
       return "";
     }
     let literal = token.literal;
-    if (upperOrLower === "upper") {
-      literal = literal.toUpperCase();
-    } else if (upperOrLower === "lower") {
+    if (upperOrLower === "lower") {
       literal = literal.toLowerCase();
-    } else if (!this.node.notGlobal && this.includedIn(reservedKeywords)) {
-      literal = literal.toUpperCase();
-    } else if (
-      literal.match(/^_PARTITION/i) ||
-      literal.match(/^_TABLE_/i) ||
-      literal.match(/^_FILE_/i) ||
-      literal.match(/^_RAW_TIMESTAMP/i)
-    ) {
-      /**
-       * NOTE
-       * Field names are not allowed to start with the (case-insensitive) prefixes _PARTITION, _TABLE_, _FILE_ and _ROW_TIMESTAMP.
-       * On the other hand, you can create a table named `_partitiondate` (that may cause an error).
-       */
-      literal = literal.toUpperCase();
+    } else if (this.options.printKeywordsInUpperCase) {
+      if (upperOrLower === "upper") {
+        literal = literal.toUpperCase();
+      } else if (!this.node.notGlobal && this.includedIn(reservedKeywords)) {
+        literal = literal.toUpperCase();
+      } else if (
+        this.options.printPseudoColumnsInUpperCase &&
+        (literal.match(/^_PARTITION/i) ||
+          literal.match(/^_TABLE_/i) ||
+          literal.match(/^_FILE_/i) ||
+          literal.match(/^_RAW_TIMESTAMP/i))
+      ) {
+        /**
+         * NOTE
+         * Field names are not allowed to start with the (case-insensitive) prefixes _PARTITION, _TABLE_, _FILE_ and _ROW_TIMESTAMP.
+         * On the other hand, you can create a table named `_partitiondate` (that may cause an error).
+         */
+        literal = literal.toUpperCase();
+      }
     }
     let comments: Doc = "";
     if (consumeLeadingComments) {
@@ -529,7 +533,7 @@ export const printSQL: PrintFunc = (path, options, print) => {
 const printAsterisk: PrintFunc = (path, options, print) => {
   type ThisNode = N.Asterisk;
   const node: ThisNode = path.getValue();
-  const p = new Printer(path, print, node, node.children);
+  const p = new Printer(path, options, print, node, node.children);
   const docs: { [Key in Docs<ThisNode>]: Doc } = {
     leading_comments: printLeadingComments(path, options, print),
     self: p.self(),
@@ -556,7 +560,7 @@ const printAsterisk: PrintFunc = (path, options, print) => {
 const printArrayAccessing: PrintFunc = (path, options, print) => {
   type ThisNode = N.ArrayAccessing;
   const node: ThisNode = path.getValue();
-  const p = new Printer(path, print, node, node.children);
+  const p = new Printer(path, options, print, node, node.children);
   const docs: { [Key in Docs<ThisNode>]: Doc } = {
     left: p.child("left"),
     self: p.self("asItIs", true),
@@ -590,7 +594,7 @@ const printArrayAccessing: PrintFunc = (path, options, print) => {
 const printArrayLiteral: PrintFunc = (path, options, print) => {
   type ThisNode = N.ArrayLiteral;
   const node: ThisNode = path.getValue();
-  const p = new Printer(path, print, node, node.children);
+  const p = new Printer(path, options, print, node, node.children);
   const docs: { [Key in Docs<ThisNode>]: Doc } = {
     type: p.child("type"),
     leading_comments: p.has("type")
@@ -626,7 +630,7 @@ const printArrayLiteral: PrintFunc = (path, options, print) => {
 const printAssertStatement: PrintFunc = (path, options, print) => {
   type ThisNode = N.AssertStatement;
   const node: ThisNode = path.getValue();
-  const p = new Printer(path, print, node, node.children);
+  const p = new Printer(path, options, print, node, node.children);
   const docs: { [Key in Docs<ThisNode>]: Doc } = {
     leading_comments: printLeadingComments(path, options, print),
     self: p.self("upper"),
@@ -663,7 +667,7 @@ const printAssertStatement: PrintFunc = (path, options, print) => {
 const printBeginStatement: PrintFunc = (path, options, print) => {
   type ThisNode = N.BeginStataement;
   const node: ThisNode = path.getValue();
-  const p = new Printer(path, print, node, node.children);
+  const p = new Printer(path, options, print, node, node.children);
   p.setNotRoot("stmts");
   const docs: { [Key in Docs<ThisNode>]: Doc } = {
     leading_comments: printLeadingComments(path, options, print),
@@ -702,7 +706,7 @@ const printBeginStatement: PrintFunc = (path, options, print) => {
 const printBetweenOperator: PrintFunc = (path, options, print) => {
   type ThisNode = N.BetweenOperator;
   const node: ThisNode = path.getValue();
-  const p = new Printer(path, print, node, node.children);
+  const p = new Printer(path, options, print, node, node.children);
   const docs: { [Key in Docs<ThisNode>]: Doc } = {
     left: p.child("left"),
     not: p.child("not", asItIs, true),
@@ -743,7 +747,7 @@ const printBetweenOperator: PrintFunc = (path, options, print) => {
 const printBooleanLiteral: PrintFunc = (path, options, print) => {
   type ThisNode = N.BooleanLiteral;
   const node: ThisNode = path.getValue();
-  const p = new Printer(path, print, node, node.children);
+  const p = new Printer(path, options, print, node, node.children);
   const docs: { [Key in Docs<ThisNode>]: Doc } = {
     leading_comments: printLeadingComments(path, options, print),
     self: p.self(),
@@ -770,7 +774,7 @@ const printBooleanLiteral: PrintFunc = (path, options, print) => {
 const printBinaryOperator: PrintFunc = (path, options, print) => {
   type ThisNode = N.BinaryOperator;
   const node: ThisNode = path.getValue();
-  const p = new Printer(path, print, node, node.children);
+  const p = new Printer(path, options, print, node, node.children);
   p.setNotRoot("right");
   const docs: { [Key in Docs<ThisNode>]: Doc } = {
     left: p.child("left"),
@@ -815,7 +819,7 @@ const printCallingFunction = (
 ) => {
   type ThisNode = N.CallingFunction;
   const node: ThisNode = path.getValue();
-  const p = new Printer(path, print, node, node.children);
+  const p = new Printer(path, options, print, node, node.children);
   p.setCallable("func");
   p.setNotRoot("args");
   const docs: { [Key in Docs<ThisNode>]: Doc } = {
@@ -870,7 +874,7 @@ const printCallingFunction = (
 const printCallingUnnest: PrintFunc = (path, options, print) => {
   type ThisNode = N.CallingUnnest;
   const node: ThisNode = path.getValue();
-  const p = new Printer(path, print, node, node.children);
+  const p = new Printer(path, options, print, node, node.children);
   const docs: { [Key in Docs<ThisNode>]: Doc } = {
     func: printCallingFunction(path as AstPathOf<ThisNode>, options, print),
     with_offset: p.child("with_offset", (x) => group([line, x])),
@@ -911,7 +915,7 @@ const printCallingUnnest: PrintFunc = (path, options, print) => {
 const printCallingDatePartFunction: PrintFunc = (path, options, print) => {
   type ThisNode = N.CallingDatePartFunction;
   const node: ThisNode = path.getValue();
-  const p = new Printer(path, print, node, node.children);
+  const p = new Printer(path, options, print, node, node.children);
   p.toUpper("func");
   p.toUpper("args");
   return printCallingFunction(path as AstPathOf<ThisNode>, options, print);
@@ -920,7 +924,7 @@ const printCallingDatePartFunction: PrintFunc = (path, options, print) => {
 const printCallStatement: PrintFunc = (path, options, print) => {
   type ThisNode = N.CallStatement;
   const node: ThisNode = path.getValue();
-  const p = new Printer(path, print, node, node.children);
+  const p = new Printer(path, options, print, node, node.children);
   const docs: { [Key in Docs<ThisNode>]: Doc } = {
     leading_comments: printLeadingComments(path, options, print),
     self: p.self(),
@@ -945,7 +949,7 @@ const printCallStatement: PrintFunc = (path, options, print) => {
 const printCaseArm: PrintFunc = (path, options, print) => {
   type ThisNode = N.CaseArm;
   const node: ThisNode = path.getValue();
-  const p = new Printer(path, print, node, node.children);
+  const p = new Printer(path, options, print, node, node.children);
   const docs: { [Key in Docs<ThisNode>]: Doc } = {
     leading_comments: printLeadingComments(path, options, print),
     self: p.self(),
@@ -970,7 +974,7 @@ const printCaseArm: PrintFunc = (path, options, print) => {
 const printCaseExpr: PrintFunc = (path, options, print) => {
   type ThisNode = N.CaseExpr;
   const node: ThisNode = path.getValue();
-  const p = new Printer(path, print, node, node.children);
+  const p = new Printer(path, options, print, node, node.children);
   const docs: { [Key in Docs<ThisNode>]: Doc } = {
     leading_comments: printLeadingComments(path, options, print),
     self: p.self(),
@@ -1005,7 +1009,7 @@ const printCaseExpr: PrintFunc = (path, options, print) => {
 const printCastArgument: PrintFunc = (path, options, print) => {
   type ThisNode = N.CastArgument;
   const node: ThisNode = path.getValue();
-  const p = new Printer(path, print, node, node.children);
+  const p = new Printer(path, options, print, node, node.children);
   const docs: { [Key in Docs<ThisNode>]: Doc } = {
     cast_from: p.child("cast_from"),
     self: p.self("upper", true),
@@ -1025,10 +1029,10 @@ const printCastArgument: PrintFunc = (path, options, print) => {
   ];
 };
 
-const printComment: PrintFunc = (path, _, print) => {
+const printComment: PrintFunc = (path, options, print) => {
   type ThisNode = N.Comment;
   const node: ThisNode = path.getValue();
-  const p = new Printer(path, print, node, node.children);
+  const p = new Printer(path, options, print, node, node.children);
   const docs: { [Key in Docs<ThisNode>]: Doc } = {
     self: p.self(),
   };
@@ -1038,7 +1042,7 @@ const printComment: PrintFunc = (path, _, print) => {
 const printCreateSchemaStatement: PrintFunc = (path, options, print) => {
   type ThisNode = N.CreateSchemaStatement;
   const node: ThisNode = path.getValue();
-  const p = new Printer(path, print, node, node.children);
+  const p = new Printer(path, options, print, node, node.children);
   const docs: { [Key in Docs<ThisNode>]: Doc } = {
     leading_comments: printLeadingComments(path, options, print),
     self: p.self("upper"),
@@ -1071,7 +1075,7 @@ const printCreateSchemaStatement: PrintFunc = (path, options, print) => {
 const printCreateTableStatement: PrintFunc = (path, options, print) => {
   type ThisNode = N.CreateTableStatement;
   const node: ThisNode = path.getValue();
-  const p = new Printer(path, print, node, node.children);
+  const p = new Printer(path, options, print, node, node.children);
   p.setLiteral("temp", "TEMP");
   const docs: { [Key in Docs<ThisNode>]: Doc } = {
     leading_comments: printLeadingComments(path, options, print),
@@ -1128,7 +1132,7 @@ const printCreateTableStatement: PrintFunc = (path, options, print) => {
 const printCreateViewStatement: PrintFunc = (path, options, print) => {
   type ThisNode = N.CreateViewStatement;
   const node: ThisNode = path.getValue();
-  const p = new Printer(path, print, node, node.children);
+  const p = new Printer(path, options, print, node, node.children);
   const docs: { [Key in Docs<ThisNode>]: Doc } = {
     leading_comments: printLeadingComments(path, options, print),
     self: p.self("upper"),
@@ -1178,7 +1182,7 @@ const printCreateViewStatement: PrintFunc = (path, options, print) => {
 const printDeclareStatement: PrintFunc = (path, options, print) => {
   type ThisNode = N.DeclareStatement;
   const node: ThisNode = path.getValue();
-  const p = new Printer(path, print, node, node.children);
+  const p = new Printer(path, options, print, node, node.children);
   const docs: { [Key in Docs<ThisNode>]: Doc } = {
     leading_comments: printLeadingComments(path, options, print),
     self: p.self("upper"),
@@ -1208,7 +1212,7 @@ const printDeclareStatement: PrintFunc = (path, options, print) => {
 const printDotOperator: PrintFunc = (path, options, print) => {
   type ThisNode = N.DotOperator;
   const node: ThisNode = path.getValue();
-  const p = new Printer(path, print, node, node.children);
+  const p = new Printer(path, options, print, node, node.children);
   const docs: { [Key in Docs<ThisNode>]: Doc } = {
     left: p.child("left"),
     self: p.self("upper", true),
@@ -1251,7 +1255,7 @@ const printDotOperator: PrintFunc = (path, options, print) => {
 const printElseIfClause: PrintFunc = (path, options, print) => {
   type ThisNode = N.ElseIfClause;
   const node: ThisNode = path.getValue();
-  const p = new Printer(path, print, node, node.children);
+  const p = new Printer(path, options, print, node, node.children);
   const docs: { [Key in Docs<ThisNode>]: Doc } = {
     leading_comments: printLeadingComments(path, options, print),
     self: p.self("upper"),
@@ -1284,7 +1288,7 @@ const printEOF: PrintFunc = (path, options, print) => {
 const printExecuteStatement: PrintFunc = (path, options, print) => {
   type ThisNode = N.ExecuteStatement;
   const node: ThisNode = path.getValue();
-  const p = new Printer(path, print, node, node.children);
+  const p = new Printer(path, options, print, node, node.children);
   const docs: { [Key in Docs<ThisNode>]: Doc } = {
     leading_comments: printLeadingComments(path, options, print),
     self: p.self("upper"),
@@ -1318,7 +1322,7 @@ const printExecuteStatement: PrintFunc = (path, options, print) => {
 const printExportStatement: PrintFunc = (path, options, print) => {
   type ThisNode = N.ExportStatement;
   const node: ThisNode = path.getValue();
-  const p = new Printer(path, print, node, node.children);
+  const p = new Printer(path, options, print, node, node.children);
   const docs: { [Key in Docs<ThisNode>]: Doc } = {
     leading_comments: printLeadingComments(path, options, print),
     self: p.self("upper"),
@@ -1349,7 +1353,7 @@ const printExportStatement: PrintFunc = (path, options, print) => {
 const printExtractArgument: PrintFunc = (path, options, print) => {
   type ThisNode = N.ExtractArgument;
   const node: ThisNode = path.getValue();
-  const p = new Printer(path, print, node, node.children);
+  const p = new Printer(path, options, print, node, node.children);
   const docs: { [Key in Docs<ThisNode>]: Doc } = {
     extract_datepart: p.child("extract_datepart"),
     self: p.self("upper", true),
@@ -1378,7 +1382,7 @@ const printExtractArgument: PrintFunc = (path, options, print) => {
 const printForSystemTimeAsOfclause: PrintFunc = (path, options, print) => {
   type ThisNode = N.ForSystemTimeAsOfClause;
   const node: ThisNode = path.getValue();
-  const p = new Printer(path, print, node, node.children);
+  const p = new Printer(path, options, print, node, node.children);
   const docs: { [Key in Docs<ThisNode>]: Doc } = {
     leading_comments: printLeadingComments(path, options, print),
     self: p.self("upper"),
@@ -1399,7 +1403,7 @@ const printForSystemTimeAsOfclause: PrintFunc = (path, options, print) => {
 const printGroupedExpr: PrintFunc = (path, options, print) => {
   type ThisNode = N.GroupedExpr;
   const node: ThisNode = path.getValue();
-  const p = new Printer(path, print, node, node.children);
+  const p = new Printer(path, options, print, node, node.children);
   const docs: { [Key in Docs<ThisNode>]: Doc } = {
     leading_comments: printLeadingComments(path, options, print),
     self: p.self(),
@@ -1441,7 +1445,7 @@ const printGroupedExpr: PrintFunc = (path, options, print) => {
 const printGroupedExprs: PrintFunc = (path, options, print) => {
   type ThisNode = N.GroupedExprs;
   const node: ThisNode = path.getValue();
-  const p = new Printer(path, print, node, node.children);
+  const p = new Printer(path, options, print, node, node.children);
   const docs: { [Key in Docs<ThisNode>]: Doc } = {
     leading_comments: printLeadingComments(path, options, print),
     self: p.self(),
@@ -1470,7 +1474,7 @@ const printGroupedExprs: PrintFunc = (path, options, print) => {
 const printGroupedStatement: PrintFunc = (path, options, print) => {
   type ThisNode = N.GroupedStatement;
   const node: ThisNode = path.getValue();
-  const p = new Printer(path, print, node, node.children);
+  const p = new Printer(path, options, print, node, node.children);
   p.setNotRoot("stmt");
   const docs: { [Key in Docs<ThisNode>]: Doc } = {
     leading_comments: printLeadingComments(path, options, print),
@@ -1515,7 +1519,7 @@ const printGroupedStatement: PrintFunc = (path, options, print) => {
 const printGroupedType: PrintFunc = (path, options, print) => {
   type ThisNode = N.GroupedType;
   const node: ThisNode = path.getValue();
-  const p = new Printer(path, print, node, node.children);
+  const p = new Printer(path, options, print, node, node.children);
   const docs: { [Key in Docs<ThisNode>]: Doc } = {
     leading_comments: printLeadingComments(path, options, print),
     self: p.self(),
@@ -1536,7 +1540,7 @@ const printGroupedType: PrintFunc = (path, options, print) => {
 const printGroupedTypeDeclarations: PrintFunc = (path, options, print) => {
   type ThisNode = N.GroupedTypeDeclarations;
   const node: ThisNode = path.getValue();
-  const p = new Printer(path, print, node, node.children);
+  const p = new Printer(path, options, print, node, node.children);
   const docs: { [Key in Docs<ThisNode>]: Doc } = {
     leading_comments: printLeadingComments(path, options, print),
     self: p.self(),
@@ -1557,7 +1561,7 @@ const printGroupedTypeDeclarations: PrintFunc = (path, options, print) => {
 const printIdentifier: PrintFunc = (path, options, print) => {
   type ThisNode = N.Identifier;
   const node: ThisNode = path.getValue();
-  const p = new Printer(path, print, node, node.children);
+  const p = new Printer(path, options, print, node, node.children);
   const docs: { [Key in Docs<ThisNode>]: Doc } = {
     leading_comments: printLeadingComments(path, options, print),
     self:
@@ -1599,7 +1603,7 @@ const printIdentifier: PrintFunc = (path, options, print) => {
 const printIfStatement: PrintFunc = (path, options, print) => {
   type ThisNode = N.IfStatement;
   const node: ThisNode = path.getValue();
-  const p = new Printer(path, print, node, node.children);
+  const p = new Printer(path, options, print, node, node.children);
   const docs: { [Key in Docs<ThisNode>]: Doc } = {
     leading_comments: printLeadingComments(path, options, print),
     self: p.self("upper"),
@@ -1635,7 +1639,7 @@ const printIfStatement: PrintFunc = (path, options, print) => {
 const printInOperator: PrintFunc = (path, options, print) => {
   type ThisNode = N.InOperator;
   const node: ThisNode = path.getValue();
-  const p = new Printer(path, print, node, node.children);
+  const p = new Printer(path, options, print, node, node.children);
   const docs: { [Key in Docs<ThisNode>]: Doc } = {
     left: p.child("left"),
     not: p.child("not"),
@@ -1670,7 +1674,7 @@ const printInOperator: PrintFunc = (path, options, print) => {
 const printIntervalLiteral: PrintFunc = (path, options, print) => {
   type ThisNode = N.IntervalLiteral;
   const node: ThisNode = path.getValue();
-  const p = new Printer(path, print, node, node.children);
+  const p = new Printer(path, options, print, node, node.children);
   const docs: { [Key in Docs<ThisNode>]: Doc } = {
     leading_comments: printLeadingComments(path, options, print),
     self: p.self("upper"),
@@ -1699,7 +1703,7 @@ const printIntervalLiteral: PrintFunc = (path, options, print) => {
 const printJoinOperator: PrintFunc = (path, options, print) => {
   type ThisNode = N.JoinOperator;
   const node: ThisNode = path.getValue();
-  const p = new Printer(path, print, node, node.children);
+  const p = new Printer(path, options, print, node, node.children);
   p.setNotRoot("left");
   p.setNotRoot("right");
   let outer: Doc = "";
@@ -1765,7 +1769,7 @@ const printJoinOperator: PrintFunc = (path, options, print) => {
 const printKeyword: PrintFunc = (path, options, print) => {
   type ThisNode = N.Keyword;
   const node: ThisNode = path.getValue();
-  const p = new Printer(path, print, node, node.children);
+  const p = new Printer(path, options, print, node, node.children);
   const docs: { [Key in Docs<ThisNode>]: Doc } = {
     leading_comments: printLeadingComments(path, options, print),
     self: p.self("upper"),
@@ -1781,7 +1785,7 @@ const printKeywordWithExpr = (
 ): Doc => {
   type ThisNode = N.KeywordWithExpr;
   const node: ThisNode = path.getValue();
-  const p = new Printer(path, print, node, node.children);
+  const p = new Printer(path, options, print, node, node.children);
   p.setNotRoot("expr");
   p.setBreakRecommended("expr");
   const docs: { [Key in Docs<ThisNode>]: Doc } = {
@@ -1806,7 +1810,7 @@ const printKeywordWithExpr = (
 const printKeywordWithExprs: PrintFunc = (path, options, print) => {
   type ThisNode = N.KeywordWithExprs;
   const node: ThisNode = path.getValue();
-  const p = new Printer(path, print, node, node.children);
+  const p = new Printer(path, options, print, node, node.children);
   const docs: { [Key in Docs<ThisNode>]: Doc } = {
     leading_comments: printLeadingComments(path, options, print),
     self: p.self("upper"),
@@ -1822,7 +1826,7 @@ const printKeywordWithExprs: PrintFunc = (path, options, print) => {
 const printKeywordWithGroupedExprs: PrintFunc = (path, options, print) => {
   type ThisNode = N.KeywordWithGroupedExprs;
   const node: ThisNode = path.getValue();
-  const p = new Printer(path, print, node, node.children);
+  const p = new Printer(path, options, print, node, node.children);
   const docs: { [Key in Docs<ThisNode>]: Doc } = {
     leading_comments: printLeadingComments(path, options, print),
     self: p.self("upper"),
@@ -1838,7 +1842,7 @@ const printKeywordWithGroupedExprs: PrintFunc = (path, options, print) => {
 const printKeywordWithStatement: PrintFunc = (path, options, print) => {
   type ThisNode = N.KeywordWithStatement;
   const node: ThisNode = path.getValue();
-  const p = new Printer(path, print, node, node.children);
+  const p = new Printer(path, options, print, node, node.children);
   p.setNotRoot("stmt");
   const docs: { [Key in Docs<ThisNode>]: Doc } = {
     leading_comments: printLeadingComments(path, options, print),
@@ -1855,7 +1859,7 @@ const printKeywordWithStatement: PrintFunc = (path, options, print) => {
 const printKeywordWithStatements: PrintFunc = (path, options, print) => {
   type ThisNode = N.KeywordWithStatements;
   const node: ThisNode = path.getValue();
-  const p = new Printer(path, print, node, node.children);
+  const p = new Printer(path, options, print, node, node.children);
   p.setNotRoot("stmts");
   const docs: { [Key in Docs<ThisNode>]: Doc } = {
     leading_comments: printLeadingComments(path, options, print),
@@ -1875,7 +1879,7 @@ const printKeywordWithStatements: PrintFunc = (path, options, print) => {
 const printLimitClause: PrintFunc = (path, options, print) => {
   type ThisNode = N.LimitClause;
   const node: ThisNode = path.getValue();
-  const p = new Printer(path, print, node, node.children);
+  const p = new Printer(path, options, print, node, node.children);
   return [
     printKeywordWithExpr(path as AstPathOf<ThisNode>, options, print),
     " ",
@@ -1886,7 +1890,7 @@ const printLimitClause: PrintFunc = (path, options, print) => {
 const printLoopStatement: PrintFunc = (path, options, print) => {
   type ThisNode = N.LoopStatement;
   const node: ThisNode = path.getValue();
-  const p = new Printer(path, print, node, node.children);
+  const p = new Printer(path, options, print, node, node.children);
   p.setNotRoot("stmts");
   const docs: { [Key in Docs<ThisNode>]: Doc } = {
     leading_comments: printLeadingComments(path, options, print),
@@ -1917,7 +1921,7 @@ const printLoopStatement: PrintFunc = (path, options, print) => {
 const printNullLiteral: PrintFunc = (path, options, print) => {
   type ThisNode = N.NullLiteral;
   const node: ThisNode = path.getValue();
-  const p = new Printer(path, print, node, node.children);
+  const p = new Printer(path, options, print, node, node.children);
   const docs: { [Key in Docs<ThisNode>]: Doc } = {
     leading_comments: printLeadingComments(path, options, print),
     self: p.self("upper"),
@@ -1944,7 +1948,7 @@ const printNullLiteral: PrintFunc = (path, options, print) => {
 const printNumericLiteral: PrintFunc = (path, options, print) => {
   type ThisNode = N.NumericLiteral;
   const node: ThisNode = path.getValue();
-  const p = new Printer(path, print, node, node.children);
+  const p = new Printer(path, options, print, node, node.children);
   const docs: { [Key in Docs<ThisNode>]: Doc } = {
     leading_comments: printLeadingComments(path, options, print),
     self: p.self("lower"), // in the case of `3.14e10`
@@ -1971,7 +1975,7 @@ const printNumericLiteral: PrintFunc = (path, options, print) => {
 const printOverClause: PrintFunc = (path, options, print) => {
   type ThisNode = N.OverClause;
   const node: ThisNode = path.getValue();
-  const p = new Printer(path, print, node, node.children);
+  const p = new Printer(path, options, print, node, node.children);
   const docs: { [Key in Docs<ThisNode>]: Doc } = {
     self: p.self("upper", true),
     trailing_comments: printTrailingComments(path, options, print),
@@ -1986,7 +1990,7 @@ const printOverClause: PrintFunc = (path, options, print) => {
 const printPivotConfig: PrintFunc = (path, options, print) => {
   type ThisNode = N.PivotConfig;
   const node: ThisNode = path.getValue();
-  const p = new Printer(path, print, node, node.children);
+  const p = new Printer(path, options, print, node, node.children);
   const docs: { [Key in Docs<ThisNode>]: Doc } = {
     leading_comments: printLeadingComments(path, options, print),
     self: p.self("upper"),
@@ -2009,7 +2013,7 @@ const printPivotConfig: PrintFunc = (path, options, print) => {
 const printPivotOperator: PrintFunc = (path, options, print) => {
   type ThisNode = N.PivotOperator;
   const node: ThisNode = path.getValue();
-  const p = new Printer(path, print, node, node.children);
+  const p = new Printer(path, options, print, node, node.children);
   const docs: { [Key in Docs<ThisNode>]: Doc } = {
     leading_comments: printLeadingComments(path, options, print),
     self: p.self("upper"),
@@ -2032,7 +2036,7 @@ const printPivotOperator: PrintFunc = (path, options, print) => {
 const printRaiseStatement: PrintFunc = (path, options, print) => {
   type ThisNode = N.RaiseStatement;
   const node: ThisNode = path.getValue();
-  const p = new Printer(path, print, node, node.children);
+  const p = new Printer(path, options, print, node, node.children);
   const docs: { [Key in Docs<ThisNode>]: Doc } = {
     leading_comments: printLeadingComments(path, options, print),
     self: p.self("upper"),
@@ -2056,7 +2060,7 @@ const printRaiseStatement: PrintFunc = (path, options, print) => {
 const printSelectStatement: PrintFunc = (path, options, print) => {
   type ThisNode = N.SelectStatement;
   const node: ThisNode = path.getValue();
-  const p = new Printer(path, print, node, node.children);
+  const p = new Printer(path, options, print, node, node.children);
   p.setNotRoot("exprs");
   const docs: { [Key in Docs<ThisNode>]: Doc } = {
     with: p.child("with"),
@@ -2135,7 +2139,7 @@ const printSelectStatement: PrintFunc = (path, options, print) => {
 const printSetOperator: PrintFunc = (path, options, print) => {
   type ThisNode = N.SetOperator;
   const node: ThisNode = path.getValue();
-  const p = new Printer(path, print, node, node.children);
+  const p = new Printer(path, options, print, node, node.children);
   p.setNotRoot("left");
   p.setNotRoot("right");
   const docs: { [Key in Docs<ThisNode>]: Doc } = {
@@ -2171,7 +2175,7 @@ const printSetOperator: PrintFunc = (path, options, print) => {
 const printSetStatement: PrintFunc = (path, options, print) => {
   type ThisNode = N.SetStatement;
   const node: ThisNode = path.getValue();
-  const p = new Printer(path, print, node, node.children);
+  const p = new Printer(path, options, print, node, node.children);
   const docs: { [Key in Docs<ThisNode>]: Doc } = {
     leading_comments: printLeadingComments(path, options, print),
     self: p.self("upper"),
@@ -2195,7 +2199,7 @@ const printSetStatement: PrintFunc = (path, options, print) => {
 const printSingleTokenStatement: PrintFunc = (path, options, print) => {
   type ThisNode = N.SingleTokenStatement;
   const node: ThisNode = path.getValue();
-  const p = new Printer(path, print, node, node.children);
+  const p = new Printer(path, options, print, node, node.children);
   const docs: { [Key in Docs<ThisNode>]: Doc } = {
     leading_comments: printLeadingComments(path, options, print),
     self: p.self("upper"),
@@ -2214,7 +2218,7 @@ const printSingleTokenStatement: PrintFunc = (path, options, print) => {
 const printStringLiteral: PrintFunc = (path, options, print) => {
   type ThisNode = N.StringLiteral;
   const node: ThisNode = path.getValue();
-  const p = new Printer(path, print, node, node.children);
+  const p = new Printer(path, options, print, node, node.children);
   const docs: { [Key in Docs<ThisNode>]: Doc } = {
     leading_comments: printLeadingComments(path, options, print),
     self: p.self(),
@@ -2241,7 +2245,7 @@ const printStringLiteral: PrintFunc = (path, options, print) => {
 const printStructLiteral: PrintFunc = (path, options, print) => {
   type ThisNode = N.StructLiteral;
   const node: ThisNode = path.getValue();
-  const p = new Printer(path, print, node, node.children);
+  const p = new Printer(path, options, print, node, node.children);
   const docs: { [Key in Docs<ThisNode>]: Doc } = {
     type: p.child("type"),
     leading_comments: p.has("type")
@@ -2279,7 +2283,7 @@ const printStructLiteral: PrintFunc = (path, options, print) => {
 const printSymbol: PrintFunc = (path, options, print) => {
   type ThisNode = N.Symbol_;
   const node: ThisNode = path.getValue();
-  const p = new Printer(path, print, node, node.children);
+  const p = new Printer(path, options, print, node, node.children);
   const docs: { [Key in Docs<ThisNode>]: Doc } = {
     leading_comments: printLeadingComments(path, options, print),
     self: p.self("upper"),
@@ -2291,7 +2295,7 @@ const printSymbol: PrintFunc = (path, options, print) => {
 const printTableSampleClause: PrintFunc = (path, options, print) => {
   type ThisNode = N.TableSampleClause;
   const node: ThisNode = path.getValue();
-  const p = new Printer(path, print, node, node.children);
+  const p = new Printer(path, options, print, node, node.children);
   const docs: { [Key in Docs<ThisNode>]: Doc } = {
     leading_comments: printLeadingComments(path, options, print),
     self: p.self("upper"),
@@ -2313,7 +2317,7 @@ const printTableSampleClause: PrintFunc = (path, options, print) => {
 const printTableSampleRatio: PrintFunc = (path, options, print) => {
   type ThisNode = N.TableSampleRatio;
   const node: ThisNode = path.getValue();
-  const p = new Printer(path, print, node, node.children);
+  const p = new Printer(path, options, print, node, node.children);
   const docs: { [Key in Docs<ThisNode>]: Doc } = {
     leading_comments: printLeadingComments(path, options, print),
     self: p.self("upper"),
@@ -2336,7 +2340,7 @@ const printTableSampleRatio: PrintFunc = (path, options, print) => {
 const printType: PrintFunc = (path, options, print) => {
   type ThisNode = N.Type;
   const node: ThisNode = path.getValue();
-  const p = new Printer(path, print, node, node.children);
+  const p = new Printer(path, options, print, node, node.children);
   const docs: { [Key in Docs<ThisNode>]: Doc } = {
     leading_comments: printLeadingComments(path, options, print),
     self: p.self("upper"),
@@ -2359,7 +2363,7 @@ const printType: PrintFunc = (path, options, print) => {
 const printTypeDeclaration: PrintFunc = (path, options, print) => {
   type ThisNode = N.TypeDeclaration;
   const node: ThisNode = path.getValue();
-  const p = new Printer(path, print, node, node.children);
+  const p = new Printer(path, options, print, node, node.children);
   const docs: { [Key in Docs<ThisNode>]: Doc } = {
     leading_comments: printLeadingComments(path, options, print),
     self: p.self(),
@@ -2380,7 +2384,7 @@ const printTypeDeclaration: PrintFunc = (path, options, print) => {
 const printUnaryOperator: PrintFunc = (path, options, print) => {
   type ThisNode = N.UnaryOperator;
   const node: ThisNode = path.getValue();
-  const p = new Printer(path, print, node, node.children);
+  const p = new Printer(path, options, print, node, node.children);
   const lowerCaseOperators = ["b", "br", "r", "rb"];
   const noSpaceOperators = [
     "+",
@@ -2422,7 +2426,7 @@ const printUnaryOperator: PrintFunc = (path, options, print) => {
 const printUnpivotConfig: PrintFunc = (path, options, print) => {
   type ThisNode = N.UnpivotConfig;
   const node: ThisNode = path.getValue();
-  const p = new Printer(path, print, node, node.children);
+  const p = new Printer(path, options, print, node, node.children);
   const docs: { [Key in Docs<ThisNode>]: Doc } = {
     leading_comments: printLeadingComments(path, options, print),
     self: p.self("upper"),
@@ -2445,7 +2449,7 @@ const printUnpivotConfig: PrintFunc = (path, options, print) => {
 const printUnpivotOperator: PrintFunc = (path, options, print) => {
   type ThisNode = N.UnpivotOperator;
   const node: ThisNode = path.getValue();
-  const p = new Printer(path, print, node, node.children);
+  const p = new Printer(path, options, print, node, node.children);
   const docs: { [Key in Docs<ThisNode>]: Doc } = {
     leading_comments: printLeadingComments(path, options, print),
     self: p.self("upper"),
@@ -2473,7 +2477,7 @@ const printUnpivotOperator: PrintFunc = (path, options, print) => {
 const printWhileStatement: PrintFunc = (path, options, print) => {
   type ThisNode = N.WhileStatement;
   const node: ThisNode = path.getValue();
-  const p = new Printer(path, print, node, node.children);
+  const p = new Printer(path, options, print, node, node.children);
   p.setBreakRecommended("condition");
   const docs: { [Key in Docs<ThisNode>]: Doc } = {
     leading_comments: printLeadingComments(path, options, print),
@@ -2506,7 +2510,7 @@ const printWhileStatement: PrintFunc = (path, options, print) => {
 const printWindowClause: PrintFunc = (path, options, print) => {
   type ThisNode = N.WindowClause;
   const node: ThisNode = path.getValue();
-  const p = new Printer(path, print, node, node.children);
+  const p = new Printer(path, options, print, node, node.children);
   const docs: { [Key in Docs<ThisNode>]: Doc } = {
     leading_comments: printLeadingComments(path, options, print),
     self: p.self("upper"),
@@ -2528,7 +2532,7 @@ const printWindowClause: PrintFunc = (path, options, print) => {
 const printWindowExpr: PrintFunc = (path, options, print) => {
   type ThisNode = N.WindowExpr;
   const node: ThisNode = path.getValue();
-  const p = new Printer(path, print, node, node.children);
+  const p = new Printer(path, options, print, node, node.children);
   const docs: { [Key in Docs<ThisNode>]: Doc } = {
     leading_comments: printLeadingComments(path, options, print),
     self: p.self(),
@@ -2553,7 +2557,7 @@ const printWindowExpr: PrintFunc = (path, options, print) => {
 const printWindowFrameClause: PrintFunc = (path, options, print) => {
   type ThisNode = N.WindowFrameClause;
   const node: ThisNode = path.getValue();
-  const p = new Printer(path, print, node, node.children);
+  const p = new Printer(path, options, print, node, node.children);
   const docs: { [Key in Docs<ThisNode>]: Doc } = {
     leading_comments: printLeadingComments(path, options, print),
     self: p.self("upper"),
@@ -2580,7 +2584,7 @@ const printWindowFrameClause: PrintFunc = (path, options, print) => {
 const printWindowSpecification: PrintFunc = (path, options, print) => {
   type ThisNode = N.WindowSpecification;
   const node: ThisNode = path.getValue();
-  const p = new Printer(path, print, node, node.children);
+  const p = new Printer(path, options, print, node, node.children);
   const docs: { [Key in Docs<ThisNode>]: Doc } = {
     self: p.self("upper", true),
     trailing_comments: printTrailingComments(path, options, print),
@@ -2611,7 +2615,7 @@ const printWindowSpecification: PrintFunc = (path, options, print) => {
 const printWithClause: PrintFunc = (path, options, print) => {
   type ThisNode = N.WithClause;
   const node: ThisNode = path.getValue();
-  const p = new Printer(path, print, node, node.children);
+  const p = new Printer(path, options, print, node, node.children);
   const docs: { [Key in Docs<ThisNode>]: Doc } = {
     leading_comments: printLeadingComments(path, options, print),
     self: p.self("upper"),
@@ -2632,7 +2636,7 @@ const printWithClause: PrintFunc = (path, options, print) => {
 const printWithPartitionColumnsClause: PrintFunc = (path, options, print) => {
   type ThisNode = N.WithPartitionColumnsClause;
   const node: ThisNode = path.getValue();
-  const p = new Printer(path, print, node, node.children);
+  const p = new Printer(path, options, print, node, node.children);
   const docs: { [Key in Docs<ThisNode>]: Doc } = {
     leading_comments: printLeadingComments(path, options, print),
     self: p.self(),
@@ -2655,7 +2659,7 @@ const printWithPartitionColumnsClause: PrintFunc = (path, options, print) => {
 const printWithQuery: PrintFunc = (path, options, print) => {
   type ThisNode = N.WithQuery;
   const node: ThisNode = path.getValue();
-  const p = new Printer(path, print, node, node.children);
+  const p = new Printer(path, options, print, node, node.children);
   p.setNotRoot("stmt");
   const docs: { [Key in Docs<ThisNode>]: Doc } = {
     leading_comments: printLeadingComments(path, options, print),
@@ -2680,7 +2684,7 @@ const printWithQuery: PrintFunc = (path, options, print) => {
 const printXXXByExprs: PrintFunc = (path, options, print) => {
   type ThisNode = N.XXXByExprs;
   const node: ThisNode = path.getValue();
-  const p = new Printer(path, print, node, node.children);
+  const p = new Printer(path, options, print, node, node.children);
   const docs: { [Key in Docs<ThisNode>]: Doc } = {
     leading_comments: printLeadingComments(path, options, print),
     self: p.self("upper"),
@@ -2705,12 +2709,12 @@ const printXXXByExprs: PrintFunc = (path, options, print) => {
 // ----- utils -----
 const printAlias = (
   path: AstPathOf<N.Expr>,
-  _: Options,
+  options: Options,
   print: (path: AstPath) => Doc
 ): Doc => {
   type ThisNode = N.Expr;
   const node: ThisNode = path.getValue();
-  const p = new Printer(path, print, node, node.children);
+  const p = new Printer(path, options, print, node, node.children);
   let as_: Doc;
   if (!p.has("alias")) {
     return "";
@@ -2723,21 +2727,21 @@ const printAlias = (
   return [" ", as_, " ", p.child("alias", asItIs, true)];
 };
 
-const printLeadingComments: PrintFunc = (path, _, print) => {
+const printLeadingComments: PrintFunc = (path, options, print) => {
   type ThisNode = N.BaseNode;
   const node: ThisNode = path.getValue();
-  const p = new Printer(path, print, node, node.children);
+  const p = new Printer(path, options, print, node, node.children);
   return p.child("leading_comments", (x) => [x, hardline]);
 };
 
 const printOrder = (
   path: AstPathOf<N.Expr>,
-  _: Options,
+  options: Options,
   print: (path: AstPath) => Doc
 ): Doc => {
   type ThisNode = N.Expr;
   const node: ThisNode = path.getValue();
-  const p = new Printer(path, print, node, node.children);
+  const p = new Printer(path, options, print, node, node.children);
   return [
     p.has("order") ? [" ", p.child("order", asItIs, true)] : "",
     p.has("null_order") ? p.child("null_order", (x) => group([line, x])) : "",
@@ -2746,12 +2750,12 @@ const printOrder = (
 
 const printPivotOrUnpivotOperator = (
   path: AstPathOf<N.FromItemExpr>,
-  _: Options,
+  options: Options,
   print: (path: AstPath) => Doc
 ): Doc => {
   type ThisNode = N.FromItemExpr;
   const node: ThisNode = path.getValue();
-  const p = new Printer(path, print, node, node.children);
+  const p = new Printer(path, options, print, node, node.children);
   const pivot = p.has("pivot") ? [" ", p.child("pivot", asItIs, true)] : "";
   const unpivot = p.has("unpivot")
     ? [" ", p.child("unpivot", asItIs, true)]
@@ -2759,9 +2763,9 @@ const printPivotOrUnpivotOperator = (
   return [pivot, unpivot];
 };
 
-const printTrailingComments: PrintFunc = (path, _, print) => {
+const printTrailingComments: PrintFunc = (path, options, print) => {
   type ThisNode = N.BaseNode;
   const node: ThisNode = path.getValue();
-  const p = new Printer(path, print, node, node.children);
+  const p = new Printer(path, options, print, node, node.children);
   return lineSuffix(p.child("trailing_comments", (x) => [" ", x]));
 };
