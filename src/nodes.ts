@@ -230,6 +230,21 @@ export type CreateTableStatement = XXXStatement & {
   }
 }
 
+export type CreateViewStatement = XXXStatement & {
+  children: {
+    or_replace?: NodeVecChild
+    materialized? : NodeChild
+    what: NodeChild
+    if_not_exists?: NodeVecChild
+    ident: NodeChild
+    column_name_list?: NodeChild
+    partitionby?: NodeChild
+    clusterby?: NodeChild
+    options?: NodeChild
+    as: NodeChild
+  }
+}
+
 export type DeclareStatement = XXXStatement & {
   children: {
     idents: NodeVecChild;

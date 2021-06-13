@@ -403,6 +403,8 @@ export const printSQL: PrintFunc = (path, options, print) => {
       return printCreateSchemaStatement(path, options, print);
     case "CreateTableStatement":
       return printCreateTableStatement(path, options, print);
+    case "CreateViewStatement":
+      return printCreateViewStatement(path, options, print);
     case "DeclareStatement":
       return printDeclareStatement(path, options, print);
     case "DotOperator":
@@ -1115,6 +1117,56 @@ const printCreateTableStatement: PrintFunc = (path, options, print) => {
       p.has("options") ? line : "",
       docs.options,
       p.has("as") ? line : "",
+      docs.as,
+      softline,
+      docs.semicolon,
+    ]),
+    p.newLine(),
+  ];
+};
+
+const printCreateViewStatement: PrintFunc = (path, options, print) => {
+  type ThisNode = N.CreateViewStatement;
+  const node: ThisNode = path.getValue();
+  const p = new Printer(path, print, node, node.children);
+  const docs: { [Key in Docs<ThisNode>]: Doc } = {
+    leading_comments: printLeadingComments(path, options, print),
+    self: p.self("upper"),
+    trailing_comments: printTrailingComments(path, options, print),
+    or_replace: p.child("or_replace", (x) => group([line, x])),
+    materialized: p.child("materialized", asItIs, true),
+    what: p.child("what", asItIs, true),
+    if_not_exists: p.child("if_not_exists", (x) => group([line, x])),
+    ident: p.child("ident", asItIs, true),
+    column_name_list: p.child("column_name_list", asItIs, true),
+    partitionby: p.child("partitionby"),
+    clusterby: p.child("clusterby"),
+    options: p.child("options"),
+    as: p.child("as", asItIs, true),
+    semicolon: p.child("semicolon"),
+  };
+  return [
+    docs.leading_comments,
+    group([
+      docs.self,
+      docs.trailing_comments,
+      docs.or_replace,
+      p.has("materialized") ? " " : "",
+      docs.materialized,
+      " ",
+      docs.what,
+      docs.if_not_exists,
+      " ",
+      docs.ident,
+      p.has("column_name_list") ? " " : "",
+      docs.column_name_list,
+      p.has("partitionby") ? line : "",
+      docs.partitionby,
+      p.has("clusterby") ? line : "",
+      docs.clusterby,
+      p.has("options") ? line : "",
+      docs.options,
+      line,
       docs.as,
       softline,
       docs.semicolon,
