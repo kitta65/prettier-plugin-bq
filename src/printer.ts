@@ -198,6 +198,18 @@ class Printer<T extends N.BaseNode> {
       literal = literal.toLowerCase();
     } else if (!this.node.notGlobal && this.includedIn(reservedKeywords)) {
       literal = literal.toUpperCase();
+    } else if (
+      literal.match(/^_PARTITION/i) ||
+      literal.match(/^_TABLE_/i) ||
+      literal.match(/^_FILE_/i) ||
+      literal.match(/^_RAW_TIMESTAMP/i)
+    ) {
+      /**
+       * NOTE
+       * Field names are not allowed to start with the (case-insensitive) prefixes _PARTITION, _TABLE_, _FILE_ and _ROW_TIMESTAMP.
+       * On the other hand, you can create a table named `_partitiondate` (that may cause an error).
+       */
+      literal = literal.toUpperCase();
     }
     let comments: Doc = "";
     if (consumeLeadingComments) {
@@ -215,6 +227,15 @@ class Printer<T extends N.BaseNode> {
     const child = this.children[key];
     if (N.isNodeChild(child)) {
       child.Node.callable = true;
+    }
+  }
+  setLiteral(key: N.NodeKeyof<N.Children<T>>, literal: string) {
+    const child = this.children[key];
+    if (N.isNodeChild(child)) {
+      const token = child.Node.token;
+      if (token) {
+        token.literal = literal;
+      }
     }
   }
   setNotRoot(key: keyof N.Children<T>) {
@@ -378,6 +399,10 @@ export const printSQL: PrintFunc = (path, options, print) => {
       return printCastArgument(path, options, print);
     case "Comment":
       return printComment(path, options, print);
+    case "CreateSchemaStatement":
+      return printCreateSchemaStatement(path, options, print);
+    case "CreateTableStatement":
+      return printCreateTableStatement(path, options, print);
     case "DeclareStatement":
       return printDeclareStatement(path, options, print);
     case "DotOperator":
@@ -488,6 +513,8 @@ export const printSQL: PrintFunc = (path, options, print) => {
       return printWindowSpecification(path, options, print);
     case "WithClause":
       return printWithClause(path, options, print);
+    case "WithPartitionColumnsClause":
+      return printWithPartitionColumnsClause(path, options, print);
     case "WithQuery":
       return printWithQuery(path, options, print);
     case "XXXByExprs":
@@ -909,7 +936,7 @@ const printCallStatement: PrintFunc = (path, options, print) => {
       softline,
       docs.semicolon,
     ]),
-    p.newLine()
+    p.newLine(),
   ];
 };
 
@@ -1004,6 +1031,96 @@ const printComment: PrintFunc = (path, _, print) => {
     self: p.self(),
   };
   return docs.self;
+};
+
+const printCreateSchemaStatement: PrintFunc = (path, options, print) => {
+  type ThisNode = N.CreateSchemaStatement;
+  const node: ThisNode = path.getValue();
+  const p = new Printer(path, print, node, node.children);
+  const docs: { [Key in Docs<ThisNode>]: Doc } = {
+    leading_comments: printLeadingComments(path, options, print),
+    self: p.self("upper"),
+    trailing_comments: printTrailingComments(path, options, print),
+    what: p.child("what", asItIs, true),
+    if_not_exists: p.child("if_not_exists", (x) => group([line, x])),
+    ident: p.child("ident", asItIs, true),
+    options: p.child("options"),
+    semicolon: p.child("semicolon"),
+  };
+  return [
+    docs.leading_comments,
+    group([
+      docs.self,
+      docs.trailing_comments,
+      " ",
+      docs.what,
+      docs.if_not_exists,
+      " ",
+      docs.ident,
+      line,
+      docs.options,
+      softline,
+      docs.semicolon,
+    ]),
+    p.newLine(),
+  ];
+};
+
+const printCreateTableStatement: PrintFunc = (path, options, print) => {
+  type ThisNode = N.CreateTableStatement;
+  const node: ThisNode = path.getValue();
+  const p = new Printer(path, print, node, node.children);
+  p.setLiteral("temp", "TEMP");
+  const docs: { [Key in Docs<ThisNode>]: Doc } = {
+    leading_comments: printLeadingComments(path, options, print),
+    self: p.self("upper"),
+    trailing_comments: printTrailingComments(path, options, print),
+    or_replace: p.child("or_replace", (x) => group([line, x])),
+    external: p.child("external", asItIs, true),
+    temp: p.child("temp", asItIs, true),
+    what: p.child("what", asItIs, true),
+    if_not_exists: p.child("if_not_exists", (x) => group([line, x])),
+    ident: p.child("ident", asItIs, true),
+    column_schema_group: p.child("column_schema_group", asItIs, true),
+    partitionby: p.child("partitionby"),
+    clusterby: p.child("clusterby"),
+    with_partition_columns: p.child("with_partition_columns"),
+    options: p.child("options"),
+    as: p.child("as", asItIs, true),
+    semicolon: p.child("semicolon"),
+  };
+  return [
+    docs.leading_comments,
+    group([
+      docs.self,
+      docs.trailing_comments,
+      docs.or_replace,
+      p.has("external") ? " " : "",
+      docs.external,
+      p.has("temp") ? " " : "",
+      docs.temp,
+      " ",
+      docs.what,
+      docs.if_not_exists,
+      " ",
+      docs.ident,
+      p.has("column_schema_group") ? " " : "",
+      docs.column_schema_group,
+      p.has("partitionby") ? line : "",
+      docs.partitionby,
+      p.has("clusterby") ? line : "",
+      docs.clusterby,
+      p.has("with_partition_columns") ? line : "",
+      docs.with_partition_columns,
+      p.has("options") ? line : "",
+      docs.options,
+      p.has("as") ? line : "",
+      docs.as,
+      softline,
+      docs.semicolon,
+    ]),
+    p.newLine(),
+  ];
 };
 
 const printDeclareStatement: PrintFunc = (path, options, print) => {
@@ -2173,12 +2290,17 @@ const printType: PrintFunc = (path, options, print) => {
     self: p.self("upper"),
     trailing_comments: printTrailingComments(path, options, print),
     type_declaration: p.child("type_declaration", asItIs, true),
+    not_null: p.child("not_null", (x) => group([line, x])),
+    options: p.child("options", asItIs, true),
   };
   return [
     docs.leading_comments,
     docs.self,
     docs.trailing_comments,
     docs.type_declaration,
+    docs.not_null,
+    p.has("options") ? " " : "",
+    docs.options,
   ];
 };
 
@@ -2455,6 +2577,29 @@ const printWithClause: PrintFunc = (path, options, print) => {
   ];
 };
 
+const printWithPartitionColumnsClause: PrintFunc = (path, options, print) => {
+  type ThisNode = N.WithPartitionColumnsClause;
+  const node: ThisNode = path.getValue();
+  const p = new Printer(path, print, node, node.children);
+  const docs: { [Key in Docs<ThisNode>]: Doc } = {
+    leading_comments: printLeadingComments(path, options, print),
+    self: p.self(),
+    trailing_comments: printTrailingComments(path, options, print),
+    partition_columns: p.child("partition_columns", (x) => group([line, x])),
+    column_schema_group: p.child("column_schema_group", asItIs, true),
+  };
+  return [
+    docs.leading_comments,
+    group([
+      docs.self,
+      docs.trailing_comments,
+      docs.partition_columns,
+      p.has("column_schema_group") ? " " : "",
+      docs.column_schema_group,
+    ]),
+  ];
+};
+
 const printWithQuery: PrintFunc = (path, options, print) => {
   type ThisNode = N.WithQuery;
   const node: ThisNode = path.getValue();
@@ -2497,7 +2642,9 @@ const printXXXByExprs: PrintFunc = (path, options, print) => {
     docs.trailing_comments,
     " ",
     docs.by,
-    node.children.exprs.NodeVec.every((x) => x.token.literal.match(/^[0-9]+$/))
+    node.children.exprs.NodeVec.every((x) =>
+      x.token.literal.match(/^[0-9]+$/)
+    ) || p.len("exprs") === 1
       ? group(docs.exprs)
       : docs.exprs,
   ];

@@ -204,6 +204,32 @@ export type Comment = BaseNode & {
   };
 };
 
+export type CreateSchemaStatement = XXXStatement & {
+  children: {
+    what: NodeChild
+    if_not_exists?: NodeVecChild
+    ident: NodeChild
+    options?: NodeChild
+  }
+}
+
+export type CreateTableStatement = XXXStatement & {
+  children: {
+    or_replace?: NodeVecChild
+    external? : NodeChild
+    temp?: NodeChild
+    what: NodeChild
+    if_not_exists?: NodeVecChild
+    ident: NodeChild
+    column_schema_group?: NodeChild
+    partitionby?: NodeChild
+    clusterby?: NodeChild
+    with_partition_columns?: NodeChild
+    options?: NodeChild
+    as?: NodeChild
+  }
+}
+
 export type DeclareStatement = XXXStatement & {
   children: {
     idents: NodeVecChild;
@@ -543,6 +569,8 @@ export type Type = BaseNode & {
   token: Token;
   children: {
     type_declaration?: NodeChild;
+    not_null?: NodeVecChild
+    options?: NodeChild
   };
 };
 
@@ -630,6 +658,14 @@ export type WithClause = BaseNode & {
   token: Token;
   children: {
     queries: NodeVecChild;
+  };
+};
+
+export type WithPartitionColumnsClause = BaseNode & {
+  token: Token;
+  children: {
+    partition_columns: NodeVecChild;
+    column_schema_group: NodeChild
   };
 };
 
