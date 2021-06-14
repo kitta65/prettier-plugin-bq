@@ -55,3 +55,27 @@ as
 ;
 
 ----- CREATE FUNCTION statement -----
+-- sql function definition
+create or replace function abc() as ('abc');
+
+create temporary function abc(x int64) as ('abc');
+
+create function if not exists abc(x array<int64>, y any type)
+returns int64
+as ('dummy');
+
+-- javascript function definition
+create function abc() returns int64 language js
+options()
+as '''return 1''';
+
+create function abc() returns int64 deterministic language js
+options(library = ['dummy'])
+as '''
+  // break
+  return 1
+''';
+
+create function abc() returns int64 not deterministic language js
+as '''return 1''';
+

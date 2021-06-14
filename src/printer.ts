@@ -403,6 +403,8 @@ export const printSQL: PrintFunc = (path, options, print) => {
       return printCastArgument(path, options, print);
     case "Comment":
       return printComment(path, options, print);
+    case "CreateFunctionStatement":
+      return printCreateFunctionStatement(path, options, print);
     case "CreateSchemaStatement":
       return printCreateSchemaStatement(path, options, print);
     case "CreateTableStatement":
@@ -455,12 +457,18 @@ export const printSQL: PrintFunc = (path, options, print) => {
       );
     case "KeywordWithExprs":
       return printKeywordWithExprs(path, options, print);
+    case "KeywordWithGroupedExpr":
+      return printKeywordWithGroupedExpr(path, options, print);
     case "KeywordWithGroupedExprs":
       return printKeywordWithGroupedExprs(path, options, print);
     case "KeywordWithStatement":
       return printKeywordWithStatement(path, options, print);
     case "KeywordWithStatements":
       return printKeywordWithStatements(path, options, print);
+    case "KeywordWithType":
+      return printKeywordWithType(path, options, print);
+    case "LanguageSpecifier":
+      return printLanguageSpecifier(path, options, print);
     case "LimitClause":
       return printLimitClause(path, options, print);
     case "LoopStatement":
@@ -1072,6 +1080,59 @@ const printCreateSchemaStatement: PrintFunc = (path, options, print) => {
   ];
 };
 
+const printCreateFunctionStatement: PrintFunc = (path, options, print) => {
+  type ThisNode = N.CreateFunctionStatement;
+  const node: ThisNode = path.getValue();
+  const p = new Printer(path, options, print, node, node.children);
+  p.setLiteral("temp", "TEMP");
+  const docs: { [Key in Docs<ThisNode>]: Doc } = {
+    leading_comments: printLeadingComments(path, options, print),
+    self: p.self("upper"),
+    trailing_comments: printTrailingComments(path, options, print),
+    or_replace: p.child("or_replace", (x) => group([line, x])),
+    temp: p.child("temp", asItIs, true),
+    what: p.child("what", asItIs, true),
+    if_not_exists: p.child("if_not_exists", (x) => group([line, x])),
+    ident: p.child("ident", asItIs, true),
+    group: p.child("group", asItIs, true),
+    returns: p.child("returns"),
+    determinism: group(p.child("determinism", asItIs, false, line)),
+    language: p.child("language"),
+    options: p.child("options"),
+    as: p.child("as"),
+    semicolon: p.child("semicolon"),
+  };
+  return [
+    docs.leading_comments,
+    group([
+      docs.self,
+      docs.trailing_comments,
+      p.has("temp") ? " " : "",
+      docs.or_replace,
+      docs.temp,
+      " ",
+      docs.what,
+      docs.if_not_exists,
+      " ",
+      docs.ident,
+      docs.group,
+      p.has("returns") ? line : "",
+      docs.returns,
+      p.has("determinism") ? line : "",
+      docs.determinism,
+      p.has("language") ? line : "",
+      docs.language,
+      p.has("options") ? line : "",
+      docs.options,
+      line,
+      docs.as,
+      softline,
+      docs.semicolon,
+    ]),
+    p.newLine(),
+  ];
+};
+
 const printCreateTableStatement: PrintFunc = (path, options, print) => {
   type ThisNode = N.CreateTableStatement;
   const node: ThisNode = path.getValue();
@@ -1552,8 +1613,8 @@ const printGroupedTypeDeclarations: PrintFunc = (path, options, print) => {
     docs.leading_comments,
     docs.self,
     docs.trailing_comments,
-    indent([softline, docs.declarations]),
-    softline,
+    indent([p.has("declarations") ? softline : "", docs.declarations]),
+    p.has("declarations") ? softline : "",
     docs.rparen,
   ];
 };
@@ -1792,13 +1853,10 @@ const printKeywordWithExpr = (
     leading_comments: printLeadingComments(path, options, print),
     self: p.self("upper"),
     trailing_comments: printTrailingComments(path, options, print),
-    // TODO define as function
     expr:
       !p.hasLeadingComments("expr") &&
-      ["GroupedExpr", "GroupedStatement", "CallingFunction"].includes(
-        node.children.expr.Node.node_type
-      )
-        ? [" ", p.child("expr", asItIs, true)]
+      ["GroupedStatement"].includes(node.children.expr.Node.node_type)
+        ? [" ", p.child("expr", asItIs, true)] // in the case of `FROM (SELECT ...)`
         : indent([line, p.child("expr")]),
   };
   return [
@@ -1820,6 +1878,22 @@ const printKeywordWithExprs: PrintFunc = (path, options, print) => {
   return [
     docs.leading_comments,
     group([docs.self, docs.trailing_comments, indent(docs.exprs)]),
+  ];
+};
+
+const printKeywordWithGroupedExpr: PrintFunc = (path, options, print) => {
+  type ThisNode = N.KeywordWithGroupedExpr;
+  const node: ThisNode = path.getValue();
+  const p = new Printer(path, options, print, node, node.children);
+  const docs: { [Key in Docs<ThisNode>]: Doc } = {
+    leading_comments: printLeadingComments(path, options, print),
+    self: p.self("upper"),
+    trailing_comments: printTrailingComments(path, options, print),
+    group: p.child("group", asItIs, true),
+  };
+  return [
+    docs.leading_comments,
+    group([docs.self, docs.trailing_comments, " ", docs.group]),
   ];
 };
 
@@ -1872,7 +1946,41 @@ const printKeywordWithStatements: PrintFunc = (path, options, print) => {
   };
   return [
     docs.leading_comments,
-    [docs.self, docs.trailing_comments, indent(docs.stmts)],
+    docs.self,
+    docs.trailing_comments,
+    indent(docs.stmts),
+  ];
+};
+
+const printKeywordWithType: PrintFunc = (path, options, print) => {
+  type ThisNode = N.KeywordWithType;
+  const node: ThisNode = path.getValue();
+  const p = new Printer(path, options, print, node, node.children);
+  const docs: { [Key in Docs<ThisNode>]: Doc } = {
+    leading_comments: printLeadingComments(path, options, print),
+    self: p.self("upper"),
+    trailing_comments: printTrailingComments(path, options, print),
+    type: p.child("type"),
+  };
+  return [
+    docs.leading_comments,
+    group([docs.self, docs.trailing_comments, indent([line, docs.type])]),
+  ];
+};
+
+const printLanguageSpecifier: PrintFunc = (path, options, print) => {
+  type ThisNode = N.LanguageSpecifier;
+  const node: ThisNode = path.getValue();
+  const p = new Printer(path, options, print, node, node.children);
+  const docs: { [Key in Docs<ThisNode>]: Doc } = {
+    leading_comments: printLeadingComments(path, options, print),
+    self: p.self("upper"),
+    trailing_comments: printTrailingComments(path, options, print),
+    language: p.child("language"),
+  };
+  return [
+    docs.leading_comments,
+    group([docs.self, docs.trailing_comments, indent([line, docs.language])]),
   ];
 };
 
@@ -2345,6 +2453,7 @@ const printType: PrintFunc = (path, options, print) => {
     leading_comments: printLeadingComments(path, options, print),
     self: p.self("upper"),
     trailing_comments: printTrailingComments(path, options, print),
+    type: p.child("type", asItIs, true),
     type_declaration: p.child("type_declaration", asItIs, true),
     not_null: p.child("not_null", (x) => group([line, x])),
     options: p.child("options", asItIs, true),
@@ -2353,6 +2462,8 @@ const printType: PrintFunc = (path, options, print) => {
     docs.leading_comments,
     docs.self,
     docs.trailing_comments,
+    p.has("type") ? " " : "",
+    docs.type,
     docs.type_declaration,
     docs.not_null,
     p.has("options") ? " " : "",

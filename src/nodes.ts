@@ -204,46 +204,62 @@ export type Comment = BaseNode & {
   };
 };
 
+export type CreateFunctionStatement = XXXStatement & {
+  children: {
+    or_replace?: NodeVecChild;
+    temp?: NodeChild;
+    what: NodeChild;
+    if_not_exists?: NodeVecChild;
+    ident: NodeChild;
+    group: NodeChild;
+    options?: NodeChild;
+    returns?: NodeChild;
+    determinism?: NodeVecChild;
+    language?: NodeChild;
+    as: NodeChild;
+  };
+};
+
 export type CreateSchemaStatement = XXXStatement & {
   children: {
-    what: NodeChild
-    if_not_exists?: NodeVecChild
-    ident: NodeChild
-    options?: NodeChild
-  }
-}
+    what: NodeChild;
+    if_not_exists?: NodeVecChild;
+    ident: NodeChild;
+    options?: NodeChild;
+  };
+};
 
 export type CreateTableStatement = XXXStatement & {
   children: {
-    or_replace?: NodeVecChild
-    external? : NodeChild
-    temp?: NodeChild
-    what: NodeChild
-    if_not_exists?: NodeVecChild
-    ident: NodeChild
-    column_schema_group?: NodeChild
-    partitionby?: NodeChild
-    clusterby?: NodeChild
-    with_partition_columns?: NodeChild
-    options?: NodeChild
-    as?: NodeChild
-  }
-}
+    or_replace?: NodeVecChild;
+    external?: NodeChild;
+    temp?: NodeChild;
+    what: NodeChild;
+    if_not_exists?: NodeVecChild;
+    ident: NodeChild;
+    column_schema_group?: NodeChild;
+    partitionby?: NodeChild;
+    clusterby?: NodeChild;
+    with_partition_columns?: NodeChild;
+    options?: NodeChild;
+    as?: NodeChild;
+  };
+};
 
 export type CreateViewStatement = XXXStatement & {
   children: {
-    or_replace?: NodeVecChild
-    materialized? : NodeChild
-    what: NodeChild
-    if_not_exists?: NodeVecChild
-    ident: NodeChild
-    column_name_list?: NodeChild
-    partitionby?: NodeChild
-    clusterby?: NodeChild
-    options?: NodeChild
-    as: NodeChild
-  }
-}
+    or_replace?: NodeVecChild;
+    materialized?: NodeChild;
+    what: NodeChild;
+    if_not_exists?: NodeVecChild;
+    ident: NodeChild;
+    column_name_list?: NodeChild;
+    partitionby?: NodeChild;
+    clusterby?: NodeChild;
+    options?: NodeChild;
+    as: NodeChild;
+  };
+};
 
 export type DeclareStatement = XXXStatement & {
   children: {
@@ -255,7 +271,7 @@ export type DeclareStatement = XXXStatement & {
 
 export type DotOperator = Identifier &
   BinaryOperator & {
-    node_type: "Identifier" | "Parameter"
+    node_type: "Identifier" | "Parameter";
     children: {
       not: undefined;
     };
@@ -436,6 +452,12 @@ export type KeywordWithExprs = Keyword & {
   };
 };
 
+export type KeywordWithGroupedExpr = Keyword & {
+  children: {
+    group: NodeChild;
+  };
+};
+
 export type KeywordWithGroupedExprs = Keyword & {
   children: {
     group: NodeChild;
@@ -451,6 +473,18 @@ export type KeywordWithStatement = Keyword & {
 export type KeywordWithStatements = Keyword & {
   children: {
     stmts: NodeVecChild;
+  };
+};
+
+export type KeywordWithType = Keyword & {
+  children: {
+    type: NodeChild;
+  };
+};
+
+export type LanguageSpecifier = BaseNode & {
+  children: {
+    language: NodeChild;
   };
 };
 
@@ -583,9 +617,10 @@ export type TableSampleRatio = BaseNode & {
 export type Type = BaseNode & {
   token: Token;
   children: {
+    type?: NodeChild; // ANY TYPE
     type_declaration?: NodeChild;
-    not_null?: NodeVecChild
-    options?: NodeChild
+    not_null?: NodeVecChild;
+    options?: NodeChild;
   };
 };
 
@@ -680,7 +715,7 @@ export type WithPartitionColumnsClause = BaseNode & {
   token: Token;
   children: {
     partition_columns: NodeVecChild;
-    column_schema_group: NodeChild
+    column_schema_group: NodeChild;
   };
 };
 
