@@ -367,6 +367,12 @@ export const printSQL: PrintFunc = (path, options, print) => {
     return path.map(print);
   }
   switch (node.node_type) {
+    case "AddColumnClause":
+      return printAddColumnClause(path, options, print);
+    case "AlterSchemaStatement":
+      return printAlterSchemaStatement(path, options, print);
+    case "AlterTableStatement":
+      return printAlterTableStatement(path, options, print);
     case "ArrayAccessing":
       return printArrayAccessing(path, options, print);
     case "ArrayLiteral":
@@ -417,6 +423,8 @@ export const printSQL: PrintFunc = (path, options, print) => {
       return printDeclareStatement(path, options, print);
     case "DotOperator":
       return printDotOperator(path, options, print);
+    case "DropColumnClause":
+      return printDropColumnClause(path, options, print);
     case "ElseIfClause":
       return printElseIfClause(path, options, print);
     case "EOF":
@@ -538,6 +546,113 @@ export const printSQL: PrintFunc = (path, options, print) => {
     default:
       return "not implemented";
   }
+};
+
+const printAddColumnClause: PrintFunc = (path, options, print) => {
+  type ThisNode = N.AddColumnClause;
+  const node: ThisNode = path.getValue();
+  const p = new Printer(path, options, print, node, node.children);
+  const docs: { [Key in Docs<ThisNode>]: Doc } = {
+    leading_comments: printLeadingComments(path, options, print),
+    self: p.self("upper"),
+    trailing_comments: printTrailingComments(path, options, print),
+    column: p.child("column", asItIs, true),
+    if_not_exists: p.child("if_not_exists", (x) => group([line, x])),
+    type_declaration: p.child("type_declaration"),
+    comma: p.child("comma", asItIs, true)
+  };
+  return [
+    docs.leading_comments,
+    group([
+      docs.self,
+      docs.trailing_comments,
+      " ",
+      docs.column,
+      docs.if_not_exists,
+      " ",
+      docs.type_declaration,
+      docs.comma,
+    ]),
+  ];
+};
+
+const printAlterSchemaStatement: PrintFunc = (path, options, print) => {
+  type ThisNode = N.AlterSchemaStatement;
+  const node: ThisNode = path.getValue();
+  const p = new Printer(path, options, print, node, node.children);
+  const docs: { [Key in Docs<ThisNode>]: Doc } = {
+    leading_comments: printLeadingComments(path, options, print),
+    self: p.self("upper"),
+    trailing_comments: printTrailingComments(path, options, print),
+    what: p.child("what", asItIs, true),
+    if_exists: p.child("if_exists", (x) => group([line, x])),
+    ident: p.child("ident", asItIs, true),
+    set: p.child("set"),
+    options: p.child("options", asItIs, true),
+    semicolon: p.child("semicolon"),
+  };
+  return [
+    docs.leading_comments,
+    group([
+      docs.self,
+      docs.trailing_comments,
+      " ",
+      docs.what,
+      docs.if_exists,
+      p.has("ident") ? " " : "",
+      docs.ident,
+      line,
+      docs.set,
+      " ",
+      docs.options,
+      softline,
+      docs.semicolon,
+    ]),
+    p.newLine(),
+  ];
+};
+
+const printAlterTableStatement: PrintFunc = (path, options, print) => {
+  type ThisNode = N.AlterTableStatement;
+  const node: ThisNode = path.getValue();
+  const p = new Printer(path, options, print, node, node.children);
+  const docs: { [Key in Docs<ThisNode>]: Doc } = {
+    leading_comments: printLeadingComments(path, options, print),
+    self: p.self("upper"),
+    trailing_comments: printTrailingComments(path, options, print),
+    what: p.child("what", asItIs, true),
+    if_exists: p.child("if_exists", (x) => group([line, x])),
+    ident: p.child("ident", asItIs, true),
+    // SET
+    set: p.child("set"),
+    options: p.child("options", asItIs, true),
+    // ADD COLUMNS
+    add_columns: p.child("add_columns", (x) => [line, x]),
+    // DROP COLUMNS
+    drop_columns: p.child("drop_columns", (x) => [line, x]),
+    semicolon: p.child("semicolon"),
+  };
+  return [
+    docs.leading_comments,
+    group([
+      docs.self,
+      docs.trailing_comments,
+      " ",
+      docs.what,
+      docs.if_exists,
+      p.has("ident") ? " " : "",
+      docs.ident,
+      p.has("set") ? line : "",
+      docs.set,
+      p.has("set") ? " " : "",
+      docs.options,
+      docs.add_columns,
+      docs.drop_columns,
+      softline,
+      docs.semicolon,
+    ]),
+    p.newLine(),
+  ];
 };
 
 const printAsterisk: PrintFunc = (path, options, print) => {
@@ -1357,6 +1472,34 @@ const printDotOperator: PrintFunc = (path, options, print) => {
     p.has("tablesample") ? [" ", docs.tablesample] : "",
     docs.order,
     docs.comma,
+  ];
+};
+
+const printDropColumnClause: PrintFunc = (path, options, print) => {
+  type ThisNode = N.DropColumnClause;
+  const node: ThisNode = path.getValue();
+  const p = new Printer(path, options, print, node, node.children);
+  const docs: { [Key in Docs<ThisNode>]: Doc } = {
+    leading_comments: printLeadingComments(path, options, print),
+    self: p.self("upper"),
+    trailing_comments: printTrailingComments(path, options, print),
+    column: p.child("column", asItIs, true),
+    if_exists: p.child("if_exists", x => group([line, x])),
+    ident: p.child("ident", asItIs, true),
+    comma: p.child("comma", asItIs, true)
+  };
+  return [
+    docs.leading_comments,
+    group([
+    docs.self,
+    " ",
+    docs.column,
+    docs.trailing_comments,
+    docs.if_exists,
+    " ",
+    docs.ident,
+    docs.comma,
+    ]),
   ];
 };
 

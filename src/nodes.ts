@@ -71,6 +71,40 @@ export const isNodeVecChild = (child: unknown): child is NodeVecChild => {
 };
 
 // ----- sub types of BaseNode -----
+export type AddColumnClause = BaseNode & {
+  children: {
+    column: NodeChild;
+    if_not_exists?: NodeVecChild;
+    type_declaration: NodeChild;
+    comma?: NodeChild
+  };
+};
+
+export type AlterSchemaStatement = XXXStatement & {
+  children: {
+    what: NodeChild;
+    if_exists?: NodeVecChild;
+    ident: NodeChild;
+    set: NodeChild;
+    options: NodeChild;
+  };
+};
+
+export type AlterTableStatement = XXXStatement & {
+  children: {
+    what: NodeChild;
+    if_exists?: NodeVecChild;
+    ident: NodeChild;
+    // SET
+    set?: NodeChild;
+    options?: NodeChild;
+    // ADD COLUMN
+    add_columns?: NodeVecChild;
+    // DROP COLUMN
+    drop_columns?: NodeVecChild;
+  };
+};
+
 export type ArrayAccessing = Expr & {
   children: {
     not: undefined;
@@ -288,6 +322,15 @@ export type DotOperator = Identifier &
       not: undefined;
     };
   };
+
+export type DropColumnClause = BaseNode & {
+  children: {
+    column: NodeChild;
+    if_exists?: NodeVecChild;
+    ident: NodeChild;
+    comma?: NodeChild;
+  };
+};
 
 export type ElseIfClause = BaseNode & {
   token: Token;
@@ -639,7 +682,7 @@ export type Type = BaseNode & {
 export type TypeDeclaration = BaseNode & {
   token: Token;
   children: {
-    in_out: NodeChild
+    in_out: NodeChild;
     type: NodeChild;
     comma?: NodeChild;
   };

@@ -89,4 +89,26 @@ create procedure abc(
 options(dummy = 'dummy')
 begin select 'abc'; end;
 
+----- ALTER SCHEMA statement -----
+alter schema prettier_plugin_bq_test set options();
+
+alter schema if exists prettier_plugin_bq_test set options(dummy = 'dummy');
+
+----- ALTER TABLE statement -----
+-- SET
+alter table t set options (dummy='dummy');
+
+-- ADD COLUMN
+alter table t
+add column x int64;
+
+alter table t
+add column if not exists x int64 options (description = 'dummy'),
+add column y struct<z int64 not null>;
+
+-- DROP
+alter table t
+drop column if exists int,
+-- break
+drop column float;
 
