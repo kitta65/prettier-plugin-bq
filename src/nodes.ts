@@ -212,11 +212,23 @@ export type CreateFunctionStatement = XXXStatement & {
     if_not_exists?: NodeVecChild;
     ident: NodeChild;
     group: NodeChild;
-    options?: NodeChild;
     returns?: NodeChild;
     determinism?: NodeVecChild;
     language?: NodeChild;
+    options?: NodeChild;
     as: NodeChild;
+  };
+};
+
+export type CreateProcedureStatement = XXXStatement & {
+  children: {
+    or_replace?: NodeVecChild;
+    what: NodeChild;
+    if_not_exists?: NodeVecChild;
+    ident: NodeChild;
+    group: NodeChild;
+    options?: NodeChild;
+    stmt: NodeChild;
   };
 };
 
@@ -627,6 +639,7 @@ export type Type = BaseNode & {
 export type TypeDeclaration = BaseNode & {
   token: Token;
   children: {
+    in_out: NodeChild
     type: NodeChild;
     comma?: NodeChild;
   };

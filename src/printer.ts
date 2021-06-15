@@ -405,6 +405,8 @@ export const printSQL: PrintFunc = (path, options, print) => {
       return printComment(path, options, print);
     case "CreateFunctionStatement":
       return printCreateFunctionStatement(path, options, print);
+    case "CreateProcedureStatement":
+      return printCreateProcedureStatement(path, options, print);
     case "CreateSchemaStatement":
       return printCreateSchemaStatement(path, options, print);
     case "CreateTableStatement":
@@ -1047,6 +1049,104 @@ const printComment: PrintFunc = (path, options, print) => {
   return docs.self;
 };
 
+const printCreateFunctionStatement: PrintFunc = (path, options, print) => {
+  type ThisNode = N.CreateFunctionStatement;
+  const node: ThisNode = path.getValue();
+  const p = new Printer(path, options, print, node, node.children);
+  p.setLiteral("temp", "TEMP");
+  const docs: { [Key in Docs<ThisNode>]: Doc } = {
+    leading_comments: printLeadingComments(path, options, print),
+    self: p.self("upper"),
+    trailing_comments: printTrailingComments(path, options, print),
+    or_replace: p.child("or_replace", (x) => group([line, x])),
+    temp: p.child("temp", asItIs, true),
+    what: p.child("what", asItIs, true),
+    if_not_exists: p.child("if_not_exists", (x) => group([line, x])),
+    ident: p.child("ident", asItIs, true),
+    group: p.child("group", asItIs, true),
+    returns: p.child("returns"),
+    determinism: group(p.child("determinism", asItIs, false, line)),
+    language: p.child("language"),
+    options: p.child("options"),
+    as: p.child("as"),
+    semicolon: p.child("semicolon"),
+  };
+  return [
+    docs.leading_comments,
+    group([
+      group([
+        docs.self,
+        docs.trailing_comments,
+        docs.or_replace,
+        p.has("temp") ? " " : "",
+        docs.temp,
+        " ",
+        docs.what,
+        docs.if_not_exists,
+        " ",
+        docs.ident,
+        docs.group,
+      ]),
+      p.has("returns") ? line : "",
+      docs.returns,
+      p.has("determinism") ? line : "",
+      docs.determinism,
+      p.has("language") ? line : "",
+      docs.language,
+      p.has("options") ? line : "",
+      docs.options,
+      line,
+      docs.as,
+      softline,
+      docs.semicolon,
+    ]),
+    p.newLine(),
+  ];
+};
+
+const printCreateProcedureStatement: PrintFunc = (path, options, print) => {
+  type ThisNode = N.CreateProcedureStatement;
+  const node: ThisNode = path.getValue();
+  const p = new Printer(path, options, print, node, node.children);
+  p.setNotRoot("stmt");
+  const docs: { [Key in Docs<ThisNode>]: Doc } = {
+    leading_comments: printLeadingComments(path, options, print),
+    self: p.self("upper"),
+    trailing_comments: printTrailingComments(path, options, print),
+    or_replace: p.child("or_replace", (x) => group([line, x])),
+    what: p.child("what", asItIs, true),
+    if_not_exists: p.child("if_not_exists", (x) => group([line, x])),
+    ident: p.child("ident", asItIs, true),
+    group: p.child("group", asItIs, true),
+    options: p.child("options"),
+    stmt: p.child("stmt"),
+    semicolon: p.child("semicolon"),
+  };
+  return [
+    docs.leading_comments,
+    group([
+      group([
+        docs.self,
+        docs.trailing_comments,
+        docs.or_replace,
+        " ",
+        docs.what,
+        docs.if_not_exists,
+        " ",
+        docs.ident,
+        docs.group,
+      ]),
+      p.has("options") ? line : "",
+      docs.options,
+      line,
+      docs.stmt,
+      softline,
+      docs.semicolon,
+    ]),
+    p.newLine(),
+  ];
+};
+
 const printCreateSchemaStatement: PrintFunc = (path, options, print) => {
   type ThisNode = N.CreateSchemaStatement;
   const node: ThisNode = path.getValue();
@@ -1073,59 +1173,6 @@ const printCreateSchemaStatement: PrintFunc = (path, options, print) => {
       docs.ident,
       line,
       docs.options,
-      softline,
-      docs.semicolon,
-    ]),
-    p.newLine(),
-  ];
-};
-
-const printCreateFunctionStatement: PrintFunc = (path, options, print) => {
-  type ThisNode = N.CreateFunctionStatement;
-  const node: ThisNode = path.getValue();
-  const p = new Printer(path, options, print, node, node.children);
-  p.setLiteral("temp", "TEMP");
-  const docs: { [Key in Docs<ThisNode>]: Doc } = {
-    leading_comments: printLeadingComments(path, options, print),
-    self: p.self("upper"),
-    trailing_comments: printTrailingComments(path, options, print),
-    or_replace: p.child("or_replace", (x) => group([line, x])),
-    temp: p.child("temp", asItIs, true),
-    what: p.child("what", asItIs, true),
-    if_not_exists: p.child("if_not_exists", (x) => group([line, x])),
-    ident: p.child("ident", asItIs, true),
-    group: p.child("group", asItIs, true),
-    returns: p.child("returns"),
-    determinism: group(p.child("determinism", asItIs, false, line)),
-    language: p.child("language"),
-    options: p.child("options"),
-    as: p.child("as"),
-    semicolon: p.child("semicolon"),
-  };
-  return [
-    docs.leading_comments,
-    group([
-      docs.self,
-      docs.trailing_comments,
-      p.has("temp") ? " " : "",
-      docs.or_replace,
-      docs.temp,
-      " ",
-      docs.what,
-      docs.if_not_exists,
-      " ",
-      docs.ident,
-      docs.group,
-      p.has("returns") ? line : "",
-      docs.returns,
-      p.has("determinism") ? line : "",
-      docs.determinism,
-      p.has("language") ? line : "",
-      docs.language,
-      p.has("options") ? line : "",
-      docs.options,
-      line,
-      docs.as,
       softline,
       docs.semicolon,
     ]),
@@ -2476,14 +2523,18 @@ const printTypeDeclaration: PrintFunc = (path, options, print) => {
   const node: ThisNode = path.getValue();
   const p = new Printer(path, options, print, node, node.children);
   const docs: { [Key in Docs<ThisNode>]: Doc } = {
-    leading_comments: printLeadingComments(path, options, print),
-    self: p.self(),
+    in_out: p.child("in_out"),
+    self: p.self("asItIs", true),
     trailing_comments: printTrailingComments(path, options, print),
     type: p.child("type", asItIs, true),
     comma: p.child("comma", asItIs, true),
+    // not used
+    leading_comments: "",
   };
+  docs.leading_comments;
   return [
-    docs.leading_comments,
+    docs.in_out,
+    p.has("in_out") ? " " : "",
     docs.self,
     node.token ? " " : "",
     docs.trailing_comments,

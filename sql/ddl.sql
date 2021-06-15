@@ -79,3 +79,14 @@ as '''
 create function abc() returns int64 not deterministic language js
 as '''return 1''';
 
+----- CREATE PROCEDURE statement -----
+create procedure abc() begin select 'abc'; end;
+
+create procedure abc(
+  x int64,
+  -- break
+  inout y int64)
+options(dummy = 'dummy')
+begin select 'abc'; end;
+
+
