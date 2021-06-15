@@ -80,6 +80,16 @@ export type AddColumnClause = BaseNode & {
   };
 };
 
+export type AlterColumnStatement = BaseNode & {
+  // NOTE this is not XXXStatement!
+  children: {
+    what: NodeChild;
+    if_exists?: NodeVecChild;
+    ident: NodeChild;
+    drop_not_null: NodeVecChild
+  };
+};
+
 export type AlterSchemaStatement = XXXStatement & {
   children: {
     what: NodeChild;
@@ -102,6 +112,8 @@ export type AlterTableStatement = XXXStatement & {
     add_columns?: NodeVecChild;
     // DROP COLUMN
     drop_columns?: NodeVecChild;
+    // ALTER COLUMN statement
+    alter_column_stmt?: NodeChild
   };
 };
 

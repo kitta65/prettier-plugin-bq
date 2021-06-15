@@ -369,6 +369,8 @@ export const printSQL: PrintFunc = (path, options, print) => {
   switch (node.node_type) {
     case "AddColumnClause":
       return printAddColumnClause(path, options, print);
+    case "AlterColumnStatement":
+      return printAlterColumnStatement(path, options, print);
     case "AlterSchemaStatement":
       return printAlterSchemaStatement(path, options, print);
     case "AlterTableStatement":
@@ -559,7 +561,7 @@ const printAddColumnClause: PrintFunc = (path, options, print) => {
     column: p.child("column", asItIs, true),
     if_not_exists: p.child("if_not_exists", (x) => group([line, x])),
     type_declaration: p.child("type_declaration"),
-    comma: p.child("comma", asItIs, true)
+    comma: p.child("comma", asItIs, true),
   };
   return [
     docs.leading_comments,
@@ -572,6 +574,34 @@ const printAddColumnClause: PrintFunc = (path, options, print) => {
       " ",
       docs.type_declaration,
       docs.comma,
+    ]),
+  ];
+};
+
+const printAlterColumnStatement: PrintFunc = (path, options, print) => {
+  type ThisNode = N.AlterColumnStatement;
+  const node: ThisNode = path.getValue();
+  const p = new Printer(path, options, print, node, node.children);
+  const docs: { [Key in Docs<ThisNode>]: Doc } = {
+    leading_comments: printLeadingComments(path, options, print),
+    self: p.self("upper"),
+    trailing_comments: printTrailingComments(path, options, print),
+    what: p.child("what", asItIs, true),
+    if_exists: p.child("if_exists", (x) => group([line, x])),
+    ident: p.child("ident", asItIs, true),
+    drop_not_null: p.child("drop_not_null", (x) => group([line, x])),
+  };
+  return [
+    docs.leading_comments,
+    group([
+      docs.self,
+      docs.trailing_comments,
+      " ",
+      docs.what,
+      docs.if_exists,
+      " ",
+      docs.ident,
+      docs.drop_not_null,
     ]),
   ];
 };
@@ -630,6 +660,8 @@ const printAlterTableStatement: PrintFunc = (path, options, print) => {
     add_columns: p.child("add_columns", (x) => [line, x]),
     // DROP COLUMNS
     drop_columns: p.child("drop_columns", (x) => [line, x]),
+    // ALTER COLUMN satatement
+    alter_column_stmt: p.child("alter_column_stmt"),
     semicolon: p.child("semicolon"),
   };
   return [
@@ -648,6 +680,8 @@ const printAlterTableStatement: PrintFunc = (path, options, print) => {
       docs.options,
       docs.add_columns,
       docs.drop_columns,
+      p.has("alter_column_stmt") ? hardline : "",
+      docs.alter_column_stmt,
       softline,
       docs.semicolon,
     ]),
@@ -1484,21 +1518,21 @@ const printDropColumnClause: PrintFunc = (path, options, print) => {
     self: p.self("upper"),
     trailing_comments: printTrailingComments(path, options, print),
     column: p.child("column", asItIs, true),
-    if_exists: p.child("if_exists", x => group([line, x])),
+    if_exists: p.child("if_exists", (x) => group([line, x])),
     ident: p.child("ident", asItIs, true),
-    comma: p.child("comma", asItIs, true)
+    comma: p.child("comma", asItIs, true),
   };
   return [
     docs.leading_comments,
     group([
-    docs.self,
-    " ",
-    docs.column,
-    docs.trailing_comments,
-    docs.if_exists,
-    " ",
-    docs.ident,
-    docs.comma,
+      docs.self,
+      " ",
+      docs.column,
+      docs.trailing_comments,
+      docs.if_exists,
+      " ",
+      docs.ident,
+      docs.comma,
     ]),
   ];
 };

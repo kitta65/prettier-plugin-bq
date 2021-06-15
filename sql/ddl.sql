@@ -112,3 +112,10 @@ drop column if exists int,
 -- break
 drop column float;
 
+----- ALTER COLUMN statement -----
+alter table t
+alter column int drop not null;
+
+alter table if exists t
+alter column if exists int drop not null;
+
