@@ -355,6 +355,17 @@ export type DropColumnClause = BaseNode & {
   };
 };
 
+export type DropStatement = XXXStatement & {
+  children: {
+    external?: NodeChild;
+    materialized?: NodeChild;
+    what: NodeChild;
+    if_exists?: NodeVecChild;
+    ident: NodeChild;
+    cascade_or_restrict?: NodeChild;
+  };
+};
+
 export type ElseIfClause = BaseNode & {
   token: Token;
   children: {

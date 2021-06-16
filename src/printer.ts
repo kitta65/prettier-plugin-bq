@@ -429,6 +429,8 @@ export const printSQL: PrintFunc = (path, options, print) => {
       return printDotOperator(path, options, print);
     case "DropColumnClause":
       return printDropColumnClause(path, options, print);
+    case "DropStatement":
+      return printDropStatement(path, options, print);
     case "ElseIfClause":
       return printElseIfClause(path, options, print);
     case "EOF":
@@ -1575,6 +1577,45 @@ const printDropColumnClause: PrintFunc = (path, options, print) => {
       docs.ident,
       docs.comma,
     ]),
+  ];
+};
+
+const printDropStatement: PrintFunc = (path, options, print) => {
+  type ThisNode = N.DropStatement;
+  const node: ThisNode = path.getValue();
+  const p = new Printer(path, options, print, node, node.children);
+  const docs: { [Key in Docs<ThisNode>]: Doc } = {
+    leading_comments: printLeadingComments(path, options, print),
+    self: p.self("upper"),
+    trailing_comments: printTrailingComments(path, options, print),
+    external: p.child("external", asItIs, true),
+    materialized: p.child("materialized", asItIs, true),
+    what: p.child("what", asItIs, true),
+    if_exists: p.child("if_exists", (x) => group([line, x])),
+    ident: p.child("ident", asItIs, true),
+    cascade_or_restrict: p.child("cascade_or_restrict", asItIs, true),
+    semicolon: p.child("semicolon"),
+  };
+  return [
+    docs.leading_comments,
+    group([
+      docs.self,
+      docs.trailing_comments,
+      p.has("external") ? " " : "",
+      docs.external,
+      p.has("materialized") ? " " : "",
+      docs.materialized,
+      " ",
+      docs.what,
+      docs.if_exists,
+      " ",
+      docs.ident,
+      p.has("cascade_or_restrict") ? " " : "",
+      docs.cascade_or_restrict,
+      softline,
+      docs.semicolon,
+    ]),
+    p.newLine(),
   ];
 };
 

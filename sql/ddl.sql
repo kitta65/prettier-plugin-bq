@@ -128,3 +128,12 @@ alter view example set options (
 -- MATERIALIZED
 alter materialized view if exists example set options (dummy = 'dummy');
 
+----- DROP statement -----
+drop table example;
+
+drop external table if exists example;
+
+drop materialized view example;
+
+drop schema example cascade;
+
