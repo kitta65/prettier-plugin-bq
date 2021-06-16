@@ -119,3 +119,12 @@ alter column int drop not null;
 alter table if exists t
 alter column if exists int drop not null;
 
+----- ALTER VIEW statement -----
+alter view example set options (
+  dummy = 'dummy',
+  description = 'abc'
+);
+
+-- MATERIALIZED
+alter materialized view if exists example set options (dummy = 'dummy');
+

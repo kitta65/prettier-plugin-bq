@@ -76,7 +76,7 @@ export type AddColumnClause = BaseNode & {
     column: NodeChild;
     if_not_exists?: NodeVecChild;
     type_declaration: NodeChild;
-    comma?: NodeChild
+    comma?: NodeChild;
   };
 };
 
@@ -86,7 +86,7 @@ export type AlterColumnStatement = BaseNode & {
     what: NodeChild;
     if_exists?: NodeVecChild;
     ident: NodeChild;
-    drop_not_null: NodeVecChild
+    drop_not_null: NodeVecChild;
   };
 };
 
@@ -113,7 +113,18 @@ export type AlterTableStatement = XXXStatement & {
     // DROP COLUMN
     drop_columns?: NodeVecChild;
     // ALTER COLUMN statement
-    alter_column_stmt?: NodeChild
+    alter_column_stmt?: NodeChild;
+  };
+};
+
+export type AlterViewStatement = XXXStatement & {
+  children: {
+    materialized?: NodeChild;
+    what: NodeChild;
+    if_exists?: NodeVecChild;
+    ident: NodeChild;
+    set: NodeChild;
+    options: NodeChild;
   };
 };
 

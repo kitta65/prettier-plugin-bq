@@ -375,6 +375,8 @@ export const printSQL: PrintFunc = (path, options, print) => {
       return printAlterSchemaStatement(path, options, print);
     case "AlterTableStatement":
       return printAlterTableStatement(path, options, print);
+    case "AlterViewStatement":
+      return printAlterViewStatement(path, options, print);
     case "ArrayAccessing":
       return printArrayAccessing(path, options, print);
     case "ArrayLiteral":
@@ -682,6 +684,45 @@ const printAlterTableStatement: PrintFunc = (path, options, print) => {
       docs.drop_columns,
       p.has("alter_column_stmt") ? hardline : "",
       docs.alter_column_stmt,
+      softline,
+      docs.semicolon,
+    ]),
+    p.newLine(),
+  ];
+};
+
+const printAlterViewStatement: PrintFunc = (path, options, print) => {
+  type ThisNode = N.AlterViewStatement;
+  const node: ThisNode = path.getValue();
+  const p = new Printer(path, options, print, node, node.children);
+  const docs: { [Key in Docs<ThisNode>]: Doc } = {
+    leading_comments: printLeadingComments(path, options, print),
+    self: p.self("upper"),
+    trailing_comments: printTrailingComments(path, options, print),
+    materialized: p.child("materialized", asItIs, true),
+    what: p.child("what", asItIs, true),
+    if_exists: p.child("if_exists", (x) => group([line, x])),
+    ident: p.child("ident", asItIs, true),
+    set: p.child("set"),
+    options: p.child("options", asItIs, true),
+    semicolon: p.child("semicolon"),
+  };
+  return [
+    docs.leading_comments,
+    group([
+      docs.self,
+      docs.trailing_comments,
+      p.has("materialized") ? " " : "",
+      docs.materialized,
+      " ",
+      docs.what,
+      docs.if_exists,
+      p.has("ident") ? " " : "",
+      docs.ident,
+      line,
+      docs.set,
+      " ",
+      docs.options,
       softline,
       docs.semicolon,
     ]),
