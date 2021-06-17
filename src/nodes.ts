@@ -502,6 +502,15 @@ export type InOperator = Expr & {
   };
 };
 
+export type InsertStatement = XXXStatement & {
+  children: {
+    into?: NodeChild;
+    target_name: NodeChild;
+    columns?: NodeChild
+    input: NodeChild;
+  };
+};
+
 export type IntervalLiteral = Expr & {
   children: {
     date_part: NodeChild;

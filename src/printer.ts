@@ -459,6 +459,8 @@ export const printSQL: PrintFunc = (path, options, print) => {
       return printIfStatement(path, options, print);
     case "InOperator":
       return printInOperator(path, options, print);
+    case "InsertStatement":
+      return printInsertStatement(path, options, print);
     case "IntervalLiteral":
       return printIntervalLiteral(path, options, print);
     case "JoinOperator":
@@ -1517,7 +1519,7 @@ const printDotOperator: PrintFunc = (path, options, print) => {
     left: p.child("left"),
     self: p.self("upper", true),
     trailing_comments: printTrailingComments(path, options, print),
-    right: p.child("right"),
+    right: p.child("right", asItIs, true),
     alias: printAlias(path as AstPathOf<ThisNode>, options, print),
     for_system_time_as_of: p.child("for_system_time_as_of", asItIs, true),
     pivot: printPivotOrUnpivotOperator(
@@ -2035,6 +2037,41 @@ const printInOperator: PrintFunc = (path, options, print) => {
     docs.alias,
     docs.order,
     docs.comma,
+  ];
+};
+
+const printInsertStatement: PrintFunc = (path, options, print) => {
+  type ThisNode = N.InsertStatement;
+  const node: ThisNode = path.getValue();
+  const p = new Printer(path, options, print, node, node.children);
+  p.setNotRoot("input")
+  const docs: { [Key in Docs<ThisNode>]: Doc } = {
+    leading_comments: printLeadingComments(path, options, print),
+    self: p.self("upper"),
+    trailing_comments: printTrailingComments(path, options, print),
+    into: p.child("into", asItIs, true),
+    target_name: p.child("target_name", asItIs, true),
+    columns: p.child("columns", asItIs, true),
+    input: p.child("input"),
+    semicolon: p.child("semicolon"),
+  };
+  return [
+    docs.leading_comments,
+    group([
+      docs.self,
+      docs.trailing_comments,
+      p.has("into") ? " " : "",
+      docs.into,
+      " ",
+      docs.target_name,
+      p.has("columns") ? " " : "",
+      docs.columns,
+      line,
+      docs.input,
+      softline,
+      docs.semicolon,
+    ]),
+    p.newLine(),
   ];
 };
 
