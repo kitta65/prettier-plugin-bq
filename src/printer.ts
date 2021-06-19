@@ -1163,7 +1163,7 @@ const printCallStatement: PrintFunc = (path, options, print) => {
   const p = new Printer(path, options, print, node, node.children);
   const docs: { [Key in Docs<ThisNode>]: Doc } = {
     leading_comments: printLeadingComments(path, options, print),
-    self: p.self(),
+    self: p.self("upper"),
     trailing_comments: printTrailingComments(path, options, print),
     procedure: p.child("procedure", asItIs, true),
     semicolon: p.child("semicolon"),
@@ -2597,11 +2597,12 @@ const printRaiseStatement: PrintFunc = (path, options, print) => {
     group([
       docs.self,
       docs.trailing_comments,
-      " ",
+      p.has("using") ? " " : "",
       docs.using,
       softline,
       docs.semicolon,
     ]),
+    p.newLine(),
   ];
 };
 
