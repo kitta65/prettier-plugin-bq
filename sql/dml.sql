@@ -44,3 +44,25 @@ update t1 set
 from t2 inner join t3 on t2.id = t3.id
 where true;
 
+----- MERGE statement -----
+-- DELETE
+merge t
+using s on t.id = s.id
+when matched then delete;
+
+-- INSERT
+merge t1 as t using t2 as s on t.id = s.id
+when not matched then insert row
+when not matched by target then
+  insert (id, value) values (1,2);
+
+-- UPDATE
+merge dataset.t t using dataset.s as s on t.id = s.id
+when not matched by source then
+  update set id = 999
+when not matched by source and true then
+  -- break
+  update set
+    id = 999,
+    value=999
+;

@@ -513,7 +513,7 @@ export type InOperator = Expr & {
 export type InsertStatement = XXXStatement & {
   children: {
     into?: NodeChild;
-    target_name: NodeChild;
+    target_name?: NodeChild;
     columns?: NodeChild;
     input: NodeChild;
   };
@@ -604,6 +604,16 @@ export type LoopStatement = XXXStatement & {
   children: {
     stmts?: NodeVecChild;
     end_loop: NodeVecChild;
+  };
+};
+
+export type MergeStatement = XXXStatement & {
+  children: {
+    into?: NodeChild;
+    table_name: NodeChild;
+    using: NodeChild;
+    on: NodeChild;
+    whens: NodeVecChild;
   };
 };
 
@@ -775,10 +785,20 @@ export type UnpivotOperator = BaseNode & {
 
 export type UpdateStatement = XXXStatement & {
   children: {
-    table_name: NodeChild;
+    table_name?: NodeChild;
     set: NodeChild;
     from?: NodeChild;
     where: NodeChild;
+  };
+};
+
+export type WhenClause = BaseNode & {
+  children: {
+    not?: NodeChild;
+    matched: NodeChild;
+    by_target_or_source: NodeVecChild;
+    and: NodeChild;
+    then: NodeChild;
   };
 };
 

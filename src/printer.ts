@@ -515,6 +515,8 @@ export const printSQL: PrintFunc = (path, options, print) => {
       return printLimitClause(path, options, print);
     case "LoopStatement":
       return printLoopStatement(path, options, print);
+    case "MergeStatement":
+      return printMergeStatement(path, options, print);
     case "NullLiteral":
       return printNullLiteral(path, options, print);
     case "NumericLiteral":
@@ -561,6 +563,8 @@ export const printSQL: PrintFunc = (path, options, print) => {
       return printUnpivotOperator(path, options, print);
     case "UpdateStatement":
       return printUpdateStatement(path, options, print);
+    case "WhenClause":
+      return printWhenClause(path, options, print);
     case "WhileStatement":
       return printWhileStatement(path, options, print);
     case "WindowClause":
@@ -2119,7 +2123,7 @@ const printInsertStatement: PrintFunc = (path, options, print) => {
       docs.self,
       docs.trailing_comments,
       docs.into,
-      " ",
+      p.has("target_name") ? " " : "",
       docs.target_name,
       p.has("columns") ? " " : "",
       docs.columns,
@@ -2275,10 +2279,11 @@ const printKeywordWithExprs: PrintFunc = (path, options, print) => {
     trailing_comments: printTrailingComments(path, options, print),
     exprs: p.child("exprs", (x) => [line, x]),
   };
-  return [
-    docs.leading_comments,
-    group([docs.self, docs.trailing_comments, indent(docs.exprs)]),
-  ];
+  let res: Doc = [docs.self, docs.trailing_comments, indent(docs.exprs)];
+  if (p.len("exprs") === 1) {
+    res = group(res);
+  }
+  return [docs.leading_comments, res];
 };
 
 const printKeywordWithGroupedExpr: PrintFunc = (path, options, print) => {
@@ -2322,11 +2327,11 @@ const printKeywordWithStatement: PrintFunc = (path, options, print) => {
     leading_comments: printLeadingComments(path, options, print),
     self: p.self("upper"),
     trailing_comments: printTrailingComments(path, options, print),
-    stmt: p.child("stmt", asItIs, true),
+    stmt: p.child("stmt"),
   };
   return [
     docs.leading_comments,
-    group([docs.self, docs.trailing_comments, line, docs.stmt]),
+    group([docs.self, docs.trailing_comments, indent([line, docs.stmt])]),
   ];
 };
 
@@ -2419,6 +2424,41 @@ const printLoopStatement: PrintFunc = (path, options, print) => {
       indent(docs.stmts),
       line,
       docs.end_loop,
+      softline,
+      docs.semicolon,
+    ]),
+    p.newLine(),
+  ];
+};
+
+const printMergeStatement: PrintFunc = (path, options, print) => {
+  type ThisNode = N.MergeStatement;
+  const node: ThisNode = path.getValue();
+  const p = new Printer(path, options, print, node, node.children);
+  const docs: { [Key in Docs<ThisNode>]: Doc } = {
+    leading_comments: printLeadingComments(path, options, print),
+    self: p.self("upper"),
+    trailing_comments: printTrailingComments(path, options, print),
+    into: p.consumeAllCommentsOfX("into"),
+    table_name: p.child("table_name", asItIs, true),
+    using: p.child("using"),
+    on: p.child("on"),
+    whens: p.child("whens", (x) => [line, x]),
+    semicolon: p.child("semicolon"),
+  };
+  return [
+    docs.leading_comments,
+    group([
+      docs.self,
+      docs.trailing_comments,
+      docs.into,
+      " ",
+      docs.table_name,
+      line,
+      docs.using,
+      line,
+      docs.on,
+      docs.whens,
       softline,
       docs.semicolon,
     ]),
@@ -2866,7 +2906,7 @@ const printTruncateStatement: PrintFunc = (path, options, print) => {
     " ",
     docs.table_name,
     docs.semicolon,
-    p.newLine()
+    p.newLine(),
   ];
 };
 
@@ -3033,7 +3073,7 @@ const printUpdateStatement: PrintFunc = (path, options, print) => {
     group([
       docs.self,
       docs.trailing_comments,
-      " ",
+      p.has("table_name") ? " " : "",
       docs.table_name,
       line,
       docs.set,
@@ -3044,7 +3084,43 @@ const printUpdateStatement: PrintFunc = (path, options, print) => {
       softline,
       docs.semicolon,
     ]),
-    p.newLine()
+    p.newLine(),
+  ];
+};
+
+const printWhenClause: PrintFunc = (path, options, print) => {
+  type ThisNode = N.WhenClause;
+  const node: ThisNode = path.getValue();
+  const p = new Printer(path, options, print, node, node.children);
+  const docs: { [Key in Docs<ThisNode>]: Doc } = {
+    leading_comments: printLeadingComments(path, options, print),
+    self: p.self("upper"),
+    not: p.child("not", asItIs, true),
+    trailing_comments: printTrailingComments(path, options, print),
+    matched: p.child("matched", asItIs, true),
+    by_target_or_source: p.child("by_target_or_source", (x) =>
+      group([line, x])
+    ),
+    and: p.child("and", asItIs, true),
+    then: p.child("then", asItIs, true),
+  };
+  return [
+    docs.leading_comments,
+    group([
+      group([
+        docs.self,
+        docs.trailing_comments,
+        p.has("not") ? " " : "",
+        docs.not,
+        " ",
+        docs.matched,
+        docs.by_target_or_source,
+        p.has("and") ? " " : "",
+        docs.and,
+        " ",
+        docs.then,
+      ]),
+    ]),
   ];
 };
 
