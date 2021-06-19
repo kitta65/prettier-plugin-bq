@@ -2921,6 +2921,7 @@ const printType: PrintFunc = (path, options, print) => {
     trailing_comments: printTrailingComments(path, options, print),
     type: p.child("type", asItIs, true),
     type_declaration: p.child("type_declaration", asItIs, true),
+    parameter: p.child("parameter", asItIs, true),
     not_null: p.child("not_null", (x) => group([line, x])),
     options: p.child("options", asItIs, true),
   };
@@ -2931,6 +2932,7 @@ const printType: PrintFunc = (path, options, print) => {
     p.has("type") ? " " : "",
     docs.type,
     docs.type_declaration,
+    docs.parameter,
     docs.not_null,
     p.has("options") ? " " : "",
     docs.options,

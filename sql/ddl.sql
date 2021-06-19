@@ -8,7 +8,7 @@ options();
 ----- CREATE TABLE statement -----
 create table table_name (x int64);
 
-create temporary table table_name (x int64, y int64);
+create temporary table table_name (x int64, y string(10));
 
 create or replace table table_name (x int64 options(description = 'dummy'))
 partition by _partitiondate

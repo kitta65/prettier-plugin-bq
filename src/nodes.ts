@@ -742,6 +742,7 @@ export type Type = BaseNode & {
   children: {
     type?: NodeChild; // ANY TYPE
     type_declaration?: NodeChild;
+    parameter?: NodeChild;
     not_null?: NodeVecChild;
     options?: NodeChild;
   };
