@@ -106,6 +106,12 @@ alter table t
 add column if not exists x int64 options (description = 'dummy'),
 add column y struct<z int64 not null>;
 
+-- RENAME
+alter table if exists t1
+-- break
+rename to t2
+;
+
 -- DROP
 alter table t
 drop column if exists int,

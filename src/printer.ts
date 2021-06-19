@@ -696,6 +696,9 @@ const printAlterTableStatement: PrintFunc = (path, options, print) => {
     options: p.child("options", asItIs, true),
     // ADD COLUMNS
     add_columns: p.child("add_columns", (x) => [line, x]),
+    // RENAMTE TO
+    rename: p.child("rename"),
+    to: p.child("to", asItIs, true),
     // DROP COLUMNS
     drop_columns: p.child("drop_columns", (x) => [line, x]),
     // ALTER COLUMN satatement
@@ -717,6 +720,10 @@ const printAlterTableStatement: PrintFunc = (path, options, print) => {
       p.has("set") ? " " : "",
       docs.options,
       docs.add_columns,
+      p.has("rename") ? line: "",
+      docs.rename,
+      p.has("rename") ? " ": "",
+      docs.to,
       docs.drop_columns,
       p.has("alter_column_stmt") ? hardline : "",
       docs.alter_column_stmt,

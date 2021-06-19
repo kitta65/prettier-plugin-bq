@@ -110,6 +110,9 @@ export type AlterTableStatement = XXXStatement & {
     options?: NodeChild;
     // ADD COLUMN
     add_columns?: NodeVecChild;
+    // RENAME TO
+    rename?: NodeChild;
+    to?: NodeChild;
     // DROP COLUMN
     drop_columns?: NodeVecChild;
     // ALTER COLUMN statement
