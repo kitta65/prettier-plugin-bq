@@ -773,6 +773,15 @@ export type UnpivotOperator = BaseNode & {
   };
 };
 
+export type UpdateStatement = XXXStatement & {
+  children: {
+    table_name: NodeChild;
+    set: NodeChild;
+    from?: NodeChild;
+    where: NodeChild;
+  };
+};
+
 export type WhileStatement = XXXStatement & {
   children: {
     condition: NodeChild;

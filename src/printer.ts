@@ -559,6 +559,8 @@ export const printSQL: PrintFunc = (path, options, print) => {
       return printUnpivotConfig(path, options, print);
     case "UnpivotOperator":
       return printUnpivotOperator(path, options, print);
+    case "UpdateStatement":
+      return printUpdateStatement(path, options, print);
     case "WhileStatement":
       return printWhileStatement(path, options, print);
     case "WindowClause":
@@ -2853,7 +2855,7 @@ const printTruncateStatement: PrintFunc = (path, options, print) => {
     table: p.child("table", asItIs, true),
     trailing_comments: printTrailingComments(path, options, print),
     table_name: p.child("table_name", asItIs, true),
-    semicolon: p.child("semicolon"),
+    semicolon: p.child("semicolon", asItIs, true),
   };
   return [
     docs.leading_comments,
@@ -2864,6 +2866,7 @@ const printTruncateStatement: PrintFunc = (path, options, print) => {
     " ",
     docs.table_name,
     docs.semicolon,
+    p.newLine()
   ];
 };
 
@@ -3008,6 +3011,40 @@ const printUnpivotOperator: PrintFunc = (path, options, print) => {
     docs.config,
     p.has("alias") ? [" ", docs.as || "AS"] : "",
     p.has("alias") ? [" ", docs.alias] : "",
+  ];
+};
+
+const printUpdateStatement: PrintFunc = (path, options, print) => {
+  type ThisNode = N.UpdateStatement;
+  const node: ThisNode = path.getValue();
+  const p = new Printer(path, options, print, node, node.children);
+  const docs: { [Key in Docs<ThisNode>]: Doc } = {
+    leading_comments: printLeadingComments(path, options, print),
+    self: p.self("upper"),
+    trailing_comments: printTrailingComments(path, options, print),
+    table_name: p.child("table_name", asItIs, true),
+    set: p.child("set"),
+    from: p.child("from"),
+    where: p.child("where"),
+    semicolon: p.child("semicolon"),
+  };
+  return [
+    docs.leading_comments,
+    group([
+      docs.self,
+      docs.trailing_comments,
+      " ",
+      docs.table_name,
+      line,
+      docs.set,
+      p.has("from") ? line : "",
+      docs.from,
+      line,
+      docs.where,
+      softline,
+      docs.semicolon,
+    ]),
+    p.newLine()
   ];
 };
 
