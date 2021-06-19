@@ -338,6 +338,14 @@ export type DeclareStatement = XXXStatement & {
   };
 };
 
+export type DeleteStatement = XXXStatement & {
+  children: {
+    from: NodeChild;
+    table_name: NodeChild;
+    where: NodeChild;
+  };
+};
+
 export type DotOperator = Identifier &
   BinaryOperator & {
     node_type: "Identifier" | "Parameter";
@@ -506,7 +514,7 @@ export type InsertStatement = XXXStatement & {
   children: {
     into?: NodeChild;
     target_name: NodeChild;
-    columns?: NodeChild
+    columns?: NodeChild;
     input: NodeChild;
   };
 };
@@ -709,6 +717,13 @@ export type TableSampleRatio = BaseNode & {
     expr: NodeChild;
     percent: NodeChild;
     rparen: NodeChild;
+  };
+};
+
+export type TruncateStatement = XXXStatement & {
+  children: {
+    table: NodeChild;
+    table_name: NodeChild;
   };
 };
 

@@ -108,6 +108,28 @@ class Printer<T extends N.BaseNode> {
     // in the case of `child` is undefined
     return "";
   }
+  consumeAllCommentsOfX(key: N.NodeKeyof<N.Children<T>>) {
+    let res: Doc = "";
+    const child = this.children[key];
+    if (N.isNodeChild(child)) {
+      const leading_comments = child.Node.children.leading_comments;
+      if (leading_comments) {
+        res = leading_comments.NodeVec.map((x) =>
+          lineSuffix([" ", x.token.literal])
+        );
+      }
+      const trailing_comments = child.Node.children.trailing_comments;
+      if (trailing_comments) {
+        res = [
+          res,
+          trailing_comments.NodeVec.map((x) =>
+            lineSuffix([" ", x.token.literal])
+          ),
+        ];
+      }
+    }
+    return res;
+  }
   consumeLeadingCommentsOfSelf() {
     const leading_comments = this.children["leading_comments"];
     if (leading_comments) {
@@ -425,6 +447,8 @@ export const printSQL: PrintFunc = (path, options, print) => {
       return printCreateViewStatement(path, options, print);
     case "DeclareStatement":
       return printDeclareStatement(path, options, print);
+    case "DeleteStatement":
+      return printDeleteStatement(path, options, print);
     case "DotOperator":
       return printDotOperator(path, options, print);
     case "DropColumnClause":
@@ -523,6 +547,8 @@ export const printSQL: PrintFunc = (path, options, print) => {
       return printTableSampleClause(path, options, print);
     case "TableSampleRatio":
       return printTableSampleRatio(path, options, print);
+    case "TruncateStatement":
+      return printTruncateStatement(path, options, print);
     case "Type":
       return printType(path, options, print);
     case "TypeDeclaration":
@@ -1511,6 +1537,36 @@ const printDeclareStatement: PrintFunc = (path, options, print) => {
   ];
 };
 
+const printDeleteStatement: PrintFunc = (path, options, print) => {
+  type ThisNode = N.DeleteStatement;
+  const node: ThisNode = path.getValue();
+  const p = new Printer(path, options, print, node, node.children);
+  const docs: { [Key in Docs<ThisNode>]: Doc } = {
+    leading_comments: printLeadingComments(path, options, print),
+    self: p.self("upper"),
+    trailing_comments: printTrailingComments(path, options, print),
+    from: p.consumeAllCommentsOfX("from"),
+    table_name: p.child("table_name", asItIs, true),
+    where: p.child("where"),
+    semicolon: p.child("semicolon"),
+  };
+  return [
+    docs.leading_comments,
+    group([
+      docs.self,
+      docs.trailing_comments,
+      docs.from,
+      " ",
+      docs.table_name,
+      line,
+      docs.where,
+      softline,
+      docs.semicolon,
+    ]),
+    p.newLine(),
+  ];
+};
+
 const printDotOperator: PrintFunc = (path, options, print) => {
   type ThisNode = N.DotOperator;
   const node: ThisNode = path.getValue();
@@ -2044,12 +2100,12 @@ const printInsertStatement: PrintFunc = (path, options, print) => {
   type ThisNode = N.InsertStatement;
   const node: ThisNode = path.getValue();
   const p = new Printer(path, options, print, node, node.children);
-  p.setNotRoot("input")
+  p.setNotRoot("input");
   const docs: { [Key in Docs<ThisNode>]: Doc } = {
     leading_comments: printLeadingComments(path, options, print),
     self: p.self("upper"),
     trailing_comments: printTrailingComments(path, options, print),
-    into: p.child("into", asItIs, true),
+    into: p.consumeAllCommentsOfX("into"),
     target_name: p.child("target_name", asItIs, true),
     columns: p.child("columns", asItIs, true),
     input: p.child("input"),
@@ -2060,7 +2116,6 @@ const printInsertStatement: PrintFunc = (path, options, print) => {
     group([
       docs.self,
       docs.trailing_comments,
-      p.has("into") ? " " : "",
       docs.into,
       " ",
       docs.target_name,
@@ -2110,30 +2165,30 @@ const printJoinOperator: PrintFunc = (path, options, print) => {
   const p = new Printer(path, options, print, node, node.children);
   p.setNotRoot("left");
   p.setNotRoot("right");
-  let outer: Doc = "";
-  const outerChild = node.children.outer;
-  if (outerChild) {
-    const leading_comments = outerChild.Node.children.leading_comments;
-    if (leading_comments) {
-      outer = [
-        outer,
-        leading_comments.NodeVec.map((x) => lineSuffix([" ", x.token.literal])),
-      ];
-    }
-    const trailing_comments = outerChild.Node.children.trailing_comments;
-    if (trailing_comments) {
-      outer = [
-        outer,
-        trailing_comments.NodeVec.map((x) =>
-          lineSuffix([" ", x.token.literal])
-        ),
-      ];
-    }
-  }
+  //let outer: Doc = "";
+  //const outerChild = node.children.outer;
+  //if (outerChild) {
+  //  const leading_comments = outerChild.Node.children.leading_comments;
+  //  if (leading_comments) {
+  //    outer = [
+  //      outer,
+  //      leading_comments.NodeVec.map((x) => lineSuffix([" ", x.token.literal])),
+  //    ];
+  //  }
+  //  const trailing_comments = outerChild.Node.children.trailing_comments;
+  //  if (trailing_comments) {
+  //    outer = [
+  //      outer,
+  //      trailing_comments.NodeVec.map((x) =>
+  //        lineSuffix([" ", x.token.literal])
+  //      ),
+  //    ];
+  //  }
+  //}
   const docs: { [Key in Docs<ThisNode>]: Doc } = {
     left: p.child("left"),
     join_type: p.child("join_type"),
-    outer: outer,
+    outer: p.consumeAllCommentsOfX("outer"),
     self: p.self("upper", true),
     trailing_comments: printTrailingComments(path, options, print),
     right: p.child("right", asItIs, true),
@@ -2785,6 +2840,30 @@ const printTableSampleRatio: PrintFunc = (path, options, print) => {
     " ",
     docs.percent,
     docs.rparen,
+  ];
+};
+
+const printTruncateStatement: PrintFunc = (path, options, print) => {
+  type ThisNode = N.TruncateStatement;
+  const node: ThisNode = path.getValue();
+  const p = new Printer(path, options, print, node, node.children);
+  const docs: { [Key in Docs<ThisNode>]: Doc } = {
+    leading_comments: printLeadingComments(path, options, print),
+    self: p.self("upper"),
+    table: p.child("table", asItIs, true),
+    trailing_comments: printTrailingComments(path, options, print),
+    table_name: p.child("table_name", asItIs, true),
+    semicolon: p.child("semicolon"),
+  };
+  return [
+    docs.leading_comments,
+    docs.self,
+    docs.trailing_comments,
+    " ",
+    docs.table,
+    " ",
+    docs.table_name,
+    docs.semicolon,
   ];
 };
 

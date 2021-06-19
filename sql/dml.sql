@@ -13,3 +13,16 @@ values
 insert v (str, int) select 'one', 1;
 
 ----- DELETE statement -----
+delete t where true;
+
+delete t temp where true;
+
+delete
+-- from
+from /* from */ t as temp
+-- break
+where not exists (select * from t where true);
+
+----- TRUNCATE -----
+truncate table t;
+
