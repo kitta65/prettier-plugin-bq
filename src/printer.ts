@@ -820,14 +820,16 @@ const printArrayAccessing: PrintFunc = (path, options, print) => {
   docs.as;
   docs.null_order;
   return [
-    docs.left,
-    docs.self,
-    docs.trailing_comments,
-    indent([softline, docs.right]),
-    softline,
-    docs.rparen,
-    docs.alias,
-    docs.order,
+    group([
+      docs.left,
+      docs.self,
+      docs.trailing_comments,
+      indent([softline, docs.right]),
+      softline,
+      docs.rparen,
+      docs.alias,
+      docs.order,
+    ]),
     docs.comma,
   ];
 };
@@ -855,15 +857,19 @@ const printArrayLiteral: PrintFunc = (path, options, print) => {
   docs.as;
   docs.null_order;
   return [
-    docs.type,
-    docs.leading_comments,
-    docs.self,
-    docs.trailing_comments,
-    indent([softline, docs.exprs]),
-    softline,
-    docs.rparen,
-    docs.alias,
-    docs.order,
+    group([
+      docs.type,
+      docs.leading_comments,
+      group([
+        docs.self,
+        docs.trailing_comments,
+        indent([softline, docs.exprs]),
+        softline,
+        docs.rparen,
+        docs.alias,
+        docs.order,
+      ]),
+    ]),
     docs.comma,
   ];
 };
@@ -980,8 +986,8 @@ const printBetweenOperator: PrintFunc = (path, options, print) => {
       group([docs.and, " ", docs.right_max]),
       docs.alias,
       docs.order,
-      docs.comma,
     ]),
+    docs.comma,
   ];
 };
 
@@ -1102,7 +1108,7 @@ const printCallingFunction = (
 
   if (node.isDatePart) {
     p.toUpper("func");
-    p.toUpper("args")
+    p.toUpper("args");
   }
 
   const docs: { [Key in Docs<ThisNode>]: Doc } = {
@@ -1936,8 +1942,8 @@ const printGroupedExprs: PrintFunc = (path, options, print) => {
       docs.rparen,
       p.has("row_value_alias") ? [" ", docs.as] : "",
       p.has("row_value_alias") ? [" ", docs.row_value_alias] : "",
-      docs.comma,
     ]),
+    docs.comma,
   ];
 };
 
@@ -1977,11 +1983,11 @@ const printGroupedStatement: PrintFunc = (path, options, print) => {
       softline,
       docs.rparen,
       docs.pivot,
-      docs.alias,
-      docs.order,
-      docs.comma,
-      docs.semicolon,
     ]),
+    docs.alias,
+    docs.order,
+    docs.comma,
+    docs.semicolon,
     p.newLine(),
   ];
 };
@@ -2571,7 +2577,7 @@ const printOverClause: PrintFunc = (path, options, print) => {
     leading_comments: "",
   };
   docs.leading_comments;
-  return [docs.self, docs.trailing_comments, docs.window];
+  return group([docs.self, docs.trailing_comments, docs.window]);
 };
 
 const printPivotConfig: PrintFunc = (path, options, print) => {
@@ -2659,7 +2665,7 @@ const printSelectStatement: PrintFunc = (path, options, print) => {
     as_struct_or_value: p.child("as_struct_or_value", asItIs, true, " "),
     distinct_or_all: p.child("distinct_or_all"),
     trailing_comments: printTrailingComments(path, options, print),
-    exprs: p.child("exprs", (x) => [line, group(x)]),
+    exprs: p.child("exprs", (x) => [line, x]),
     // FROM clause
     from: p.child("from"),
     // WHERE clause
@@ -2854,18 +2860,20 @@ const printStructLiteral: PrintFunc = (path, options, print) => {
   docs.as;
   docs.null_order;
   return [
-    docs.type,
-    docs.leading_comments,
     group([
-      docs.self,
-      docs.trailing_comments,
-      indent([softline, docs.exprs]),
-      softline,
-      docs.rparen,
-      docs.alias,
-      docs.order,
-      docs.comma,
+      docs.type,
+      docs.leading_comments,
+      group([
+        docs.self,
+        docs.trailing_comments,
+        indent([softline, docs.exprs]),
+        softline,
+        docs.rparen,
+      ]),
     ]),
+    docs.alias,
+    docs.order,
+    docs.comma,
   ];
 };
 
@@ -3278,6 +3286,12 @@ const printWindowSpecification: PrintFunc = (path, options, print) => {
   type ThisNode = N.WindowSpecification;
   const node: ThisNode = path.getValue();
   const p = new Printer(path, options, print, node, node.children);
+  const empty = !(
+    p.has("name") ||
+    p.has("partitionby") ||
+    p.has("orderby") ||
+    p.has("frame")
+  );
   const docs: { [Key in Docs<ThisNode>]: Doc } = {
     self: p.self("upper", true),
     trailing_comments: printTrailingComments(path, options, print),
@@ -3294,13 +3308,13 @@ const printWindowSpecification: PrintFunc = (path, options, print) => {
     docs.self,
     docs.trailing_comments,
     indent([
-      softline,
+      empty ? "" : softline,
       join(
         line,
         [docs.name, docs.partitionby, docs.orderby, docs.frame].filter((x) => x)
       ),
     ]),
-    softline,
+    empty ? "" : softline,
     docs.rparen,
   ];
 };
