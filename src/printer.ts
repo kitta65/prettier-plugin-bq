@@ -275,7 +275,7 @@ class Printer<T extends N.BaseNode> {
       });
     }
   }
-  setNoGlobal(key: N.NodeKeyof<N.Children<T>>) {
+  setNotGlobal(key: N.NodeKeyof<N.Children<T>>) {
     const child = this.children[key];
     if (N.isNodeChild(child)) {
       child.Node.notGlobal = true;
@@ -1711,6 +1711,7 @@ const printDotOperator: PrintFunc = (path, options, print) => {
   type ThisNode = N.DotOperator;
   const node: ThisNode = path.getValue();
   const p = new Printer(path, options, print, node, node.children);
+  p.setNotGlobal("right")
   const docs: { [Key in Docs<ThisNode>]: Doc } = {
     left: p.child("left"),
     self: p.self("upper", true),
