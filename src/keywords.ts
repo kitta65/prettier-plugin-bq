@@ -388,15 +388,7 @@ export const globalFunctions = [
   "NULLIF",
 ];
 
-/*
-const hllCountFunctions = [
-  // HLL functions
-  "INIT",
-  "MERGE",
-  "MERGE_PARTIAL",
-  "EXTRACT",
-];
-const keysFunctions = [
+export const keysFunctions = [
   // AEAD encryption functions
   "NEW_KEYSET",
   "ADD_KEY_FROM_RAW_BYTES",
@@ -406,14 +398,22 @@ const keysFunctions = [
   "KEYSET_LENGTH",
 ];
 
-const aeadFunctions = [
+export const aeadFunctions = [
   // AEAD encryption functions
   "DECRYPT_BYTES",
   "DECRYPT_STRING",
   "ENCRYPT",
 ];
 
-const netFunctions = [
+export const hllCountFunctions = [
+  // HLL functions
+  "INIT",
+  "MERGE",
+  "MERGE_PARTIAL",
+  "EXTRACT",
+];
+
+export const netFunctions = [
   // net functions
   "IP_FROM_STRING",
   "SAFE_IP_FROM_STRING",
@@ -426,5 +426,4 @@ const netFunctions = [
   "PUBLIC_SUFFIX",
   "REG_DOMAIN",
 ];
-*/
 

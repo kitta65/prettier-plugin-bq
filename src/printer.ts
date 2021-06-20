@@ -1,4 +1,11 @@
-import { reservedKeywords, globalFunctions } from "./keywords";
+import {
+  reservedKeywords,
+  globalFunctions,
+  keysFunctions,
+  aeadFunctions,
+  hllCountFunctions,
+  netFunctions,
+} from "./keywords";
 import { doc } from "prettier";
 import type { Doc, AstPath } from "prettier";
 import * as N from "./nodes";
@@ -247,12 +254,6 @@ class Printer<T extends N.BaseNode> {
     const child = this.children[key];
     if (N.isNodeChild(child)) {
       child.Node.breakRecommended = true;
-    }
-  }
-  setCallable(key: N.NodeKeyof<N.Children<T>>) {
-    const child = this.children[key];
-    if (N.isNodeChild(child)) {
-      child.Node.callable = true;
     }
   }
   setLiteral(key: N.NodeKeyof<N.Children<T>>, literal: string) {
@@ -1067,48 +1068,137 @@ const printCallingFunction = (
   type ThisNode = N.CallingFunction;
   const node: ThisNode = path.getValue();
   const p = new Printer(path, options, print, node, node.children);
-  p.setCallable("func");
   p.setNotRoot("args");
 
-  const func = node.children.func.Node.token.literal.toUpperCase();
-  const args = node.children.args;
-  if (args) {
-    // NORMALIZE
-    if (
-      ["NORMALIZE", "NORMALIZE_AND_CASEFOLD"].includes(func) &&
-      2 <= p.len("args")
-    ) {
-      args.NodeVec[1].token.literal =
-        args.NodeVec[1].token.literal.toUpperCase();
-    }
-    // XXX_DIFF
-    if (
-      ["DATE_DIFF", "DATETIME_DIFF", "TIME_DIFF", "TIMESTAMP_DIFF"].includes(
-        func
-      )
-    ) {
-      args.NodeVec[2].isDatePart = true;
-    }
-    // XXX_TRUNC
-    if (
-      [
-        "DATE_TRUNC",
-        "DATETIME_TRUNC",
-        "TIME_TRUNC",
-        "TIMESTAMP_TRUNC",
-      ].includes(func)
-    ) {
-      args.NodeVec[1].isDatePart = true;
-    }
-    // LAST_DAY
-    if (func === "LAST_DAY" && 2 <= p.len("args")) {
-      args.NodeVec[1].isDatePart = true;
-    }
-  }
-
+  let func = node.children.func.Node;
+  let parent: N.Identifier;
+  let grandParent: N.Identifier;
   if (node.isDatePart) {
     p.toUpper("func");
     p.toUpper("args");
+  }
+
+  if (!N.isDotOperator(func)) {
+    // SUBSTR("foo", 0, 2)
+    if (globalFunctions.includes(func.token.literal.toUpperCase())) {
+      func.isPreDefinedFunction = true;
+    }
+  } else {
+    parent = func.children.left.Node;
+    func = func.children.right.Node;
+    if (!N.isDotOperator(parent)) {
+      // SAFE.SUBSTR("foo", 0, 2)
+      // KEYS.NEW_KEYSET('AEAD_AES_GCM_256')
+      switch (parent.token.literal.toUpperCase()) {
+        case "SAFE":
+          if (globalFunctions.includes(func.token.literal.toUpperCase())) {
+            func.isPreDefinedFunction = true;
+            parent.token.literal = parent.token.literal.toUpperCase();
+          }
+          break;
+        case "KEYS":
+          if (keysFunctions.includes(func.token.literal.toUpperCase())) {
+            func.isPreDefinedFunction = true;
+            parent.token.literal = parent.token.literal.toUpperCase();
+          }
+          break;
+        case "AEAD":
+          if (aeadFunctions.includes(func.token.literal.toUpperCase())) {
+            func.isPreDefinedFunction = true;
+            parent.token.literal = parent.token.literal.toUpperCase();
+          }
+          break;
+        case "NET":
+          if (netFunctions.includes(func.token.literal.toUpperCase())) {
+            func.isPreDefinedFunction = true;
+            parent.token.literal = parent.token.literal.toUpperCase();
+          }
+          break;
+        case "HLL_COUNT":
+          if (hllCountFunctions.includes(func.token.literal.toUpperCase())) {
+            func.isPreDefinedFunction = true;
+            parent.token.literal = parent.token.literal.toUpperCase();
+          }
+          break;
+      }
+    } else {
+      // SAFE.KEYS.NEW_KEYSET('AEAD_AES_GCM_256')
+      grandParent = parent.children.left.Node;
+      parent = parent.children.right.Node;
+      if (grandParent.token.literal.toUpperCase() === "SAFE") {
+        switch (parent.token.literal.toUpperCase()) {
+          case "KEYS":
+            if (keysFunctions.includes(func.token.literal.toUpperCase())) {
+              func.isPreDefinedFunction = true;
+              parent.token.literal = parent.token.literal.toUpperCase();
+              grandParent.token.literal =
+                grandParent.token.literal.toUpperCase();
+            }
+            break;
+          case "AEAD":
+            if (aeadFunctions.includes(func.token.literal.toUpperCase())) {
+              func.isPreDefinedFunction = true;
+              parent.token.literal = parent.token.literal.toUpperCase();
+              grandParent.token.literal =
+                grandParent.token.literal.toUpperCase();
+            }
+            break;
+          case "NET":
+            if (netFunctions.includes(func.token.literal.toUpperCase())) {
+              func.isPreDefinedFunction = true;
+              parent.token.literal = parent.token.literal.toUpperCase();
+              grandParent.token.literal =
+                grandParent.token.literal.toUpperCase();
+            }
+            break;
+          case "HLL_COUNT":
+            if (hllCountFunctions.includes(func.token.literal.toUpperCase())) {
+              func.isPreDefinedFunction = true;
+              parent.token.literal = parent.token.literal.toUpperCase();
+              grandParent.token.literal =
+                grandParent.token.literal.toUpperCase();
+            }
+            break;
+        }
+      }
+    }
+  }
+  if (func.isPreDefinedFunction) {
+    const func_literal = func.token.literal.toUpperCase();
+    const args = node.children.args;
+    if (args) {
+      // NORMALIZE
+      if (
+        ["NORMALIZE", "NORMALIZE_AND_CASEFOLD"].includes(func_literal) &&
+        2 <= p.len("args")
+      ) {
+        args.NodeVec[1].token.literal =
+          args.NodeVec[1].token.literal.toUpperCase();
+      }
+      // XXX_DIFF
+      if (
+        ["DATE_DIFF", "DATETIME_DIFF", "TIME_DIFF", "TIMESTAMP_DIFF"].includes(
+          func_literal
+        )
+      ) {
+        args.NodeVec[2].isDatePart = true;
+      }
+      // XXX_TRUNC
+      if (
+        [
+          "DATE_TRUNC",
+          "DATETIME_TRUNC",
+          "TIME_TRUNC",
+          "TIMESTAMP_TRUNC",
+        ].includes(func_literal)
+      ) {
+        args.NodeVec[1].isDatePart = true;
+      }
+      // LAST_DAY
+      if (func === "LAST_DAY" && 2 <= p.len("args")) {
+        args.NodeVec[1].isDatePart = true;
+      }
+    }
   }
 
   const docs: { [Key in Docs<ThisNode>]: Doc } = {
@@ -2041,7 +2131,7 @@ const printIdentifier: PrintFunc = (path, options, print) => {
   const docs: { [Key in Docs<ThisNode>]: Doc } = {
     leading_comments: printLeadingComments(path, options, print),
     self:
-      (node.callable && p.includedIn(globalFunctions)) || node.isDatePart
+      node.isPreDefinedFunction || node.isDatePart
         ? p.self("upper")
         : p.self(),
     trailing_comments: printTrailingComments(path, options, print),

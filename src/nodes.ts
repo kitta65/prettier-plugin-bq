@@ -29,12 +29,12 @@ export type BaseNode = {
   };
   node_type: string;
   emptyLines?: number;
-  callable?: true;
   notGlobal?: true;
   notRoot?: true;
   breakRecommended?: true;
   isFinalColumn?: true;
   isDatePart?: true;
+  isPreDefinedFunction?: true;
 };
 
 export type Children<T extends BaseNode> = T["children"];
@@ -201,7 +201,7 @@ export type BooleanLiteral = Expr;
 
 export type CallingFunction = Expr & {
   children: {
-    func: {Node: Expr};
+    func: {Node: Identifier};
     distinct?: NodeChild;
     args?: { NodeVec: Expr[] };
     ignore_nulls?: NodeVecChild;
@@ -354,11 +354,16 @@ export type DeleteStatement = XXXStatement & {
 
 export type DotOperator = Identifier &
   BinaryOperator & {
-    node_type: "Identifier" | "Parameter";
     children: {
       not: undefined;
+      left: {Node: Identifier};
+      right: {Node: Identifier};
     };
   };
+
+export const isDotOperator = (n: BaseNode): n is DotOperator => {
+  return n.node_type === "DotOperator"
+};
 
 export type DropColumnClause = BaseNode & {
   children: {

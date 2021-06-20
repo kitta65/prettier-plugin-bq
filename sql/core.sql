@@ -132,6 +132,15 @@ select
   last_day(dt)
 from t;
 
+-- SAFE
+select safe.substr("foo", 0, 2);
+
+-- KEYS, ADAD, HLL_COUNT, NET
+select
+  keys.new_keyset('AEAD_AES_GCM_256'),
+  safe.keys.new_keyset('AEAD_AES_GCM_256')
+;
+
 ----- window function -----
 select
   sum(int) over (),
