@@ -720,9 +720,9 @@ const printAlterTableStatement: PrintFunc = (path, options, print) => {
       p.has("set") ? " " : "",
       docs.options,
       docs.add_columns,
-      p.has("rename") ? line: "",
+      p.has("rename") ? line : "",
       docs.rename,
-      p.has("rename") ? " ": "",
+      p.has("rename") ? " " : "",
       docs.to,
       docs.drop_columns,
       p.has("alter_column_stmt") ? hardline : "",
@@ -784,7 +784,7 @@ const printAsterisk: PrintFunc = (path, options, print) => {
     except: p.child("except", (x) => [" ", x], true),
     replace: p.child("replace", (x) => [" ", x], true),
     alias: printAlias(path as AstPathOf<ThisNode>, options, print),
-    comma: p.child("comma", asItIs, true),
+    comma: printComma(path as AstPathOf<ThisNode>, options, print),
     // not used
     as: "",
   };
@@ -812,7 +812,7 @@ const printArrayAccessing: PrintFunc = (path, options, print) => {
     rparen: p.child("rparen"),
     alias: printAlias(path as AstPathOf<ThisNode>, options, print),
     order: printOrder(path as AstPathOf<ThisNode>, options, print),
-    comma: p.child("comma", asItIs, true),
+    comma: printComma(path as AstPathOf<ThisNode>, options, print),
     // not used
     leading_comments: "",
     as: "",
@@ -849,7 +849,7 @@ const printArrayLiteral: PrintFunc = (path, options, print) => {
     rparen: p.child("rparen"),
     alias: printAlias(path as AstPathOf<ThisNode>, options, print),
     order: printOrder(path as AstPathOf<ThisNode>, options, print),
-    comma: p.child("comma", asItIs, true),
+    comma: printComma(path as AstPathOf<ThisNode>, options, print),
     // not used
     as: "",
     null_order: "",
@@ -960,7 +960,7 @@ const printBetweenOperator: PrintFunc = (path, options, print) => {
     right_max: p.child("right_max", asItIs, true),
     alias: printAlias(path as AstPathOf<ThisNode>, options, print),
     order: printOrder(path as AstPathOf<ThisNode>, options, print),
-    comma: p.child("comma", asItIs, true),
+    comma: printComma(path as AstPathOf<ThisNode>, options, print),
     // not used
     leading_comments: "",
     as: "",
@@ -997,7 +997,7 @@ const printBooleanLiteral: PrintFunc = (path, options, print) => {
     trailing_comments: printTrailingComments(path, options, print),
     alias: printAlias(path as AstPathOf<ThisNode>, options, print),
     order: printOrder(path as AstPathOf<ThisNode>, options, print),
-    comma: p.child("comma", asItIs, true),
+    comma: printComma(path as AstPathOf<ThisNode>, options, print),
     // not used
     as: "",
     null_order: "",
@@ -1027,7 +1027,7 @@ const printBinaryOperator: PrintFunc = (path, options, print) => {
     right: p.child("right", asItIs, true),
     alias: printAlias(path as AstPathOf<ThisNode>, options, print),
     order: printOrder(path as AstPathOf<ThisNode>, options, print),
-    comma: p.child("comma", asItIs, true),
+    comma: printComma(path as AstPathOf<ThisNode>, options, print),
     // not used
     leading_comments: "",
     as: "",
@@ -1078,7 +1078,7 @@ const printCallingFunction = (
     over: p.child("over", (x) => [" ", x], true),
     alias: printAlias(path as AstPathOf<ThisNode>, options, print),
     order: printOrder(path as AstPathOf<ThisNode>, options, print),
-    comma: p.child("comma", asItIs, true),
+    comma: printComma(path as AstPathOf<ThisNode>, options, print),
     // not used
     leading_comments: "",
     as: "",
@@ -1227,7 +1227,7 @@ const printCaseExpr: PrintFunc = (path, options, print) => {
     end: p.child("end", asItIs, true),
     alias: printAlias(path as AstPathOf<ThisNode>, options, print),
     order: printOrder(path as AstPathOf<ThisNode>, options, print),
-    comma: p.child("comma", asItIs, true),
+    comma: printComma(path as AstPathOf<ThisNode>, options, print),
     // not used
     as: "",
     null_order: "",
@@ -1598,7 +1598,7 @@ const printDotOperator: PrintFunc = (path, options, print) => {
     ),
     tablesample: p.child("tablesample", asItIs, true),
     order: printOrder(path as AstPathOf<ThisNode>, options, print),
-    comma: p.child("comma", asItIs, true),
+    comma: printComma(path as AstPathOf<ThisNode>, options, print),
     // not used
     leading_comments: "",
     as: "",
@@ -1855,7 +1855,7 @@ const printGroupedExpr: PrintFunc = (path, options, print) => {
       print
     ),
     order: printOrder(path as AstPathOf<ThisNode>, options, print),
-    comma: p.child("comma", asItIs, true),
+    comma: printComma(path as AstPathOf<ThisNode>, options, print),
     // not used
     as: "",
     null_order: "",
@@ -1927,7 +1927,7 @@ const printGroupedStatement: PrintFunc = (path, options, print) => {
       print
     ),
     order: printOrder(path as AstPathOf<ThisNode>, options, print),
-    comma: p.child("comma", asItIs, true),
+    comma: printComma(path as AstPathOf<ThisNode>, options, print),
     semicolon: p.child("semicolon", asItIs, true),
     // not used
     as: "",
@@ -2016,7 +2016,7 @@ const printIdentifier: PrintFunc = (path, options, print) => {
     ),
     tablesample: p.child("tablesample", asItIs, true),
     order: printOrder(path as AstPathOf<ThisNode>, options, print),
-    comma: p.child("comma", asItIs, true),
+    comma: printComma(path as AstPathOf<ThisNode>, options, print),
     // not used
     unpivot: "",
     as: "",
@@ -2086,7 +2086,7 @@ const printInOperator: PrintFunc = (path, options, print) => {
     right: p.child("right", asItIs, true),
     alias: printAlias(path as AstPathOf<ThisNode>, options, print),
     order: printOrder(path as AstPathOf<ThisNode>, options, print),
-    comma: p.child("comma", asItIs, true),
+    comma: printComma(path as AstPathOf<ThisNode>, options, print),
     // not used
     leading_comments: "",
     as: "",
@@ -2154,7 +2154,7 @@ const printIntervalLiteral: PrintFunc = (path, options, print) => {
     right: p.child("right", asItIs, true),
     date_part: p.child("date_part", asItIs, true),
     alias: printAlias(path as AstPathOf<ThisNode>, options, print),
-    comma: p.child("comma", asItIs, true),
+    comma: printComma(path as AstPathOf<ThisNode>, options, print),
     // not used
     as: "",
   };
@@ -2483,7 +2483,7 @@ const printNullLiteral: PrintFunc = (path, options, print) => {
     trailing_comments: printTrailingComments(path, options, print),
     alias: printAlias(path as AstPathOf<ThisNode>, options, print),
     order: printOrder(path as AstPathOf<ThisNode>, options, print),
-    comma: p.child("comma", asItIs, true),
+    comma: printComma(path as AstPathOf<ThisNode>, options, print),
     // not used
     as: "",
     null_order: "",
@@ -2510,7 +2510,7 @@ const printNumericLiteral: PrintFunc = (path, options, print) => {
     trailing_comments: printTrailingComments(path, options, print),
     alias: printAlias(path as AstPathOf<ThisNode>, options, print),
     order: printOrder(path as AstPathOf<ThisNode>, options, print),
-    comma: p.child("comma", asItIs, true),
+    comma: printComma(path as AstPathOf<ThisNode>, options, print),
     // not used
     as: "",
     null_order: "",
@@ -2618,6 +2618,7 @@ const printSelectStatement: PrintFunc = (path, options, print) => {
   const node: ThisNode = path.getValue();
   const p = new Printer(path, options, print, node, node.children);
   p.setNotRoot("exprs");
+  node.children.exprs.NodeVec[p.len("exprs") - 1].isFinalColumn = true;
   const docs: { [Key in Docs<ThisNode>]: Doc } = {
     with: p.child("with"),
     leading_comments: printLeadingComments(path, options, print),
@@ -2781,7 +2782,7 @@ const printStringLiteral: PrintFunc = (path, options, print) => {
     trailing_comments: printTrailingComments(path, options, print),
     alias: printAlias(path as AstPathOf<ThisNode>, options, print),
     order: printOrder(path as AstPathOf<ThisNode>, options, print),
-    comma: p.child("comma", asItIs, true),
+    comma: printComma(path as AstPathOf<ThisNode>, options, print),
     // not used
     as: "",
     null_order: "",
@@ -2813,7 +2814,7 @@ const printStructLiteral: PrintFunc = (path, options, print) => {
     rparen: p.child("rparen"),
     alias: printAlias(path as AstPathOf<ThisNode>, options, print),
     order: printOrder(path as AstPathOf<ThisNode>, options, print),
-    comma: p.child("comma", asItIs, true),
+    comma: printComma(path as AstPathOf<ThisNode>, options, print),
     // not used
     as: "",
     null_order: "",
@@ -2994,7 +2995,7 @@ const printUnaryOperator: PrintFunc = (path, options, print) => {
     right: p.child("right", asItIs, true),
     alias: printAlias(path as AstPathOf<ThisNode>, options, print),
     order: printOrder(path as AstPathOf<ThisNode>, options, print),
-    comma: p.child("comma", asItIs, true),
+    comma: printComma(path as AstPathOf<ThisNode>, options, print),
     // not used
     as: "",
     null_order: "",
@@ -3385,6 +3386,24 @@ const printAlias = (
     as_ = "AS";
   }
   return [" ", as_, " ", p.child("alias", asItIs, true)];
+};
+
+const printComma = (
+  path: AstPathOf<N.Expr>,
+  options: Options,
+  print: (path: AstPath) => Doc
+): Doc => {
+  type ThisNode = N.Expr;
+  const node: ThisNode = path.getValue();
+  const p = new Printer(path, options, print, node, node.children);
+  if (node.isFinalColumn) {
+    return ifBreak(
+      p.child("comma", asItIs, true) || ",",
+      p.consumeAllCommentsOfX("comma")
+    );
+  } else {
+    return p.child("comma", asItIs, true);
+  }
 };
 
 const printLeadingComments: PrintFunc = (path, options, print) => {

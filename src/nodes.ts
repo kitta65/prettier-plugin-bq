@@ -17,6 +17,9 @@ type Token = {
  *
  * # breakRecommended
  * if it is true, `hardline` is used at left side of `AND`, `OR` and `JOIN`.
+ *
+ * # isFinalColumn
+ * if it is true, the node is the final column of SELECT statement.
  */
 export type BaseNode = {
   token: Token | null;
@@ -30,6 +33,7 @@ export type BaseNode = {
   notGlobal?: true;
   notRoot?: true;
   breakRecommended?: true;
+  isFinalColumn?: true;
 };
 
 export type Children<T extends BaseNode> = T["children"];
