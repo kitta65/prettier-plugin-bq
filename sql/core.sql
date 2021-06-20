@@ -120,6 +120,18 @@ select st_geogfromtext(str, oriented => true) from t;
 -- INTERVAL
 select date_add(dt, interval 1 + 1 day) from t;
 
+-- NORMALIZE
+select normalize('\u00ea', nfc);
+
+-- date_part
+select
+  date_diff(dt, dt, week),
+  date_diff(dt, dt, week(monday)),
+  date_trunc(dt, day),
+  last_day(dt, month),
+  last_day(dt)
+from t;
+
 ----- window function -----
 select
   sum(int) over (),

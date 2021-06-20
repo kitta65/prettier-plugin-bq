@@ -34,6 +34,7 @@ export type BaseNode = {
   notRoot?: true;
   breakRecommended?: true;
   isFinalColumn?: true;
+  isDatePart?: true;
 };
 
 export type Children<T extends BaseNode> = T["children"];
@@ -200,9 +201,9 @@ export type BooleanLiteral = Expr;
 
 export type CallingFunction = Expr & {
   children: {
-    func: NodeChild;
+    func: {Node: Expr};
     distinct?: NodeChild;
-    args?: NodeVecChild;
+    args?: { NodeVec: Expr[] };
     ignore_nulls?: NodeVecChild;
     orderby?: NodeChild;
     limit?: NodeChild;
@@ -227,8 +228,6 @@ export type CallingUnnest = CallingFunction &
       comma: undefined;
     };
   };
-
-export type CallingDatePartFunction = CallingFunction;
 
 export type CallStatement = XXXStatement & {
   children: {

@@ -421,8 +421,6 @@ export const printSQL: PrintFunc = (path, options, print) => {
         options,
         print
       );
-    case "CallingDatePartFunction":
-      return printCallingDatePartFunction(path, options, print);
     case "CallingUnnest":
       return printCallingUnnest(path, options, print);
     case "CallStatement":
@@ -1065,6 +1063,48 @@ const printCallingFunction = (
   const p = new Printer(path, options, print, node, node.children);
   p.setCallable("func");
   p.setNotRoot("args");
+
+  const func = node.children.func.Node.token.literal.toUpperCase();
+  const args = node.children.args;
+  if (args) {
+    // NORMALIZE
+    if (
+      ["NORMALIZE", "NORMALIZE_AND_CASEFOLD"].includes(func) &&
+      2 <= p.len("args")
+    ) {
+      args.NodeVec[1].token.literal =
+        args.NodeVec[1].token.literal.toUpperCase();
+    }
+    // XXX_DIFF
+    if (
+      ["DATE_DIFF", "DATETIME_DIFF", "TIME_DIFF", "TIMESTAMP_DIFF"].includes(
+        func
+      )
+    ) {
+      args.NodeVec[2].isDatePart = true;
+    }
+    // XXX_TRUNC
+    if (
+      [
+        "DATE_TRUNC",
+        "DATETIME_TRUNC",
+        "TIME_TRUNC",
+        "TIMESTAMP_TRUNC",
+      ].includes(func)
+    ) {
+      args.NodeVec[1].isDatePart = true;
+    }
+    // LAST_DAY
+    if (func === "LAST_DAY" && 2 <= p.len("args")) {
+      args.NodeVec[1].isDatePart = true;
+    }
+  }
+
+  if (node.isDatePart) {
+    p.toUpper("func");
+    p.toUpper("args")
+  }
+
   const docs: { [Key in Docs<ThisNode>]: Doc } = {
     func: p.child("func"),
     self: p.self("asItIs", true),
@@ -1153,15 +1193,6 @@ const printCallingUnnest: PrintFunc = (path, options, print) => {
     p.has("offset_alias") ? [" ", docs.offset_alias] : "",
     docs.pivot,
   ];
-};
-
-const printCallingDatePartFunction: PrintFunc = (path, options, print) => {
-  type ThisNode = N.CallingDatePartFunction;
-  const node: ThisNode = path.getValue();
-  const p = new Printer(path, options, print, node, node.children);
-  p.toUpper("func");
-  p.toUpper("args");
-  return printCallingFunction(path as AstPathOf<ThisNode>, options, print);
 };
 
 const printCallStatement: PrintFunc = (path, options, print) => {
@@ -1792,6 +1823,7 @@ const printExtractArgument: PrintFunc = (path, options, print) => {
   type ThisNode = N.ExtractArgument;
   const node: ThisNode = path.getValue();
   const p = new Printer(path, options, print, node, node.children);
+  node.children.extract_datepart.Node.isDatePart = true;
   const docs: { [Key in Docs<ThisNode>]: Doc } = {
     extract_datepart: p.child("extract_datepart"),
     self: p.self("upper", true),
@@ -2003,7 +2035,7 @@ const printIdentifier: PrintFunc = (path, options, print) => {
   const docs: { [Key in Docs<ThisNode>]: Doc } = {
     leading_comments: printLeadingComments(path, options, print),
     self:
-      node.callable && p.includedIn(globalFunctions)
+      (node.callable && p.includedIn(globalFunctions)) || node.isDatePart
         ? p.self("upper")
         : p.self(),
     trailing_comments: printTrailingComments(path, options, print),
