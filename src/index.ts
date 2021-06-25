@@ -1,4 +1,4 @@
-import parser from "@dr666m1/bq2cst";
+import { parse } from "@dr666m1/bq2cst";
 import { printSQL } from "./printer";
 
 const languages = [
@@ -11,7 +11,7 @@ const languages = [
 
 const parsers = {
   "sql-parse": {
-    parse: (text: string) => parser.parse(text),
+    parse: (text: string) => parse(text),
     astFormat: "sql-ast",
   },
 };
@@ -22,7 +22,7 @@ const printers = {
   },
 };
 
-const CATEGORY_BQ = "BQ"
+const CATEGORY_BQ = "BQ";
 
 const options = {
   printKeywordsInUpperCase: {
@@ -35,8 +35,8 @@ const options = {
     type: "boolean",
     category: CATEGORY_BQ,
     default: true,
-    description: "Print pseudo columns in upper case."
-  }
+    description: "Print pseudo columns in upper case.",
+  },
 };
 
 module.exports = {
