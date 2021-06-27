@@ -523,10 +523,8 @@ export const printSQL = (
       return printKeywordWithExpr(path, options, print, node);
     case "KeywordWithExprs":
       return printKeywordWithExprs(path, options, print, node);
-    case "KeywordWithGroupedExpr":
-      return printKeywordWithGroupedExpr(path, options, print, node);
-    case "KeywordWithGroupedExprs":
-      return printKeywordWithGroupedExprs(path, options, print, node);
+    case "KeywordWithGroupedXXX":
+      return printKeywordWithGroupedXXX(path, options, print, node);
     case "KeywordWithStatement":
       return printKeywordWithStatement(path, options, print, node);
     case "KeywordWithStatements":
@@ -1104,7 +1102,16 @@ const printBinaryOperator: PrintFunc<bq2cst.BinaryOperator> = (
   ];
 };
 
-const printCallingFunction: PrintFunc<bq2cst.CallingFunctionGeneral> = (
+const printCallingFunction: PrintFunc<bq2cst.CallingFunction> = (
+  path,
+  options,
+  print,
+  node
+) => {
+  return printCallingFunctionGeneral(path, options, print, node);
+};
+
+const printCallingFunctionGeneral: PrintFunc<bq2cst.CallingFunctionGeneral> = (
   path,
   options,
   print,
@@ -1244,7 +1251,7 @@ const printCallingFunction: PrintFunc<bq2cst.CallingFunctionGeneral> = (
     }
   }
 
-  const docs: { [Key in Docs<bq2cst.CallingFunction>]: Doc } = {
+  const docs: { [Key in Docs<bq2cst.CallingFunctionGeneral>]: Doc } = {
     leading_comments: "", // eslint-disable-line unicorn/no-unused-properties
     func: p.child("func"),
     self: p.self("asItIs", true),
@@ -1297,7 +1304,7 @@ const printCallingUnnest: PrintFunc<bq2cst.CallingUnnest> = (
 ) => {
   const p = new Printer(path, options, print, node, node.children);
   const docs: { [Key in Docs<bq2cst.CallingUnnest>]: Doc } = {
-    func: printCallingFunction(path, options, print, node),
+    self: printCallingFunctionGeneral(path, options, print, node),
     with_offset: p.child("with_offset", (x) => group([line, x])),
     offset_as: p.child("offset_as", asItIs, true),
     offset_alias: p.child("offset_alias", asItIs, true),
@@ -1306,7 +1313,7 @@ const printCallingUnnest: PrintFunc<bq2cst.CallingUnnest> = (
 
     /* eslint-disable unicorn/no-unused-properties */
     leading_comments: "",
-    self: "",
+    func: "",
     trailing_comments: "",
     args: "",
     rparen: "",
@@ -1315,7 +1322,7 @@ const printCallingUnnest: PrintFunc<bq2cst.CallingUnnest> = (
     /* eslint-enable unicorn/no-unused-properties */
   };
   return [
-    docs.func,
+    docs.self,
     docs.with_offset,
     p.has("offset_alias") ? [" ", docs.offset_as || "AS"] : "",
     p.has("offset_alias") ? [" ", docs.offset_alias] : "",
@@ -1596,8 +1603,9 @@ const printCreateTableStatement: PrintFunc<bq2cst.CreateTableStatement> = (
     self: p.self("upper"),
     trailing_comments: printTrailingComments(path, options, print, node),
     or_replace: p.child("or_replace", (x) => group([line, x])),
-    external: p.child("external", asItIs, true),
     temp: p.child("temp", asItIs, true),
+    external: p.child("external", asItIs, true),
+    snapshot: p.child("snapshot", asItIs, true),
     what: p.child("what", asItIs, true),
     if_not_exists: p.child("if_not_exists", (x) => group([line, x])),
     ident: p.child("ident", asItIs, true),
@@ -1605,6 +1613,7 @@ const printCreateTableStatement: PrintFunc<bq2cst.CreateTableStatement> = (
     partitionby: p.child("partitionby"),
     clusterby: p.child("clusterby"),
     with_partition_columns: p.child("with_partition_columns"),
+    clone: p.child("clone"),
     options: p.child("options"),
     as: p.child("as", asItIs, true),
     semicolon: p.child("semicolon"),
@@ -1615,10 +1624,12 @@ const printCreateTableStatement: PrintFunc<bq2cst.CreateTableStatement> = (
       docs.self,
       docs.trailing_comments,
       docs.or_replace,
-      p.has("external") ? " " : "",
-      docs.external,
       p.has("temp") ? " " : "",
       docs.temp,
+      p.has("external") ? " " : "",
+      docs.external,
+      p.has("snapshot") ? " " : "",
+      docs.snapshot,
       " ",
       docs.what,
       docs.if_not_exists,
@@ -1632,6 +1643,8 @@ const printCreateTableStatement: PrintFunc<bq2cst.CreateTableStatement> = (
       docs.clusterby,
       p.has("with_partition_columns") ? line : "",
       docs.with_partition_columns,
+      p.has("clone") ? line : "",
+      docs.clone,
       p.has("options") ? line : "",
       docs.options,
       p.has("as") ? line : "",
@@ -2457,14 +2470,14 @@ const printKeywordWithExprs: PrintFunc<bq2cst.KeywordWithExprs> = (
   return [docs.leading_comments, res];
 };
 
-const printKeywordWithGroupedExpr: PrintFunc<bq2cst.KeywordWithGroupedExpr> = (
+const printKeywordWithGroupedXXX: PrintFunc<bq2cst.KeywordWithGroupedXXX> = (
   path,
   options,
   print,
   node
 ) => {
   const p = new Printer(path, options, print, node, node.children);
-  const docs: { [Key in Docs<bq2cst.KeywordWithGroupedExpr>]: Doc } = {
+  const docs: { [Key in Docs<bq2cst.KeywordWithGroupedXXX>]: Doc } = {
     leading_comments: printLeadingComments(path, options, print, node),
     self: p.self("upper"),
     trailing_comments: printTrailingComments(path, options, print, node),
@@ -2475,21 +2488,6 @@ const printKeywordWithGroupedExpr: PrintFunc<bq2cst.KeywordWithGroupedExpr> = (
     group([docs.self, docs.trailing_comments, " ", docs.group]),
   ];
 };
-
-const printKeywordWithGroupedExprs: PrintFunc<bq2cst.KeywordWithGroupedExprs> =
-  (path, options, print, node) => {
-    const p = new Printer(path, options, print, node, node.children);
-    const docs: { [Key in Docs<bq2cst.KeywordWithGroupedExprs>]: Doc } = {
-      leading_comments: printLeadingComments(path, options, print, node),
-      self: p.self("upper"),
-      trailing_comments: printTrailingComments(path, options, print, node),
-      group: p.child("group", asItIs, true),
-    };
-    return [
-      docs.leading_comments,
-      group([docs.self, docs.trailing_comments, " ", docs.group]),
-    ];
-  };
 
 const printKeywordWithStatement: PrintFunc<bq2cst.KeywordWithStatement> = (
   path,

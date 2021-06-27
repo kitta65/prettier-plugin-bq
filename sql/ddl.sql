@@ -18,6 +18,14 @@ create table if not exists table_name (x int64 not null)
 cluster by x
 as select 1 union all select 2;
 
+create table from_snap clone snap;
+
+-- SNAPSHOT
+create snapshot table snap
+clone t for system_time as of current_timestamp()
+options (description = "dummy")
+;
+
 -- EXTERNAL
 create external table table_name
 with partition columns
