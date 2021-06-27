@@ -1,3 +1,5 @@
-work/
-test/
-result/
+*
+!dist/**/*
+!package.json
+!README.md
+!LICENSE
