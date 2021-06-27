@@ -19,6 +19,14 @@ npx prettier --write ./xxx.sql
 
 For more information, please read the prettier document.
 
+## Configuration
+Below are the options that `@dr666m1/prettier-plugin-bq` currently supports.
+
+|API Option|CLI Option|Default|Description|
+|---|---|---|---|
+|printKeywordInUpperCase|print-keywords-in-upper-case|true|Print [reserved keywords](https://cloud.google.com/bigquery/docs/reference/standard-sql/lexical#reserved_keywords) and [functions](https://cloud.google.com/bigquery/docs/reference/standard-sql/functions-and-operators) in upper case.|
+|printPseudoColumnsInUpperCase|print-pseudo-columns-in-upper-case|true|Print pseudo columns (e.g. `_PARTITIONDATE`, `_PARTITIONTIME`) in upper case. When `printKeywordsInUpperCase` is `false`, this option is ignored.|
+
 ## Coding style
 This plugin doesn't follow any famous style guides,
 because none of them satisfies me.
