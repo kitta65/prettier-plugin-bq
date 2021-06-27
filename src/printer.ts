@@ -319,6 +319,9 @@ class Printer<T extends bq2cst.BaseNode> {
   }
   toUpper(key: keyof Children<T>) {
     const child = this.children[key];
+    if (!this.options.printKeywordsInUpperCase) {
+      return;
+    }
     if (isNodeChild(child)) {
       const token = child.Node.token;
       if (token) {
@@ -1128,6 +1131,12 @@ const printCallingFunctionGeneral: PrintFunc<bq2cst.CallingFunctionGeneral> = (
     p.toUpper("args");
   }
 
+  const toUpper = (x: string) => {
+    if (options.printKeywordsInUpperCase) {
+      x = x.toUpperCase()
+    }
+    return x
+  }
   if (func.node_type === "Identifier") {
     // SUBSTR("foo", 0, 2)
     if (globalFunctions.includes(func.token.literal.toUpperCase())) {
@@ -1143,31 +1152,31 @@ const printCallingFunctionGeneral: PrintFunc<bq2cst.CallingFunctionGeneral> = (
         case "SAFE":
           if (globalFunctions.includes(func.token.literal.toUpperCase())) {
             func.isPreDefinedFunction = true;
-            parent.token.literal = parent.token.literal.toUpperCase();
+            toUpper(parent.token.literal);
           }
           break;
         case "KEYS":
           if (keysFunctions.includes(func.token.literal.toUpperCase())) {
             func.isPreDefinedFunction = true;
-            parent.token.literal = parent.token.literal.toUpperCase();
+            toUpper(parent.token.literal);
           }
           break;
         case "AEAD":
           if (aeadFunctions.includes(func.token.literal.toUpperCase())) {
             func.isPreDefinedFunction = true;
-            parent.token.literal = parent.token.literal.toUpperCase();
+            toUpper(parent.token.literal);
           }
           break;
         case "NET":
           if (netFunctions.includes(func.token.literal.toUpperCase())) {
             func.isPreDefinedFunction = true;
-            parent.token.literal = parent.token.literal.toUpperCase();
+            toUpper(parent.token.literal);
           }
           break;
         case "HLL_COUNT":
           if (hllCountFunctions.includes(func.token.literal.toUpperCase())) {
             func.isPreDefinedFunction = true;
-            parent.token.literal = parent.token.literal.toUpperCase();
+            toUpper(parent.token.literal);
           }
           break;
       }
@@ -1180,33 +1189,29 @@ const printCallingFunctionGeneral: PrintFunc<bq2cst.CallingFunctionGeneral> = (
           case "KEYS":
             if (keysFunctions.includes(func.token.literal.toUpperCase())) {
               func.isPreDefinedFunction = true;
-              parent.token.literal = parent.token.literal.toUpperCase();
-              grandParent.token.literal =
-                grandParent.token.literal.toUpperCase();
+              toUpper(parent.token.literal);
+              toUpper(grandParent.token.literal);
             }
             break;
           case "AEAD":
             if (aeadFunctions.includes(func.token.literal.toUpperCase())) {
               func.isPreDefinedFunction = true;
-              parent.token.literal = parent.token.literal.toUpperCase();
-              grandParent.token.literal =
-                grandParent.token.literal.toUpperCase();
+              toUpper(parent.token.literal);
+              toUpper(grandParent.token.literal);
             }
             break;
           case "NET":
             if (netFunctions.includes(func.token.literal.toUpperCase())) {
               func.isPreDefinedFunction = true;
-              parent.token.literal = parent.token.literal.toUpperCase();
-              grandParent.token.literal =
-                grandParent.token.literal.toUpperCase();
+              toUpper(parent.token.literal);
+              toUpper(grandParent.token.literal);
             }
             break;
           case "HLL_COUNT":
             if (hllCountFunctions.includes(func.token.literal.toUpperCase())) {
               func.isPreDefinedFunction = true;
-              parent.token.literal = parent.token.literal.toUpperCase();
-              grandParent.token.literal =
-                grandParent.token.literal.toUpperCase();
+              toUpper(parent.token.literal);
+              toUpper(grandParent.token.literal);
             }
             break;
         }
@@ -1222,8 +1227,7 @@ const printCallingFunctionGeneral: PrintFunc<bq2cst.CallingFunctionGeneral> = (
         ["NORMALIZE", "NORMALIZE_AND_CASEFOLD"].includes(func_literal) &&
         2 <= p.len("args")
       ) {
-        args.NodeVec[1].token.literal =
-          args.NodeVec[1].token.literal.toUpperCase();
+        toUpper(args.NodeVec[1].token.literal);
       }
       // XXX_DIFF
       if (
@@ -1324,7 +1328,12 @@ const printCallingUnnest: PrintFunc<bq2cst.CallingUnnest> = (
   return [
     docs.self,
     docs.with_offset,
-    p.has("offset_alias") ? [" ", docs.offset_as || "AS"] : "",
+    p.has("offset_alias")
+      ? [
+          " ",
+          docs.offset_as || (options.printKeywordsInUpperCase ? "AS" : "as"),
+        ]
+      : "",
     p.has("offset_alias") ? [" ", docs.offset_alias] : "",
     docs.pivot,
   ];
@@ -1461,7 +1470,7 @@ const printComment: PrintFunc<bq2cst.Comment> = (
 const printCreateFunctionStatement: PrintFunc<bq2cst.CreateFunctionStatement> =
   (path, options, print, node) => {
     const p = new Printer(path, options, print, node, node.children);
-    p.setLiteral("temp", "TEMP");
+    p.setLiteral("temp", options.printKeywordsInUpperCase ? "TEMP" : "temp");
     const docs: { [Key in Docs<bq2cst.CreateFunctionStatement>]: Doc } = {
       leading_comments: printLeadingComments(path, options, print, node),
       self: p.self("upper"),
@@ -2091,7 +2100,11 @@ const printGroupedExprs: PrintFunc<bq2cst.GroupedExprs> = (
     trailing_comments: printTrailingComments(path, options, print, node),
     exprs: p.child("exprs", asItIs, false, line),
     rparen: p.child("rparen"),
-    as: p.has("as") ? p.child("as", asItIs, true) : "AS",
+    as: p.has("as")
+      ? p.child("as", asItIs, true)
+      : options.printKeywordsInUpperCase
+      ? "AS"
+      : "as",
     row_value_alias: p.child("row_value_alias", asItIs, true),
     comma: p.child("comma", asItIs, true),
   };
@@ -2396,7 +2409,13 @@ const printJoinOperator: PrintFunc<bq2cst.JoinOperator> = (
   return [
     docs.left,
     hardline,
-    p.includedIn(["JOIN"]) ? [docs.join_type || "INNER", " "] : "",
+    p.includedIn(["JOIN"])
+      ? [
+          docs.join_type ||
+            (options.printKeywordsInUpperCase ? "INNER" : "inner"),
+          " ",
+        ]
+      : "",
     docs.outer,
     docs.self,
     docs.trailing_comments,
@@ -2788,7 +2807,9 @@ const printPivotOperator: PrintFunc<bq2cst.PivotOperator> = (
     docs.trailing_comments,
     " ",
     docs.config,
-    p.has("alias") ? [" ", docs.as || "AS"] : "",
+    p.has("alias")
+      ? [" ", docs.as || (options.printKeywordsInUpperCase ? "AS" : "as")]
+      : "",
     p.has("alias") ? [" ", docs.alias] : "",
   ];
 };
@@ -3293,7 +3314,9 @@ const printUnpivotOperator: PrintFunc<bq2cst.UnpivotOperator> = (
     docs.trailing_comments,
     " ",
     docs.config,
-    p.has("alias") ? [" ", docs.as || "AS"] : "",
+    p.has("alias")
+      ? [" ", docs.as || (options.printKeywordsInUpperCase ? "AS" : "as")]
+      : "",
     p.has("alias") ? [" ", docs.alias] : "",
   ];
 };
@@ -3641,7 +3664,7 @@ const printAlias: PrintFunc<bq2cst.Expr> = (path, options, print, node) => {
   if (p.has("as")) {
     as_ = p.child("as", asItIs, true);
   } else {
-    as_ = "AS";
+    as_ = options.printKeywordsInUpperCase ? "AS" : "as";
   }
   return [" ", as_, " ", p.child("alias", asItIs, true)];
 };
