@@ -25,10 +25,6 @@ const {
 
 export type Children<T extends bq2cst.BaseNode> = T["children"];
 
-export type NodeChild = { Node: bq2cst.BaseNode };
-
-export type NodeVecChild = { NodeVec: bq2cst.BaseNode[] };
-
 export type NodeKeyof<T> = {
   [k in keyof T]-?: T[k] extends { Node: bq2cst.BaseNode } | undefined
     ? k
@@ -41,7 +37,7 @@ export type NodeVecKeyof<T> = {
     : never;
 }[keyof T];
 
-export const isNodeChild = (child: unknown): child is NodeChild => {
+export const isNodeChild = (child: unknown): child is bq2cst.NodeChild => {
   if (
     child &&
     typeof child === "object" &&
@@ -53,7 +49,7 @@ export const isNodeChild = (child: unknown): child is NodeChild => {
   return false;
 };
 
-export const isNodeVecChild = (child: unknown): child is NodeVecChild => {
+export const isNodeVecChild = (child: unknown): child is bq2cst.NodeVecChild => {
   if (
     child &&
     typeof child === "object" &&
