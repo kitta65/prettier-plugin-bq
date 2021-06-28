@@ -75,7 +75,11 @@ select
       -- comment
       then 'three'
     else null end,
-  case when int = 1 then 'one' else 'other' end as caseExpression
+  case when int = 1 then 'one' else 'other' end as caseExpression,
+  case
+    -- break
+    when int = 1 then 'one'
+    else 'other' end
 from t
 ;
 

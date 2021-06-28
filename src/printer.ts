@@ -49,7 +49,9 @@ export const isNodeChild = (child: unknown): child is bq2cst.NodeChild => {
   return false;
 };
 
-export const isNodeVecChild = (child: unknown): child is bq2cst.NodeVecChild => {
+export const isNodeVecChild = (
+  child: unknown
+): child is bq2cst.NodeVecChild => {
   if (
     child &&
     typeof child === "object" &&
@@ -286,6 +288,16 @@ class Printer<T extends bq2cst.BaseNode> {
     const child = this.children[key];
     if (isNodeChild(child)) {
       child.Node.breakRecommended = true;
+    }
+  }
+  setGroupRecommended(key: keyof Children<T>) {
+    const child = this.children[key];
+    if (isNodeChild(child)) {
+      child.Node.groupRecommended = true;
+    } else if (isNodeVecChild(child)) {
+      child.NodeVec.forEach((x) => {
+        x.groupRecommended = true;
+      });
     }
   }
   setLiteral(key: NodeKeyof<Children<T>>, literal: string) {
@@ -1068,6 +1080,7 @@ const printBinaryOperator: PrintFunc<bq2cst.BinaryOperator> = (
   node
 ) => {
   const p = new Printer(path, options, print, node, node.children);
+  p.setNotRoot("left");
   p.setNotRoot("right");
   const docs: { [Key in Docs<bq2cst.BinaryOperator>]: Doc } = {
     leading_comments: "", // eslint-disable-line unicorn/no-unused-properties
@@ -1082,8 +1095,8 @@ const printBinaryOperator: PrintFunc<bq2cst.BinaryOperator> = (
     null_order: "", // eslint-disable-line unicorn/no-unused-properties
     comma: printComma(path, options, print, node),
   };
-  return [
-    docs.left,
+  let operatorAndRight: Doc = [
+    // NOTE left is not included because it often has leading_comments and breaks.
     p.includedIn(["AND", "OR"])
       ? node.breakRecommended
         ? hardline
@@ -1095,10 +1108,11 @@ const printBinaryOperator: PrintFunc<bq2cst.BinaryOperator> = (
     " ",
     docs.trailing_comments,
     docs.right,
-    docs.alias,
-    docs.order,
-    docs.comma,
   ];
+  if (node.groupRecommended) {
+    operatorAndRight = group(operatorAndRight);
+  }
+  return [docs.left, operatorAndRight, docs.alias, docs.order, docs.comma];
 };
 
 const printCallingFunction: PrintFunc<bq2cst.CallingFunction> = (
@@ -1129,10 +1143,10 @@ const printCallingFunctionGeneral: PrintFunc<bq2cst.CallingFunctionGeneral> = (
 
   const toUpper = (x: string) => {
     if (options.printKeywordsInUpperCase) {
-      x = x.toUpperCase()
+      x = x.toUpperCase();
     }
-    return x
-  }
+    return x;
+  };
   if (func.node_type === "Identifier") {
     // SUBSTR("foo", 0, 2)
     if (globalFunctions.includes(func.token.literal.toUpperCase())) {
@@ -1403,7 +1417,7 @@ const printCaseExpr: PrintFunc<bq2cst.CaseExpr> = (
     self: p.self(),
     trailing_comments: printTrailingComments(path, options, print, node),
     expr: p.child("expr", asItIs, true),
-    arms: p.child("arms", (x) => group(x), false, line),
+    arms: p.child("arms", (x) => [line, group(x)], false),
     end: p.child("end", asItIs, true),
     as: "", // eslint-disable-line unicorn/no-unused-properties
     alias: printAlias(path, options, print, node),
@@ -1411,19 +1425,19 @@ const printCaseExpr: PrintFunc<bq2cst.CaseExpr> = (
     null_order: "", // eslint-disable-line unicorn/no-unused-properties
     comma: printComma(path, options, print, node),
   };
-  return [
-    docs.leading_comments,
+  let res: Doc = [
     docs.self,
     docs.trailing_comments,
-    " ",
+    p.has("expr") ? " " : "",
     docs.expr,
-    indent([p.has("expr") ? line : "", docs.arms]),
+    indent(docs.arms),
     " ",
     docs.end,
-    docs.alias,
-    docs.order,
-    docs.comma,
   ];
+  if (p.len("arms") <= 2) {
+    res = group(res);
+  }
+  return [docs.leading_comments, res, docs.alias, docs.order, docs.comma];
 };
 
 const printCastArgument: PrintFunc<bq2cst.CastArgument> = (
@@ -2090,6 +2104,7 @@ const printGroupedExprs: PrintFunc<bq2cst.GroupedExprs> = (
   node
 ) => {
   const p = new Printer(path, options, print, node, node.children);
+  p.setGroupRecommended("exprs");
   const docs: { [Key in Docs<bq2cst.GroupedExprs>]: Doc } = {
     leading_comments: printLeadingComments(path, options, print, node),
     self: p.self(),
@@ -2472,6 +2487,7 @@ const printKeywordWithExprs: PrintFunc<bq2cst.KeywordWithExprs> = (
   node
 ) => {
   const p = new Printer(path, options, print, node, node.children);
+  p.setGroupRecommended("exprs");
   const docs: { [Key in Docs<bq2cst.KeywordWithExprs>]: Doc } = {
     leading_comments: printLeadingComments(path, options, print, node),
     self: p.self("upper"),
@@ -2846,6 +2862,7 @@ const printSelectStatement: PrintFunc<bq2cst.SelectStatement> = (
 ) => {
   const p = new Printer(path, options, print, node, node.children);
   p.setNotRoot("exprs");
+  p.setGroupRecommended("exprs");
   node.children.exprs.NodeVec[p.len("exprs") - 1].isFinalColumn = true;
   const docs: { [Key in Docs<bq2cst.SelectStatement>]: Doc } = {
     with: p.child("with"),
@@ -3629,6 +3646,7 @@ const printXXXByExprs: PrintFunc<bq2cst.XXXByExprs> = (
   node
 ) => {
   const p = new Printer(path, options, print, node, node.children);
+  p.setGroupRecommended("exprs");
   const docs: { [Key in Docs<bq2cst.XXXByExprs>]: Doc } = {
     leading_comments: printLeadingComments(path, options, print, node),
     self: p.self("upper"),

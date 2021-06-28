@@ -18,6 +18,7 @@ declare module "@dr666m1/bq2cst" {
      * if it is true, the statement is a part of another statement.
      */
     breakRecommended?: true;
+    groupRecommended?: true;
     emptyLines?: number;
     isDatePart?: true;
     isFinalColumn?: true;
