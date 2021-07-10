@@ -1426,12 +1426,8 @@ const printCaseArm: PrintFunc<bq2cst.CaseArm> = (
     docs.leading_comments,
     docs.self,
     docs.trailing_comments,
-    " ",
-    docs.expr,
-    indent([
-      p.has("expr") ? line : "",
-      group([docs.then, p.has("then") ? " " : "", docs.result]),
-    ]),
+    group([indent([p.has("expr") ? line : "", docs.expr])]),
+    indent([p.has("then") ? line : "", group([docs.then, " ", docs.result])]),
   ];
 };
 

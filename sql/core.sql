@@ -79,6 +79,13 @@ select
   case
     -- break
     when int = 1 then 'one'
+    when
+      int in (
+        -- break
+        2,
+        3
+      )
+      then 'two or three'
     else 'other' end
 from t
 ;
