@@ -460,6 +460,8 @@ export const printSQL = (
       return printBooleanLiteral(path, options, print, node);
     case "BinaryOperator":
       return printBinaryOperator(path, options, print, node);
+    case "CallingArrayAccessingFunction":
+      return printCallingArrayAccessingFunction(path, options, print, node);
     case "CallingFunction":
       return printCallingFunction(path, options, print, node);
     case "CallingUnnest":
@@ -861,8 +863,8 @@ const printArrayAccessing: PrintFunc<bq2cst.ArrayAccessing> = (
     left: p.child("left"),
     self: p.self("asItIs", true),
     trailing_comments: printTrailingComments(path, options, print, node),
-    right: p.child("right"),
-    rparen: p.child("rparen"),
+    right: p.child("right", asItIs, true),
+    rparen: p.child("rparen", asItIs, true),
     as: "", // eslint-disable-line unicorn/no-unused-properties
     alias: printAlias(path, options, print, node),
     order: printOrder(path, options, print, node),
@@ -874,8 +876,7 @@ const printArrayAccessing: PrintFunc<bq2cst.ArrayAccessing> = (
       docs.left,
       docs.self,
       docs.trailing_comments,
-      indent([softline, docs.right]),
-      softline,
+      docs.right,
       docs.rparen,
       docs.alias,
       docs.order,
@@ -1114,6 +1115,34 @@ const printBinaryOperator: PrintFunc<bq2cst.BinaryOperator> = (
   }
   return [docs.left, operatorAndRight, docs.alias, docs.order, docs.comma];
 };
+
+const printCallingArrayAccessingFunction: PrintFunc<bq2cst.CallingArrayAccessingFunction> = (
+  path,
+  options,
+  print,
+  node
+) => {
+  const p = new Printer(path, options, print, node, node.children);
+  p.setNotRoot("args");
+  if (2 <= p.len("args")) {
+    throw "Only one argument is expected!"
+  }
+  const docs: { [Key in Docs<bq2cst.CallingArrayAccessingFunction>]: Doc } = {
+    leading_comments: "", // eslint-disable-line unicorn/no-unused-properties
+    func: p.child("func"),
+    self: p.self("asItIs", true),
+    trailing_comments: printTrailingComments(path, options, print, node),
+    args: p.child("args", (x) => group(x), true, line),
+    rparen: p.child("rparen", asItIs, true),
+  };
+  return [
+    docs.func,
+    docs.self,
+    docs.trailing_comments,
+    docs.args,
+    docs.rparen,
+  ]
+}
 
 const printCallingFunction: PrintFunc<bq2cst.CallingFunction> = (
   path,
