@@ -1033,15 +1033,17 @@ const printBetweenOperator: PrintFunc<bq2cst.BetweenOperator> = (
     docs.left,
     " ",
     p.has("not") ? [docs.not, " "] : "",
-    docs.self,
-    docs.trailing_comments,
-    indent([
-      line,
-      group(docs.right_min),
-      line,
-      group([docs.and, " ", docs.right_max]),
-      docs.alias,
-      docs.order,
+    group([
+      docs.self,
+      docs.trailing_comments,
+      indent([
+        line,
+        group(docs.right_min),
+        line,
+        group([docs.and, " ", docs.right_max]),
+        docs.alias,
+        docs.order,
+      ]),
     ]),
     docs.comma,
   ];
