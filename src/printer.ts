@@ -1116,7 +1116,8 @@ const printBinaryOperator: PrintFunc<bq2cst.BinaryOperator> = (
   return [docs.left, operatorAndRight, docs.alias, docs.order, docs.comma];
 };
 
-const printCallingArrayAccessingFunction: PrintFunc<bq2cst.CallingArrayAccessingFunction> = (
+const printCallingArrayAccessingFunction: //
+PrintFunc<bq2cst.CallingArrayAccessingFunction> = (
   path,
   options,
   print,
@@ -1125,7 +1126,11 @@ const printCallingArrayAccessingFunction: PrintFunc<bq2cst.CallingArrayAccessing
   const p = new Printer(path, options, print, node, node.children);
   p.setNotRoot("args");
   if (2 <= p.len("args")) {
-    throw "Only one argument is expected!"
+    throw "Only one argument is expected!";
+  }
+  const funcToken = p.node.children.func.Node.token;
+  if (globalFunctions.includes(funcToken.literal.toUpperCase())) {
+    funcToken.literal = funcToken.literal.toUpperCase();
   }
   const docs: { [Key in Docs<bq2cst.CallingArrayAccessingFunction>]: Doc } = {
     leading_comments: "", // eslint-disable-line unicorn/no-unused-properties
@@ -1135,14 +1140,8 @@ const printCallingArrayAccessingFunction: PrintFunc<bq2cst.CallingArrayAccessing
     args: p.child("args", (x) => group(x), true, line),
     rparen: p.child("rparen", asItIs, true),
   };
-  return [
-    docs.func,
-    docs.self,
-    docs.trailing_comments,
-    docs.args,
-    docs.rparen,
-  ]
-}
+  return [docs.func, docs.self, docs.trailing_comments, docs.args, docs.rparen];
+};
 
 const printCallingFunction: PrintFunc<bq2cst.CallingFunction> = (
   path,
@@ -1170,9 +1169,9 @@ const printCallingFunctionGeneral: PrintFunc<bq2cst.CallingFunctionGeneral> = (
     p.toUpper("args");
   }
 
-  const toUpper = (x: string) => {
+  const toUpper = (x: bq2cst.Token) => {
     if (options.printKeywordsInUpperCase) {
-      x = x.toUpperCase();
+      x.literal = x.literal.toUpperCase();
     }
     return x;
   };
@@ -1191,31 +1190,31 @@ const printCallingFunctionGeneral: PrintFunc<bq2cst.CallingFunctionGeneral> = (
         case "SAFE":
           if (globalFunctions.includes(func.token.literal.toUpperCase())) {
             func.isPreDefinedFunction = true;
-            toUpper(parent.token.literal);
+            toUpper(parent.token);
           }
           break;
         case "KEYS":
           if (keysFunctions.includes(func.token.literal.toUpperCase())) {
             func.isPreDefinedFunction = true;
-            toUpper(parent.token.literal);
+            toUpper(parent.token);
           }
           break;
         case "AEAD":
           if (aeadFunctions.includes(func.token.literal.toUpperCase())) {
             func.isPreDefinedFunction = true;
-            toUpper(parent.token.literal);
+            toUpper(parent.token);
           }
           break;
         case "NET":
           if (netFunctions.includes(func.token.literal.toUpperCase())) {
             func.isPreDefinedFunction = true;
-            toUpper(parent.token.literal);
+            toUpper(parent.token);
           }
           break;
         case "HLL_COUNT":
           if (hllCountFunctions.includes(func.token.literal.toUpperCase())) {
             func.isPreDefinedFunction = true;
-            toUpper(parent.token.literal);
+            toUpper(parent.token);
           }
           break;
       }
@@ -1228,29 +1227,29 @@ const printCallingFunctionGeneral: PrintFunc<bq2cst.CallingFunctionGeneral> = (
           case "KEYS":
             if (keysFunctions.includes(func.token.literal.toUpperCase())) {
               func.isPreDefinedFunction = true;
-              toUpper(parent.token.literal);
-              toUpper(grandParent.token.literal);
+              toUpper(parent.token);
+              toUpper(grandParent.token);
             }
             break;
           case "AEAD":
             if (aeadFunctions.includes(func.token.literal.toUpperCase())) {
               func.isPreDefinedFunction = true;
-              toUpper(parent.token.literal);
-              toUpper(grandParent.token.literal);
+              toUpper(parent.token);
+              toUpper(grandParent.token);
             }
             break;
           case "NET":
             if (netFunctions.includes(func.token.literal.toUpperCase())) {
               func.isPreDefinedFunction = true;
-              toUpper(parent.token.literal);
-              toUpper(grandParent.token.literal);
+              toUpper(parent.token);
+              toUpper(grandParent.token);
             }
             break;
           case "HLL_COUNT":
             if (hllCountFunctions.includes(func.token.literal.toUpperCase())) {
               func.isPreDefinedFunction = true;
-              toUpper(parent.token.literal);
-              toUpper(grandParent.token.literal);
+              toUpper(parent.token);
+              toUpper(grandParent.token);
             }
             break;
         }
@@ -1266,7 +1265,7 @@ const printCallingFunctionGeneral: PrintFunc<bq2cst.CallingFunctionGeneral> = (
         ["NORMALIZE", "NORMALIZE_AND_CASEFOLD"].includes(func_literal) &&
         2 <= p.len("args")
       ) {
-        toUpper(args.NodeVec[1].token.literal);
+        toUpper(args.NodeVec[1].token);
       }
       // XXX_DIFF
       if (
@@ -1301,7 +1300,7 @@ const printCallingFunctionGeneral: PrintFunc<bq2cst.CallingFunctionGeneral> = (
     trailing_comments: printTrailingComments(path, options, print, node),
     distinct: p.child("distinct", (x) => [x, line]),
     args: p.child("args", (x) => group(x), false, line),
-    ignore_nulls: p.child("ignore_nulls", asItIs, false, " "),
+    ignore_nulls: group(p.child("ignore_nulls", asItIs, false, line)),
     orderby: p.child("orderby"),
     limit: p.child("limit"),
     rparen: p.child("rparen"),
