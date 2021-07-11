@@ -508,6 +508,8 @@ export const printSQL = (
       return printExtractArgument(path, options, print, node);
     case "ForSystemTimeAsOfClause":
       return printForSystemTimeAsOfclause(path, options, print, node);
+    case "GrantStatement":
+      return printGrantStatement(path, options, print, node);
     case "GroupedExpr":
       return printGroupedExpr(path, options, print, node);
     case "GroupedExprs":
@@ -564,6 +566,8 @@ export const printSQL = (
       return printPivotConfig(path, options, print, node);
     case "PivotOperator":
       return printPivotOperator(path, options, print, node);
+    case "RevokeStatement":
+      return printRevokeStatement(path, options, print, node);
     case "RaiseStatement":
       return printRaiseStatement(path, options, print, node);
     case "SelectStatement":
@@ -2098,6 +2102,43 @@ const printForSystemTimeAsOfclause: PrintFunc<bq2cst.ForSystemTimeAsOfClause> =
     ];
   };
 
+const printGrantStatement: PrintFunc<bq2cst.GrantStatement> = (
+  path,
+  options,
+  print,
+  node
+) => {
+  const p = new Printer(path, options, print, node, node.children);
+  const docs: { [Key in Docs<bq2cst.GrantStatement>]: Doc } = {
+    leading_comments: printLeadingComments(path, options, print, node),
+    self: p.self("upper"),
+    trailing_comments: printTrailingComments(path, options, print, node),
+    roles: p.child("roles", (x) => [line, x]),
+    on: p.child("on"),
+    resource_type: p.child("resource_type", asItIs, true),
+    ident: p.child("ident", asItIs, true),
+    to: p.child("to"),
+    semicolon: p.child("semicolon"),
+  };
+  return [
+    docs.leading_comments,
+    group([
+      group([docs.self, docs.trailing_comments, docs.roles]),
+      line,
+      docs.on,
+      " ",
+      docs.resource_type,
+      " ",
+      docs.ident,
+      line,
+      group(docs.to),
+      softline,
+      docs.semicolon,
+    ]),
+    p.newLine(),
+  ];
+};
+
 const printGroupedExpr: PrintFunc<bq2cst.GroupedExpr> = (
   path,
   options,
@@ -2861,6 +2902,43 @@ const printPivotOperator: PrintFunc<bq2cst.PivotOperator> = (
       ? [" ", docs.as || (options.printKeywordsInUpperCase ? "AS" : "as")]
       : "",
     p.has("alias") ? [" ", docs.alias] : "",
+  ];
+};
+
+const printRevokeStatement: PrintFunc<bq2cst.RevokeStatement> = (
+  path,
+  options,
+  print,
+  node
+) => {
+  const p = new Printer(path, options, print, node, node.children);
+  const docs: { [Key in Docs<bq2cst.RevokeStatement>]: Doc } = {
+    leading_comments: printLeadingComments(path, options, print, node),
+    self: p.self("upper"),
+    trailing_comments: printTrailingComments(path, options, print, node),
+    roles: p.child("roles", (x) => [line, x]),
+    on: p.child("on"),
+    resource_type: p.child("resource_type", asItIs, true),
+    ident: p.child("ident", asItIs, true),
+    from: p.child("from"),
+    semicolon: p.child("semicolon"),
+  };
+  return [
+    docs.leading_comments,
+    group([
+      group([docs.self, docs.trailing_comments, docs.roles]),
+      line,
+      docs.on,
+      " ",
+      docs.resource_type,
+      " ",
+      docs.ident,
+      line,
+      group(docs.from),
+      softline,
+      docs.semicolon,
+    ]),
+    p.newLine(),
   ];
 };
 
