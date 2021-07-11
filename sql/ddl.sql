@@ -146,6 +146,12 @@ alter column int drop not null;
 alter table if exists t
 alter column if exists int drop not null;
 
+alter table t
+alter column if exists int
+-- break
+set options (description = 'description')
+;
+
 ----- ALTER VIEW statement -----
 alter view example set options (
   dummy = 'dummy',
