@@ -85,6 +85,14 @@ do
   select 2;
 end while;
 
+----- transaction statement -----
+begin
+  begin transaction;
+  commit transaction;
+exception when error then
+  rollback;
+end;
+
 ----- RAISE statement -----
 begin
 exception when error then

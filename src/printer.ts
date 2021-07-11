@@ -588,6 +588,8 @@ export const printSQL = (
       return printTableSampleClause(path, options, print, node);
     case "TableSampleRatio":
       return printTableSampleRatio(path, options, print, node);
+    case "TransactionStatement":
+      return printTransactionStatement(path, options, print, node);
     case "TruncateStatement":
       return printTruncateStatement(path, options, print, node);
     case "Type":
@@ -3267,6 +3269,31 @@ const printTableSampleRatio: PrintFunc<bq2cst.TableSampleRatio> = (
     " ",
     docs.percent,
     docs.rparen,
+  ];
+};
+
+const printTransactionStatement: PrintFunc<bq2cst.TransactionStatement> = (
+  path,
+  options,
+  print,
+  node
+) => {
+  const p = new Printer(path, options, print, node, node.children);
+  const docs: { [Key in Docs<bq2cst.TransactionStatement>]: Doc } = {
+    leading_comments: printLeadingComments(path, options, print, node),
+    self: p.self("upper"),
+    trailing_comments: printTrailingComments(path, options, print, node),
+    transaction: p.child("transaction", asItIs, true),
+    semicolon: p.child("semicolon", asItIs, true),
+  };
+  return [
+    docs.leading_comments,
+    docs.self,
+    docs.trailing_comments,
+    p.has("transaction") ? " " : "",
+    docs.transaction,
+    docs.semicolon,
+    p.newLine(),
   ];
 };
 
