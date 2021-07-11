@@ -135,6 +135,8 @@ export const globalFunctions = [
   "BIT_COUNT",
   // conversion functions
   "CAST",
+  "PARSE_BIGNUMERIC",
+  "PARSE_NUMERIC",
   "SAFE_CAST",
   // date functions
   "CURRENT_DATE",
@@ -186,6 +188,7 @@ export const globalFunctions = [
   "ST_DWITHIN",
   "ST_ENDPOINT",
   "ST_EQUALS",
+  "ST_GEOGFROM",
   "ST_GEOGFROMGEOJSON",
   "ST_GEOGFROMTEXT",
   "ST_GEOGFROMWKB",
