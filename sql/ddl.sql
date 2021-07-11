@@ -87,6 +87,19 @@ as '''
 create function abc() returns int64 not deterministic language js
 as '''return 1''';
 
+-- TVF
+create table function one()
+as select 1 as one
+;
+
+create table function one()
+-- break
+returns table<one int64>
+as
+  -- break
+  select 1 as one
+;
+
 ----- CREATE PROCEDURE statement -----
 create procedure abc() begin select 'abc'; end;
 

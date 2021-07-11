@@ -668,6 +668,8 @@ const printAlterColumnStatement: PrintFunc<bq2cst.AlterColumnStatement> = (
     what: p.child("what", asItIs, true),
     if_exists: p.child("if_exists", (x) => group([line, x])),
     ident: p.child("ident", asItIs, true),
+    set: p.child("set"),
+    options: p.child("options", asItIs, true),
     drop_not_null: p.child("drop_not_null", (x) => group([line, x])),
   };
   return [
@@ -680,6 +682,10 @@ const printAlterColumnStatement: PrintFunc<bq2cst.AlterColumnStatement> = (
       docs.if_exists,
       " ",
       docs.ident,
+      p.has("set") ? line : "",
+      docs.set,
+      p.has("options") ? " " : "",
+      docs.options,
       docs.drop_not_null,
     ]),
   ];
@@ -1479,6 +1485,7 @@ const printCastArgument: PrintFunc<bq2cst.CastArgument> = (
     self: p.self("upper", true),
     trailing_comments: printTrailingComments(path, options, print, node),
     cast_to: p.child("cast_to", asItIs, true),
+    format: p.child("format", asItIs, true),
   };
   return [
     docs.cast_from,
@@ -1487,6 +1494,8 @@ const printCastArgument: PrintFunc<bq2cst.CastArgument> = (
     docs.trailing_comments,
     " ",
     docs.cast_to,
+    p.has("format") ? " " : "",
+    docs.format,
   ];
 };
 
@@ -1513,6 +1522,7 @@ const printCreateFunctionStatement: PrintFunc<bq2cst.CreateFunctionStatement> =
       trailing_comments: printTrailingComments(path, options, print, node),
       or_replace: p.child("or_replace", (x) => group([line, x])),
       temp: p.child("temp", asItIs, true),
+      table: p.child("table", asItIs, true),
       what: p.child("what", asItIs, true),
       if_not_exists: p.child("if_not_exists", (x) => group([line, x])),
       ident: p.child("ident", asItIs, true),
@@ -1533,6 +1543,8 @@ const printCreateFunctionStatement: PrintFunc<bq2cst.CreateFunctionStatement> =
           docs.or_replace,
           p.has("temp") ? " " : "",
           docs.temp,
+          p.has("table") ? " " : "",
+          docs.table,
           " ",
           docs.what,
           docs.if_not_exists,
