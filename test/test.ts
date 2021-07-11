@@ -52,8 +52,18 @@ test("ddl.sql", async () => {
   await dryRun(format(sql));
 });
 
+test("dcl.sql", async () => {
+  const sql = await read("./result/dcl.sql");
+  await dryRun(format(sql));
+});
+
 test("script.sql", async () => {
   const sql = await read("./result/script.sql");
+  await dryRun(format(sql));
+});
+
+test("debug.sql", async () => {
+  const sql = await read("./result/debug.sql");
   await dryRun(format(sql));
 });
 
