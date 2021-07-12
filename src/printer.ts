@@ -1314,7 +1314,7 @@ const printCallingFunctionGeneral: PrintFunc<bq2cst.CallingFunctionGeneral> = (
     trailing_comments: printTrailingComments(path, options, print, node),
     distinct: p.child("distinct", (x) => [x, line]),
     args: p.child("args", (x) => group(x), false, line),
-    ignore_nulls: group(p.child("ignore_nulls", asItIs, false, line)),
+    ignore_nulls: p.child("ignore_nulls", asItIs, false, line),
     orderby: p.child("orderby"),
     limit: p.child("limit"),
     rparen: p.child("rparen"),
@@ -1325,24 +1325,31 @@ const printCallingFunctionGeneral: PrintFunc<bq2cst.CallingFunctionGeneral> = (
     null_order: "", // eslint-disable-line unicorn/no-unused-properties
     comma: printComma(path, options, print, node),
   };
+  const trailings = [docs.ignore_nulls, docs.orderby, docs.limit].filter(
+    (x) => x !== ""
+  );
+  const noNewLine =
+    !p.has("distinct") &&
+    p.len("args") <= 1 &&
+    !p.hasLeadingComments("args") &&
+    trailings.length === 0 &&
+    !p.hasLeadingComments("rparen")
+      ? true
+      : false;
+  const insideParen = [
+    noNewLine ? "" : softline,
+    docs.distinct,
+    docs.args,
+    trailings.map((x) => [line, group(x)]),
+  ];
   return [
     // func often has leading_comments, so it is placed out of group
     docs.func,
     group([
       docs.self,
       docs.trailing_comments,
-      indent([
-        p.has("args") ? softline : "",
-        docs.distinct,
-        docs.args,
-        p.has("ignore_nulls") ? line : "",
-        group(docs.ignore_nulls),
-        p.has("orderby") ? line : "",
-        group(docs.orderby),
-        p.has("limit") ? line : "",
-        group(docs.limit),
-      ]),
-      p.has("args") ? softline : "",
+      noNewLine ? insideParen : indent(insideParen),
+      noNewLine ? "" : softline,
       docs.rparen,
     ]),
     docs.over,
