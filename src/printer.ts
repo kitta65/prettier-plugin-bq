@@ -182,7 +182,7 @@ class Printer<T extends bq2cst.BaseNode> {
     }
     return "";
   }
-  consumeLeadingCommentsOfX(key: keyof Children<T>) {
+  consumeLeadingCommentsOfX(key: keyof Children<T>, asLineSuffix = true) {
     const firstNode = this.getFirstNode(key);
     if (!firstNode) {
       return "";
@@ -190,7 +190,9 @@ class Printer<T extends bq2cst.BaseNode> {
     const leading_comments = firstNode.children.leading_comments;
     if (leading_comments) {
       const res = leading_comments.NodeVec.map((x) =>
-        lineSuffix([" ", x.token.literal])
+        asLineSuffix
+          ? lineSuffix([" ", x.token.literal])
+          : [x.token.literal, hardline]
       );
       delete firstNode.children.leading_comments;
       return res;
@@ -1097,8 +1099,9 @@ const printBinaryOperator: PrintFunc<bq2cst.BinaryOperator> = (
   const p = new Printer(path, options, print, node, node.children);
   p.setNotRoot("left");
   p.setNotRoot("right");
+  const leading_comments = p.consumeLeadingCommentsOfX("left", false);
   const docs: { [Key in Docs<bq2cst.BinaryOperator>]: Doc } = {
-    leading_comments: "", // eslint-disable-line unicorn/no-unused-properties
+    leading_comments: leading_comments,
     left: p.child("left"),
     not: p.child("not", asItIs, true),
     self: p.self("upper", true),
@@ -1110,24 +1113,49 @@ const printBinaryOperator: PrintFunc<bq2cst.BinaryOperator> = (
     null_order: "", // eslint-disable-line unicorn/no-unused-properties
     comma: printComma(path, options, print, node),
   };
-  let operatorAndRight: Doc = [
-    // NOTE left is not included because it often has leading_comments and breaks.
-    p.includedIn(["AND", "OR"])
-      ? node.breakRecommended
-        ? hardline
-        : line
-      : " ",
+
+  const logical = p.includedIn(["AND", "OR"]);
+  // directly asigning to `docs.left` is not good idea
+  // because it disturbs eslint-plugin-unicorn
+  let left = docs.left;
+  let right = docs.right;
+  if (logical) {
+    if (
+      !["AND", "OR"].includes(
+        p.node.children.left.Node.token.literal.toUpperCase()
+      )
+    ) {
+      left = group(docs.left);
+    }
+    if (
+      !["AND", "OR"].includes(
+        p.node.children.right.Node.token.literal.toUpperCase()
+      )
+    ) {
+      right = group(docs.right);
+    }
+  } else {
+    if (p.node.children.left.Node.node_type !== "BinaryOperator") {
+      left = group(docs.left);
+    }
+    if (p.node.children.right.Node.node_type !== "BinaryOperator") {
+      right = group(docs.right);
+    }
+  }
+  let res: Doc = [
+    left,
+    logical && node.breakRecommended ? hardline : line,
     p.has("not") && !p.includedIn(["IS"]) ? [docs.not, " "] : "",
     docs.self,
     p.has("not") && p.includedIn(["IS"]) ? [" ", docs.not] : "",
     " ",
     docs.trailing_comments,
-    docs.right,
+    right,
   ];
   if (node.groupRecommended) {
-    operatorAndRight = group(operatorAndRight);
+    res = group(res);
   }
-  return [docs.left, operatorAndRight, docs.alias, docs.order, docs.comma];
+  return [docs.leading_comments, res, docs.alias, docs.order, docs.comma];
 };
 
 const printCallingArrayAccessingFunction: //
@@ -3109,6 +3137,7 @@ const printSetStatement: PrintFunc<bq2cst.SetStatement> = (
   node
 ) => {
   const p = new Printer(path, options, print, node, node.children);
+  p.setGroupRecommended("expr");
   const docs: { [Key in Docs<bq2cst.SetStatement>]: Doc } = {
     leading_comments: printLeadingComments(path, options, print, node),
     self: p.self("upper"),
