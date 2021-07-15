@@ -25,6 +25,12 @@ const printers = {
 const CATEGORY_BQ = "BQ";
 
 const options = {
+  formatMultilineComment: {
+    type: "boolean",
+    category: CATEGORY_BQ,
+    default: false,
+    description: "Format multiline-comment.",
+  },
   printKeywordsInUpperCase: {
     type: "boolean",
     category: CATEGORY_BQ,

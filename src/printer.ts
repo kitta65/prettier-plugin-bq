@@ -1547,6 +1547,38 @@ const printComment: PrintFunc<bq2cst.Comment> = (
   node
 ) => {
   const p = new Printer(path, options, print, node, node.children);
+  const token = p.node.token;
+  const splittedComment = token.literal.split("\n").map((x) => x.trim());
+  if (options.formatMultilineComment && 2 <= splittedComment.length) {
+    const formattedRows = [];
+    const firstRow = splittedComment.shift();
+    if (firstRow && 3 <= firstRow.length) {
+      formattedRows.push(firstRow.slice(0, 2));
+      formattedRows.push(" * " + firstRow.slice(2).trim());
+    } else {
+      formattedRows.push(firstRow);
+    }
+    const lastRow = splittedComment.pop();
+    for (const row of splittedComment) {
+      if (row.startsWith("*")) {
+        formattedRows.push(" " + row);
+      } else {
+        formattedRows.push(" * " + row);
+      }
+    }
+    if (lastRow && 3 <= lastRow.length) {
+      const lastRowHead = lastRow.slice(0, -2).trim();
+      if (lastRowHead.startsWith("*")) {
+        formattedRows.push(" " + lastRowHead);
+      } else {
+        formattedRows.push(" * " + lastRowHead);
+      }
+      formattedRows.push(" " + lastRow.slice(-2));
+    } else {
+      formattedRows.push(" " + lastRow!.slice(-2)); // eslint-disable-line @typescript-eslint/no-non-null-assertion
+    }
+    token.literal = formattedRows.join("\n");
+  }
   const docs: { [Key in Docs<bq2cst.Comment>]: Doc } = {
     self: p.self(),
   };
