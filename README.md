@@ -24,6 +24,7 @@ Below are the options that `@dr666m1/prettier-plugin-bq` currently supports.
 
 |API Option|CLI Option|Default|Description|
 |---|---|---|---|
+|formatMultilineComment|format-multiline-comment|false|Print multiline commnets in ["starred-block"](https://eslint.org/docs/rules/multiline-comment-style) style.|
 |printKeywordInUpperCase|print-keywords-in-upper-case|true|Print [reserved keywords](https://cloud.google.com/bigquery/docs/reference/standard-sql/lexical#reserved_keywords) and [functions](https://cloud.google.com/bigquery/docs/reference/standard-sql/functions-and-operators) in upper case.|
 |printPseudoColumnsInUpperCase|print-pseudo-columns-in-upper-case|true|Print pseudo columns (e.g. `_PARTITIONDATE`, `_PARTITIONTIME`) in upper case. When `printKeywordsInUpperCase` is `false`, this option is ignored.|
 
