@@ -482,6 +482,8 @@ export const printSQL = (
       return printCreateFunctionStatement(path, options, print, node);
     case "CreateProcedureStatement":
       return printCreateProcedureStatement(path, options, print, node);
+    case "CreateReservationStatement":
+      return printCreateReservationStatement(path, options, print, node);
     case "CreateSchemaStatement":
       return printCreateSchemaStatement(path, options, print, node);
     case "CreateTableStatement":
@@ -1677,6 +1679,42 @@ const printCreateProcedureStatement: PrintFunc<bq2cst.CreateProcedureStatement> 
         docs.options,
         line,
         docs.stmt,
+        softline,
+        docs.semicolon,
+      ]),
+      p.newLine(),
+    ];
+  };
+
+const printCreateReservationStatement: PrintFunc<bq2cst.CreateReservationStatement> =
+  (path, options, print, node) => {
+    const p = new Printer(path, options, print, node, node.children);
+    const docs: { [Key in Docs<bq2cst.CreateReservationStatement>]: Doc } = {
+      leading_comments: printLeadingComments(path, options, print, node),
+      self: p.self("upper"),
+      trailing_comments: printTrailingComments(path, options, print, node),
+      what: p.child("what", asItIs, true),
+      ident: p.child("ident", asItIs, true),
+      as: p.child("as"),
+      json: p.child("json", asItIs, true),
+      json_string: p.child("json_string", asItIs, true),
+      semicolon: p.child("semicolon"),
+    };
+    return [
+      docs.leading_comments,
+      group([
+        docs.self,
+        docs.trailing_comments,
+        " ",
+        docs.what,
+        " ",
+        docs.ident,
+        line,
+        docs.as,
+        " ",
+        docs.json,
+        " ",
+        docs.json_string,
         softline,
         docs.semicolon,
       ]),

@@ -313,6 +313,7 @@ export const globalFunctions = [
   "CODE_POINTS_TO_BYTES",
   "CODE_POINTS_TO_STRING",
   "CONCAT",
+  "CONTAINS_SUBSTR",
   "ENDS_WITH",
   "FORMAT",
   "FROM_BASE32",
