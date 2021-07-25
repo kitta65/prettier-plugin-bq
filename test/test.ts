@@ -68,6 +68,6 @@ test("debug.sql", async () => {
 });
 
 test("other.sql", async () => {
-  const sql = await read("./result/select.sql");
+  const sql = await read("./result/other.sql");
   await dryRun(format(sql));
 });
