@@ -27,6 +27,11 @@ select
   1 in (1000000000000000, 2000000000000000, 3000000000000000, 4000000000000000, 5000000000000000),
   1 not in (1, 2, 3) as notOneTwoThree,
 ;
+select 1 in (
+  -- break
+  select 1
+)
+;
 
 -- LIKE
 select

@@ -952,7 +952,6 @@ const printAssertStatement: PrintFunc<bq2cst.AssertStatement> = (
     leading_comments: printLeadingComments(path, options, print, node),
     self: p.self("upper"),
     trailing_comments: printTrailingComments(path, options, print, node),
-    // TODO define as function
     expr:
       !p.hasLeadingComments("expr") &&
       ["GroupedExpr", "GroupedStatement", "CallingFunction"].includes(
@@ -2485,6 +2484,7 @@ const printInOperator: PrintFunc<bq2cst.InOperator> = (
   node
 ) => {
   const p = new Printer(path, options, print, node, node.children);
+  p.setNotRoot("right");
   const docs: { [Key in Docs<bq2cst.InOperator>]: Doc } = {
     leading_comments: "", // eslint-disable-line unicorn/no-unused-properties
     left: p.child("left"),
