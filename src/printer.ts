@@ -1357,7 +1357,7 @@ const printCallingFunctionGeneral: PrintFunc<bq2cst.CallingFunctionGeneral> = (
   const trailings = [docs.ignore_nulls, docs.orderby, docs.limit].filter(
     (x) => x !== ""
   );
-  const noNewLine =
+  let noNewLine =
     !p.has("distinct") &&
     p.len("args") <= 1 &&
     !p.hasLeadingComments("args") &&
@@ -1365,6 +1365,14 @@ const printCallingFunctionGeneral: PrintFunc<bq2cst.CallingFunctionGeneral> = (
     !p.hasLeadingComments("rparen")
       ? true
       : false;
+  if (
+    p.node.children.args &&
+    !["GroupedExpr", "GroupedStatement", "CallingFunction"].includes( // NOTE the same array appears in printAssertStatement. DRY!
+      p.node.children.args.NodeVec[0].node_type
+    )
+  ) {
+    noNewLine = false;
+  }
   const insideParen = [
     noNewLine ? "" : softline,
     docs.distinct,
