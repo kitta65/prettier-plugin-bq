@@ -18,6 +18,10 @@ create table if not exists table_name (x int64 not null)
 cluster by x
 as select 1 union all select 2;
 
+create table new_table like source_table;
+
+create table new_table copy source_table;
+
 create table from_snap clone snap;
 
 -- SNAPSHOT
@@ -150,6 +154,11 @@ alter table t
 alter column if exists int
 -- break
 set options (description = 'description')
+;
+
+alter table t
+alter column int
+set data type numeric
 ;
 
 ----- ALTER VIEW statement -----
