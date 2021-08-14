@@ -1382,7 +1382,7 @@ const printCallingFunctionGeneral: PrintFunc<bq2cst.CallingFunctionGeneral> = (
         args.NodeVec[1].isDatePart = true;
       }
       // LAST_DAY
-      if (func === "LAST_DAY" && 2 <= p.len("args")) {
+      if (func_literal === "LAST_DAY" && 2 <= p.len("args")) {
         args.NodeVec[1].isDatePart = true;
       }
     }
