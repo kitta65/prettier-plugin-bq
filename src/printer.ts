@@ -12,6 +12,7 @@ import type { Doc, AstPath } from "prettier";
 
 const {
   builders: {
+    breakParent,
     group,
     hardline,
     ifBreak,
@@ -3341,6 +3342,7 @@ const printStringLiteral: PrintFunc<bq2cst.StringLiteral> = (
     comma: printComma(path, options, print, node),
   };
   return [
+    p.node.token.literal.includes("\n") ? breakParent : "",
     docs.leading_comments,
     docs.self,
     docs.trailing_comments,

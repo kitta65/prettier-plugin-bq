@@ -53,6 +53,12 @@ select
 from t
 ;
 
+----- STRING -----
+select """
+multiline string""", R'''
+multiline string'''
+;
+
 ----- ARRAY -----
 select
   [1,2],
