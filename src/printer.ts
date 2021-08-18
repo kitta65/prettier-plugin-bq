@@ -24,16 +24,43 @@ const {
   },
 } = doc;
 
-export type Children<T extends bq2cst.BaseNode> = T["children"];
+// module augmentation
+declare module "@dr666m1/bq2cst" {
+  interface BaseNode {
+    /**
+     * # breakRecommended
+     * if it is true, `hardline` is used at left side of `AND`, `OR` and `JOIN`.
+     *
+     * # isFinalColumn
+     * if it is true, the node is the final column of SELECT statement.
+     *
+     * # notGlobal
+     * if it is true, the node follows `.` operator.
+     *
+     * # notRoot
+     * if it is true, the statement is a part of another statement.
+     */
+    breakRecommended?: true;
+    groupRecommended?: true;
+    emptyLines?: number;
+    isDatePart?: true;
+    isFinalColumn?: true;
+    isPreDefinedFunction?: true;
+    notGlobal?: true;
+    notRoot?: true;
+  }
+}
+
+export type Children<T extends bq2cst.UnknownNode> = T["children"];
 
 export type NodeKeyof<T> = {
-  [k in keyof T]-?: T[k] extends { Node: bq2cst.BaseNode } | undefined
+  [k in keyof T]-?: T[k] extends { Node: bq2cst.UnknownNode } | undefined
     ? k
     : never;
 }[keyof T];
 
 export type NodeVecKeyof<T> = {
-  [k in keyof T]-?: T[k] extends { NodeVec: bq2cst.BaseNode[] } | undefined
+  [k in keyof T]-?: T[k] extends { NodeVec: bq2cst.UnknownNode[] } | undefined
     ? k
     : never;
 }[keyof T];
@@ -64,14 +91,14 @@ export const isNodeVecChild = (
   return false;
 };
 
-type PrintFunc<T extends bq2cst.BaseNode> = (
+type PrintFunc<T extends bq2cst.UnknownNode> = (
   path: AstPath,
   oprions: Options,
   print: (path: AstPath) => Doc,
   node: T
 ) => Doc;
 
-type Docs<T extends bq2cst.BaseNode> =
+type Docs<T extends bq2cst.UnknownNode> =
   | {
       [k in keyof T["children"]]-?: T["children"][k] extends undefined
         ? never
@@ -83,7 +110,7 @@ type Options = Record<string, unknown>;
 
 type ConsumeTarget = "all" | "first" | "none";
 
-class Printer<T extends bq2cst.BaseNode> {
+class Printer<T extends bq2cst.UnknownNode> {
   /**
    * Children<T> is needed because `keyof T["children"]` throws error
    * https://github.com/microsoft/TypeScript/issues/36631
@@ -217,7 +244,7 @@ class Printer<T extends bq2cst.BaseNode> {
       }
     } else if (target === "all") {
       const child = this.children[key];
-      let firstNodes: bq2cst.BaseNode[] = [];
+      let firstNodes: bq2cst.UnknownNode[] = [];
       if (isNodeChild(child)) {
         firstNodes = [getFirstNode(child.Node)];
       } else if (isNodeVecChild(child)) {
@@ -399,7 +426,7 @@ const asItIs = (x: Doc) => {
   return x;
 };
 
-const getFirstNode = (node: bq2cst.BaseNode): bq2cst.BaseNode => {
+const getFirstNode = (node: bq2cst.UnknownNode): bq2cst.UnknownNode => {
   const candidates = [];
   for (const [k, v] of Object.entries(node.children)) {
     if (["leading_comments", "trailing_comments"].includes(k)) {
@@ -726,7 +753,7 @@ const printAlterColumnStatement: PrintFunc<bq2cst.AlterColumnStatement> = (
     if_exists: p.child("if_exists", (x) => group([line, x])),
     ident: p.child("ident", asItIs, "all"),
     set: p.child("set"),
-    data_type: p.child("data_type", asItIs, "all", " "), // TODO consume all comments
+    data_type: p.child("data_type", asItIs, "all", " "),
     type: p.child("type", asItIs, "all"),
     options: p.child("options", asItIs, "all"),
     drop_not_null: p.child("drop_not_null", (x) => group([line, x])),
@@ -1248,12 +1275,9 @@ const printCallingFunction: PrintFunc<bq2cst.CallingFunction> = (
   return printCallingFunctionGeneral(path, options, print, node);
 };
 
-const printCallingFunctionGeneral: PrintFunc<bq2cst.CallingFunctionGeneral> = (
-  path,
-  options,
-  print,
-  node
-) => {
+const printCallingFunctionGeneral: PrintFunc<
+  bq2cst.CallingFunctionGeneral & bq2cst.UnknownNode
+> = (path, options, print, node) => {
   const p = new Printer(path, options, print, node, node.children);
   p.setNotRoot("args");
 
@@ -1389,7 +1413,9 @@ const printCallingFunctionGeneral: PrintFunc<bq2cst.CallingFunctionGeneral> = (
     }
   }
 
-  const docs: { [Key in Docs<bq2cst.CallingFunctionGeneral>]: Doc } = {
+  const docs: {
+    [Key in Docs<bq2cst.CallingFunctionGeneral & bq2cst.UnknownNode>]: Doc;
+  } = {
     leading_comments: "", // eslint-disable-line unicorn/no-unused-properties
     func: p.child("func"),
     self: p.self("asItIs", true),
@@ -3993,7 +4019,12 @@ const printXXXByExprs: PrintFunc<bq2cst.XXXByExprs> = (
 };
 
 // ----- utils -----
-const printAlias: PrintFunc<bq2cst.Expr> = (path, options, print, node) => {
+const printAlias: PrintFunc<bq2cst.Expr & bq2cst.UnknownNode> = (
+  path,
+  options,
+  print,
+  node
+) => {
   const p = new Printer(path, options, print, node, node.children);
   let as_: Doc;
   if (!p.has("alias")) {
@@ -4007,7 +4038,12 @@ const printAlias: PrintFunc<bq2cst.Expr> = (path, options, print, node) => {
   return [" ", as_, " ", p.child("alias", asItIs, "all")];
 };
 
-const printComma: PrintFunc<bq2cst.Expr> = (path, options, print, node) => {
+const printComma: PrintFunc<bq2cst.Expr & bq2cst.UnknownNode> = (
+  path,
+  options,
+  print,
+  node
+) => {
   const p = new Printer(path, options, print, node, node.children);
   if (p.node.isFinalColumn) {
     return ifBreak(
@@ -4019,7 +4055,7 @@ const printComma: PrintFunc<bq2cst.Expr> = (path, options, print, node) => {
   }
 };
 
-const printLeadingComments: PrintFunc<bq2cst.BaseNode> = (
+const printLeadingComments: PrintFunc<bq2cst.UnknownNode> = (
   path,
   options,
   print,
@@ -4029,7 +4065,12 @@ const printLeadingComments: PrintFunc<bq2cst.BaseNode> = (
   return p.child("leading_comments", (x) => [x, hardline]);
 };
 
-const printOrder: PrintFunc<bq2cst.Expr> = (path, options, print, node) => {
+const printOrder: PrintFunc<bq2cst.Expr & bq2cst.UnknownNode> = (
+  path,
+  options,
+  print,
+  node
+) => {
   const p = new Printer(path, options, print, node, node.children);
   return [
     p.has("order") ? [" ", p.child("order", asItIs, "all")] : "",
@@ -4037,12 +4078,9 @@ const printOrder: PrintFunc<bq2cst.Expr> = (path, options, print, node) => {
   ];
 };
 
-const printPivotOrUnpivotOperator: PrintFunc<bq2cst.FromItemExpr> = (
-  path,
-  options,
-  print,
-  node
-) => {
+const printPivotOrUnpivotOperator: PrintFunc<
+  bq2cst.FromItemExpr & bq2cst.UnknownNode
+> = (path, options, print, node) => {
   const p = new Printer(path, options, print, node, node.children);
   const pivot = p.has("pivot") ? [" ", p.child("pivot", asItIs, "all")] : "";
   const unpivot = p.has("unpivot")
@@ -4051,7 +4089,7 @@ const printPivotOrUnpivotOperator: PrintFunc<bq2cst.FromItemExpr> = (
   return [pivot, unpivot];
 };
 
-const printTrailingComments: PrintFunc<bq2cst.BaseNode> = (
+const printTrailingComments: PrintFunc<bq2cst.UnknownNode> = (
   path,
   options,
   print,
