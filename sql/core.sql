@@ -32,6 +32,8 @@ select 1 in (
   select 1
 )
 ;
+select 1 in unnest([1, 2]);
+
 
 -- LIKE
 select
