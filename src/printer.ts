@@ -2440,7 +2440,8 @@ const printGroupedStatement: PrintFunc<bq2cst.GroupedStatement> = (
     docs.leading_comments,
     group([
       docs.self,
-      indent([softline, group([docs.trailing_comments, docs.stmt])]),
+      docs.trailing_comments,
+      indent([softline, group(docs.stmt)]),
       softline,
       docs.rparen,
       docs.pivot,
