@@ -20,6 +20,10 @@ select 1 union all select 2 union all select 3;
 select 1 union all (select 2 union all select 3);
 
 ----- WITH clause -----
+with a as (select 1)
+-- before select
+select * from a;
+
 with
   -- with query
   a as (select 1)

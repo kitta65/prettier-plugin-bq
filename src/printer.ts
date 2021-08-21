@@ -3224,11 +3224,14 @@ const printSelectStatement: PrintFunc<bq2cst.SelectStatement> = (
     indent(docs.exprs),
   ];
   return [
-    docs.leading_comments,
     group([
       // WITH clause
       docs.with,
-      p.has("with") ? line : "",
+      p.has("with") ? hardline : "",
+    ]),
+    docs.leading_comments,
+    group([
+      p.has("with") ? breakParent : "",
       // SELECT clause
       docs.trailing_comments,
       p.len("exprs") === 1 ? group(select) : select,

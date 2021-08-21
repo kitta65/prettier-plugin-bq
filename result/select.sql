@@ -34,6 +34,12 @@ UNION ALL
 ;
 
 ----- WITH clause -----
+WITH a AS (SELECT 1)
+-- before select
+SELECT *
+FROM a
+;
+
 WITH
   -- with query
   a AS (SELECT 1)
