@@ -99,6 +99,11 @@ where
   not exists(select 1 from u where u.str = t.str)
 ;
 
+-- TVF
+select *
+from prettier_plugin_bq_test.tvf()
+;
+
 -- FOR SYSTEM_TIME AS OF
 select str from t for system_time as of current_timestamp();
 

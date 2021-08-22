@@ -112,6 +112,9 @@ WHERE
   NOT EXISTS(SELECT 1 FROM u WHERE u.str = t.str)
 ;
 
+-- TVF
+SELECT * FROM prettier_plugin_bq_test.tvf();
+
 -- FOR SYSTEM_TIME AS OF
 SELECT str FROM t FOR SYSTEM_TIME AS OF CURRENT_TIMESTAMP();
 

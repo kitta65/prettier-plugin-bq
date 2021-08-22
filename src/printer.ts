@@ -540,6 +540,8 @@ export const printSQL = (
       return printCallingArrayAccessingFunction(path, options, print, node);
     case "CallingFunction":
       return printCallingFunction(path, options, print, node);
+    case "CallingTableFunction":
+      return printCallingTableFunction(path, options, print, node);
     case "CallingUnnest":
       return printCallingUnnest(path, options, print, node);
     case "CallStatement":
@@ -1473,6 +1475,33 @@ const printCallingFunctionGeneral: PrintFunc<
     docs.alias,
     docs.order,
     docs.comma,
+  ];
+};
+
+const printCallingTableFunction: PrintFunc<bq2cst.CallingTableFunction> = (
+  path,
+  options,
+  print,
+  node
+) => {
+  const docs: { [Key in Docs<bq2cst.CallingTableFunction>]: Doc } = {
+    self: printCallingFunctionGeneral(path, options, print, node),
+    pivot: printPivotOrUnpivotOperator(path, options, print, node),
+    unpivot: "", // eslint-disable-line unicorn/no-unused-properties
+
+    /* eslint-disable unicorn/no-unused-properties */
+    leading_comments: "",
+    func: "",
+    trailing_comments: "",
+    args: "",
+    rparen: "",
+    as: "",
+    alias: "",
+    /* eslint-enable unicorn/no-unused-properties */
+  };
+  return [
+    docs.self,
+    docs.pivot,
   ];
 };
 
