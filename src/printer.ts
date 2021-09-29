@@ -2777,7 +2777,8 @@ const printKeywordWithExpr: PrintFunc<bq2cst.KeywordWithExpr> = (
 ) => {
   const p = new Printer(path, options, print, node);
   p.setNotRoot("expr");
-  p.setBreakRecommended("expr");
+  p.setBreakRecommended("expr"); // AND or OR
+  p.setGroupRecommended("expr"); // other binary operator
   const docs: { [Key in Docs<bq2cst.KeywordWithExpr>]: Doc } = {
     leading_comments: printLeadingComments(path, options, print, node),
     self: p.self("upper"),
@@ -3798,7 +3799,10 @@ const printWhileStatement: PrintFunc<bq2cst.WhileStatement> = (
   node
 ) => {
   const p = new Printer(path, options, print, node);
-  p.setBreakRecommended("condition");
+
+  p.setBreakRecommended("condition"); // AND or OR
+  p.setGroupRecommended("condition"); // other binary operator
+
   const docs: { [Key in Docs<bq2cst.WhileStatement>]: Doc } = {
     leading_comments: printLeadingComments(path, options, print, node),
     self: p.self("upper"),

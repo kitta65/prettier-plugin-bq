@@ -187,6 +187,13 @@ from
     join u on t2.dt = u.dt
 ;
 
+select *
+from
+  t as toolongtablename1
+  inner join u as toolongtablename2 on
+    toolongtablename1.str = toolongtablename2.str
+;
+
 select * from t as t1 , t t2 join (t as t3 full outer join t t4 on t3.dt = t4.dt) on t2.str = t4.str;
 
 ----- WHERE clause -----

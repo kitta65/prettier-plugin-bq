@@ -204,6 +204,13 @@ FROM
 
 SELECT *
 FROM
+  t AS toolongtablename1
+  INNER JOIN u AS toolongtablename2 ON
+    toolongtablename1.str = toolongtablename2.str
+;
+
+SELECT *
+FROM
   t AS t1
   , t AS t2
   INNER JOIN (
