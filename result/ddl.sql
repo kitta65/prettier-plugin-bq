@@ -178,3 +178,5 @@ DROP EXTERNAL TABLE IF EXISTS example;
 DROP MATERIALIZED VIEW example;
 
 DROP SCHEMA example CASCADE;
+
+DROP TABLE FUNCTION prettier_plugin_bq_test.tvf;

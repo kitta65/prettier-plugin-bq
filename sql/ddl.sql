@@ -179,3 +179,4 @@ drop materialized view example;
 
 drop schema example cascade;
 
+drop table function prettier_plugin_bq_test.tvf;
