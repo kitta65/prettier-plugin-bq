@@ -120,7 +120,7 @@ select
 ;
 
 -- CAST
-select cast('1' as int64);
+select cast('1' as int64), safe_cast('1' as int64);
 
 select cast(b'\x48\x65\x6c\x6c\x6f' as string format 'ASCII');
 
