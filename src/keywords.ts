@@ -177,6 +177,8 @@ export const globalFunctions = [
   "ST_AZIMUTH",
   "ST_BOUNDARY",
   "ST_BOUNDINGBOX",
+  "ST_BUFFER",
+  "ST_BUFFERWITHTOLERANCE",
   "ST_CENTROID",
   "ST_CENTROID_AGG",
   "ST_CLOSESTPOINT",
