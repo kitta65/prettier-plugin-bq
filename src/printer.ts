@@ -3303,6 +3303,7 @@ const printSetOperator: PrintFunc<bq2cst.SetOperator> = (
   p.setNotRoot("left");
   p.setNotRoot("right");
   const docs: { [Key in Docs<bq2cst.SetOperator>]: Doc } = {
+    with: p.child("with"),
     left: p.child("left"),
     leading_comments: printLeadingComments(path, options, print, node),
     self: p.self("upper"),
@@ -3312,6 +3313,8 @@ const printSetOperator: PrintFunc<bq2cst.SetOperator> = (
     semicolon: p.child("semicolon", asItIs, "all"),
   };
   const res = [
+    docs.with,
+    p.has("with") ? line : "",
     docs.left,
     line,
     docs.leading_comments,
