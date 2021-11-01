@@ -18,6 +18,13 @@ select 1 intersect distinct (select 2);
 select 1 union all select 2 union all select 3;
 
 select 1 union all (select 2 union all select 3);
+with tmp as (select 1)
+select * from tmp
+union all
+select * from tmp;
+(with tmp as (select 1) select * from tmp)
+union all
+select 2;
 
 ----- WITH clause -----
 with a as (select 1)

@@ -490,7 +490,12 @@ export const printSQL = (
           // start of statement
           let startNode = node[i + 1];
           while (startNode.node_type === "SetOperator") {
-            startNode = startNode.children.left.Node;
+            const with_ = startNode.children.with;
+            if (with_) {
+              startNode = with_.Node;
+            } else {
+              startNode = startNode.children.left.Node;
+            }
           }
           let startLine;
           if (startNode.token) {
