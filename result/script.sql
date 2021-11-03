@@ -11,6 +11,11 @@ INT64
 DEFAULT 1
 ;
 
+-- parameterized data type
+DECLARE x NUMERIC(5);
+
+DECLARE y BIGNUMERIC(5, 2);
+
 ----- SET statement -----
 SET a = 5;
 
