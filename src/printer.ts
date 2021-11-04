@@ -1452,7 +1452,7 @@ const printCallingFunctionGeneral: PrintFunc<
   if (
     p.children.args &&
     !["GroupedExpr", "GroupedStatement", "CallingFunction"].includes(
-      // NOTE the same array appears in printAssertStatement. DRY!
+      // TODO the same array appears in printAssertStatement. DRY!
       p.children.args.NodeVec[0].node_type
     )
   ) {
@@ -2935,16 +2935,13 @@ const printLimitClause: PrintFunc<bq2cst.LimitClause> = (
     leading_comments: printLeadingComments(path, options, print, node),
     self: p.self("upper"),
     trailing_comments: printTrailingComments(path, options, print, node),
-    expr:
-      !p.hasLeadingComments("expr") &&
-      ["GroupedStatement"].includes(node.children.expr.Node.node_type)
-        ? [" ", p.child("expr", asItIs, "all")] // in the case of `FROM (SELECT ...)`
-        : indent([line, p.child("expr")]),
+    // NOTE expr is literal or parameter value
+    expr: p.child("expr"),
     offset: p.child("offset", asItIs, "all"),
   };
   return [
     docs.leading_comments,
-    group([docs.self, docs.trailing_comments, docs.expr]),
+    group([docs.self, docs.trailing_comments, " ", docs.expr]),
     p.has("offset") ? " " : "",
     docs.offset,
   ];
