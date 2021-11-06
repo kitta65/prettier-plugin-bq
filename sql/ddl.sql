@@ -89,7 +89,10 @@ as '''
 ''';
 
 create function abc() returns int64 not deterministic language js
-as '''return 1''';
+as r'''
+  // break
+  return 1
+''';
 
 -- TVF
 create table function one()

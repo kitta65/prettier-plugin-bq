@@ -2784,15 +2784,31 @@ const printKeywordWithExpr: PrintFunc<bq2cst.KeywordWithExpr> = (
   p.setNotRoot("expr");
   p.setBreakRecommended("expr"); // AND or OR
   p.setGroupRecommended("expr"); // other binary operator
+
+  let indentExpr = true;
+  if (!p.hasLeadingComments("expr")) {
+    const token = node.children.expr.Node.token
+    if (!token) throw new Error("Something went wrong.");
+    const node_type = node.children.expr.Node.node_type;
+    if (node_type === "GroupedStatement") {
+      // FROM (SELECT ...)
+      indentExpr = false;
+    } else if (node_type === "StringLiteral" && token.literal.match(/^['"]{3}\n/)) {
+      // AS '''const x = "aaa"; return x'''
+      indentExpr = false;
+    } else if (node_type === "UnaryOperator" && token.literal.match(/^[brBR]{1,2}$/)) {
+      // AS r'''const x = "aaa"; return x'''
+      indentExpr = false;
+    }
+  }
+
   const docs: { [Key in Docs<bq2cst.KeywordWithExpr>]: Doc } = {
     leading_comments: printLeadingComments(path, options, print, node),
     self: p.self("upper"),
     trailing_comments: printTrailingComments(path, options, print, node),
-    expr:
-      !p.hasLeadingComments("expr") &&
-      ["GroupedStatement"].includes(node.children.expr.Node.node_type)
-        ? [" ", p.child("expr", asItIs, "all")] // in the case of `FROM (SELECT ...)`
-        : indent([line, p.child("expr")]),
+    expr: indentExpr
+      ? indent([line, p.child("expr")])
+      : [" ", p.child("expr", asItIs, "all")],
   };
   return [
     docs.leading_comments,

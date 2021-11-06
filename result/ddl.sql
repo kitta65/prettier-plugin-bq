@@ -78,8 +78,7 @@ RETURNS INT64
 DETERMINISTIC
 LANGUAGE js
 OPTIONS (library = ['dummy'])
-AS
-  '''
+AS '''
   // break
   return 1
 '''
@@ -89,7 +88,10 @@ CREATE FUNCTION abc()
 RETURNS INT64
 NOT DETERMINISTIC
 LANGUAGE js
-AS '''return 1'''
+AS r'''
+  // break
+  return 1
+'''
 ;
 
 -- TVF
