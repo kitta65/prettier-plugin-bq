@@ -1,6 +1,6 @@
 {
   "name": "@dr666m1/prettier-plugin-bq",
-  "version": "0.2.13",
+  "version": "0.2.14",
   "description": "",
   "main": "dist/index.js",
   "scripts": {
