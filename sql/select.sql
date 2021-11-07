@@ -50,6 +50,8 @@ with a as (
 select 3
 ;
 
+with a as (select 1) (select 2);
+
 ----- SELECT clause -----
 -- distinct
 select distinct str from t;
@@ -84,6 +86,18 @@ select as value struct(1 as a, 2 as b) xyz;
 select (select 1);
 
 select (select 1 except distinct select 2);
+
+select ((select 1));
+
+select * from (
+  (select 1)
+  union all select 2
+);
+
+select * from (
+  ((select 1))
+  union all select 2
+);
 
 ----- FROM clause -----
 -- alias

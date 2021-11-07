@@ -2378,6 +2378,7 @@ const printGroupedExpr: PrintFunc<bq2cst.GroupedExpr> = (
   node
 ) => {
   const p = new Printer(path, options, print, node);
+  p.setNotRoot("expr");
   const docs: { [Key in Docs<bq2cst.GroupedExpr>]: Doc } = {
     leading_comments: printLeadingComments(path, options, print, node),
     self: p.self(),
@@ -2454,6 +2455,7 @@ const printGroupedStatement: PrintFunc<bq2cst.GroupedStatement> = (
   const p = new Printer(path, options, print, node);
   p.setNotRoot("stmt");
   const docs: { [Key in Docs<bq2cst.GroupedStatement>]: Doc } = {
+    with: p.child("with"),
     leading_comments: printLeadingComments(path, options, print, node),
     self: p.self(),
     trailing_comments: printTrailingComments(path, options, print, node),
@@ -2469,19 +2471,24 @@ const printGroupedStatement: PrintFunc<bq2cst.GroupedStatement> = (
     semicolon: p.child("semicolon", asItIs, "all"),
   };
   return [
+    group([docs.with, p.has("with") ? hardline : ""]),
     docs.leading_comments,
     group([
-      docs.self,
-      docs.trailing_comments,
-      indent([softline, group(docs.stmt)]),
-      softline,
-      docs.rparen,
-      docs.pivot,
+      p.has("with") ? breakParent : "",
+      group([
+        docs.self,
+        docs.trailing_comments,
+        indent([softline, group(docs.stmt)]),
+        softline,
+        docs.rparen,
+        docs.pivot,
+      ]),
+      docs.alias,
+      docs.order,
+      docs.comma,
+      p.has("semicolon") ? softline : "",
+      docs.semicolon,
     ]),
-    docs.alias,
-    docs.order,
-    docs.comma,
-    docs.semicolon,
     p.newLine(),
   ];
 };
@@ -2787,16 +2794,22 @@ const printKeywordWithExpr: PrintFunc<bq2cst.KeywordWithExpr> = (
 
   let indentExpr = true;
   if (!p.hasLeadingComments("expr")) {
-    const token = node.children.expr.Node.token
+    const token = node.children.expr.Node.token;
     if (!token) throw new Error("Something went wrong.");
     const node_type = node.children.expr.Node.node_type;
     if (node_type === "GroupedStatement") {
       // FROM (SELECT ...)
       indentExpr = false;
-    } else if (node_type === "StringLiteral" && token.literal.match(/^['"]{3}\n/)) {
+    } else if (
+      node_type === "StringLiteral" &&
+      token.literal.match(/^['"]{3}\n/)
+    ) {
       // AS '''const x = "aaa"; return x'''
       indentExpr = false;
-    } else if (node_type === "UnaryOperator" && token.literal.match(/^[brBR]{1,2}$/)) {
+    } else if (
+      node_type === "UnaryOperator" &&
+      token.literal.match(/^[brBR]{1,2}$/)
+    ) {
       // AS r'''const x = "aaa"; return x'''
       indentExpr = false;
     }
