@@ -62,8 +62,6 @@ EXCEPTION WHEN ERROR THEN
 END
 ;
 
-label: BEGIN SELECT 1; END;
-
 ----- IF statement -----
 IF TRUE THEN SELECT 1; END IF;
 

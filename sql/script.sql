@@ -51,8 +51,6 @@ end;
 
 begin exception when error then end;
 
-label: begin select 1; end;
-
 ----- IF statement -----
 if true then
   select 1;
