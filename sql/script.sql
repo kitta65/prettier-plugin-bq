@@ -118,6 +118,19 @@ exception when error then
   rollback;
 end;
 
+----- FOR statement -----
+for record in (
+  -- break
+  select 1
+) do
+  select record;
+end for;
+
+label: for record in (select 1) do
+  break label;
+  break label;
+end for label;
+
 ----- RAISE statement -----
 begin
 exception when error then

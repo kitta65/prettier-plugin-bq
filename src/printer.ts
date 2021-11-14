@@ -595,6 +595,8 @@ export const printSQL = (
       return printExportStatement(path, options, print, node);
     case "ExtractArgument":
       return printExtractArgument(path, options, print, node);
+    case "ForStatement":
+      return printForStatement(path, options, print, node);
     case "ForSystemTimeAsOfClause":
       return printForSystemTimeAsOfclause(path, options, print, node);
     case "GrantStatement":
@@ -2365,6 +2367,67 @@ const printExtractArgument: PrintFunc<bq2cst.ExtractArgument> = (
   ];
 };
 
+const printForStatement: PrintFunc<bq2cst.ForStatement> = (
+  path,
+  options,
+  print,
+  node
+) => {
+  const p = new Printer(path, options, print, node);
+
+  let leading_label_comments: Doc = "";
+  if (
+    node.children.leading_label &&
+    node.children.leading_label.Node.children.leading_comments
+  ) {
+    leading_label_comments =
+      node.children.leading_label.Node.children.leading_comments.NodeVec.map(
+        (n) => [n.token.literal, hardline]
+      );
+    p.consumeLeadingCommentsOfX("leading_label");
+  }
+
+  const docs: { [Key in Docs<bq2cst.ForStatement>]: Doc } = {
+    leading_label: p.child("leading_label"),
+    colon: p.child("colon", asItIs, "all"),
+    leading_comments: printLeadingComments(path, options, print, node),
+    self: p.self("upper"),
+    trailing_comments: printTrailingComments(path, options, print, node),
+    ident: p.child("ident", asItIs, "all"),
+    in: p.child("in", asItIs, "all"),
+    do: p.child("do", asItIs, "all"),
+    end_for: group(p.child("end_for", asItIs, "none", line)),
+    trailing_label: p.child("trailing_label", asItIs, "all"),
+    semicolon: p.child("semicolon"),
+  };
+  return [
+    leading_label_comments,
+    docs.leading_comments,
+    group([
+      group([
+        docs.leading_label,
+        docs.colon,
+        p.has("leading_label") ? " " : "",
+        docs.self,
+        docs.trailing_comments,
+        " ",
+        docs.ident,
+        " ",
+        docs.in,
+      ]),
+      " ",
+      docs.do,
+      line,
+      docs.end_for,
+      p.has("trailing_label") ? " " : "",
+      docs.trailing_label,
+      softline,
+      docs.semicolon,
+    ]),
+    p.newLine(),
+  ];
+};
+
 const printForSystemTimeAsOfclause: PrintFunc<bq2cst.ForSystemTimeAsOfClause> =
   (path, options, print, node) => {
     const p = new Printer(path, options, print, node);
@@ -2908,6 +2971,7 @@ const printKeywordWithGroupedXXX: PrintFunc<bq2cst.KeywordWithGroupedXXX> = (
   node
 ) => {
   const p = new Printer(path, options, print, node);
+  p.setNotRoot("group");
   const docs: { [Key in Docs<bq2cst.KeywordWithGroupedXXX>]: Doc } = {
     leading_comments: printLeadingComments(path, options, print, node),
     self: p.self("upper"),

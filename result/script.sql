@@ -134,6 +134,21 @@ EXCEPTION WHEN ERROR THEN
 END
 ;
 
+----- FOR statement -----
+FOR record IN (
+  -- break
+  SELECT 1
+) DO
+  SELECT record;
+END FOR
+;
+
+label: FOR record IN (SELECT 1) DO
+  BREAK label;
+  BREAK label;
+END FOR label
+;
+
 ----- RAISE statement -----
 BEGIN
 EXCEPTION WHEN ERROR THEN
