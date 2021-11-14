@@ -659,6 +659,8 @@ export const printSQL = (
       return printRevokeStatement(path, options, print, node);
     case "RaiseStatement":
       return printRaiseStatement(path, options, print, node);
+    case "RepeatStatement":
+      return printRepeatStatement(path, options, print, node);
     case "SelectStatement":
       return printSelectStatement(path, options, print, node);
     case "SetOperator":
@@ -2346,7 +2348,7 @@ const printExtractArgument: PrintFunc<bq2cst.ExtractArgument> = (
     self: p.self("upper", true),
     trailing_comments: printTrailingComments(path, options, print, node),
     extract_from: p.child("extract_from", asItIs, "all"),
-    at_time_zone: p.child("at_time_zone", asItIs, "none", " "),
+    at_time_zone: p.child("at_time_zone", asItIs, "all", " "),
     time_zone: p.child("time_zone", asItIs, "all"),
   };
   return [
@@ -3301,6 +3303,65 @@ const printRaiseStatement: PrintFunc<bq2cst.RaiseStatement> = (
       docs.trailing_comments,
       p.has("using") ? " " : "",
       docs.using,
+      softline,
+      docs.semicolon,
+    ]),
+    p.newLine(),
+  ];
+};
+
+const printRepeatStatement: PrintFunc<bq2cst.RepeatStatement> = (
+  path,
+  options,
+  print,
+  node
+) => {
+  const p = new Printer(path, options, print, node);
+  p.setNotRoot("stmts");
+
+  let leading_label_comments: Doc = "";
+  if (
+    node.children.leading_label &&
+    node.children.leading_label.Node.children.leading_comments
+  ) {
+    leading_label_comments =
+      node.children.leading_label.Node.children.leading_comments.NodeVec.map(
+        (n) => [n.token.literal, hardline]
+      );
+    p.consumeLeadingCommentsOfX("leading_label");
+  }
+
+  const docs: { [Key in Docs<bq2cst.RepeatStatement>]: Doc } = {
+    leading_label: p.child("leading_label"),
+    colon: p.child("colon", asItIs, "all"),
+    leading_comments: printLeadingComments(path, options, print, node),
+    self: p.self("upper"),
+    trailing_comments: printTrailingComments(path, options, print, node),
+    stmts:
+      p.len("stmts") <= 1
+        ? p.child("stmts", (x) => [line, x])
+        : p.child("stmts", (x) => [hardline, x]),
+    until: p.child("until"),
+    end_repeat: group(p.child("end_repeat", asItIs, "none", line)),
+    trailing_label: p.child("trailing_label", asItIs, "all"),
+    semicolon: p.child("semicolon"),
+  };
+  return [
+    leading_label_comments,
+    docs.leading_comments,
+    group([
+      docs.leading_label,
+      docs.colon,
+      p.has("leading_label") ? " " : "",
+      docs.self,
+      docs.trailing_comments,
+      indent(docs.stmts),
+      line,
+      docs.until,
+      line,
+      docs.end_repeat,
+      p.has("trailing_label") ? " " : "",
+      docs.trailing_label,
       softline,
       docs.semicolon,
     ]),

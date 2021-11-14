@@ -75,6 +75,18 @@ loop select 1; break; end loop;
 
 label: loop select 1; break; end loop label;
 
+----- REPEAT statement -----
+repeat
+  select 1;
+until true
+end repeat;
+
+label: repeat
+  select 1;
+  break label;
+until true
+end repeat label;
+
 ----- WHILE statement -----
 while true do
   iterate;

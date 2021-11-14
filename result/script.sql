@@ -93,6 +93,16 @@ label: LOOP
 END LOOP label
 ;
 
+----- REPEAT statement -----
+REPEAT SELECT 1; UNTIL TRUE END REPEAT;
+
+label: REPEAT
+  SELECT 1;
+  BREAK label;
+UNTIL TRUE
+END REPEAT label
+;
+
 ----- WHILE statement -----
 WHILE TRUE DO
   ITERATE;
