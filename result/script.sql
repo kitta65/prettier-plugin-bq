@@ -62,6 +62,8 @@ EXCEPTION WHEN ERROR THEN
 END
 ;
 
+label: BEGIN SELECT 1; END;
+
 ----- IF statement -----
 IF TRUE THEN SELECT 1; END IF;
 
@@ -87,6 +89,12 @@ LOOP
 END LOOP
 ;
 
+label: LOOP
+  SELECT 1;
+  BREAK;
+END LOOP label
+;
+
 ----- WHILE statement -----
 WHILE TRUE DO
   ITERATE;
@@ -104,6 +112,10 @@ DO
   SELECT 2;
 END WHILE
 ;
+
+-- comment before label
+-- comment before while
+label: WHILE TRUE DO BREAK; END WHILE;
 
 ----- transaction statement -----
 BEGIN

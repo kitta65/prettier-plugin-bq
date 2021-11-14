@@ -51,6 +51,7 @@ end;
 
 begin exception when error then end;
 
+label: begin select 1; end;
 
 ----- IF statement -----
 if true then
@@ -74,6 +75,8 @@ loop select 1; end loop;
 
 loop select 1; break; end loop;
 
+label: loop select 1; break; end loop label;
+
 ----- WHILE statement -----
 while true do
   iterate;
@@ -88,6 +91,13 @@ while
 do
   select 1;
   select 2;
+end while;
+
+-- comment before label
+label:
+-- comment before while
+while true do
+  break;
 end while;
 
 ----- transaction statement -----

@@ -543,6 +543,8 @@ export const printSQL = (
       return printBooleanLiteral(path, options, print, node);
     case "BinaryOperator":
       return printBinaryOperator(path, options, print, node);
+    case "BreakContinueStatement":
+      return printBreakContinueStatement(path, options, print, node);
     case "CallingArrayAccessingFunction":
       return printCallingArrayAccessingFunction(path, options, print, node);
     case "CallingFunction":
@@ -553,8 +555,8 @@ export const printSQL = (
       return printCallingUnnest(path, options, print, node);
     case "CallStatement":
       return printCallStatement(path, options, print, node);
-    case "CaseArm":
-      return printCaseArm(path, options, print, node);
+    case "CaseExprArm":
+      return printCaseExprArm(path, options, print, node);
     case "CaseExpr":
       return printCaseExpr(path, options, print, node);
     case "CastArgument":
@@ -1077,7 +1079,22 @@ const printBeginStatement: PrintFunc<bq2cst.BeginStatement> = (
 ) => {
   const p = new Printer(path, options, print, node);
   p.setNotRoot("stmts");
+
+  let leading_label_comments: Doc = "";
+  if (
+    node.children.leading_label &&
+    node.children.leading_label.Node.children.leading_comments
+  ) {
+    leading_label_comments =
+      node.children.leading_label.Node.children.leading_comments.NodeVec.map(
+        (n) => [n.token.literal, hardline]
+      );
+    p.consumeLeadingCommentsOfX("leading_label");
+  }
+
   const docs: { [Key in Docs<bq2cst.BeginStatement>]: Doc } = {
+    leading_label: p.child("leading_label"),
+    colon: p.child("colon", asItIs, "all"),
     leading_comments: printLeadingComments(path, options, print, node),
     self: p.self("upper"),
     trailing_comments: printTrailingComments(path, options, print, node),
@@ -1090,11 +1107,16 @@ const printBeginStatement: PrintFunc<bq2cst.BeginStatement> = (
     ),
     then: p.child("then", asItIs, "all"),
     end: p.child("end"),
+    trailing_label: p.child("trailing_label", asItIs, "all"),
     semicolon: p.child("semicolon"),
   };
   return [
+    leading_label_comments,
     docs.leading_comments,
     group([
+      docs.leading_label,
+      docs.colon,
+      p.has("leading_label") ? " " : "",
       docs.self,
       docs.trailing_comments,
       indent(docs.stmts),
@@ -1104,6 +1126,8 @@ const printBeginStatement: PrintFunc<bq2cst.BeginStatement> = (
       docs.then,
       line,
       docs.end,
+      p.has("trailing_label") ? " " : "",
+      docs.trailing_label,
       softline,
       docs.semicolon,
     ]),
@@ -1242,6 +1266,31 @@ const printBinaryOperator: PrintFunc<bq2cst.BinaryOperator> = (
     res = group(res);
   }
   return [docs.leading_comments, res, docs.alias, docs.order, docs.comma];
+};
+
+const printBreakContinueStatement: PrintFunc<bq2cst.BreakContinueStatement> = (
+  path,
+  options,
+  print,
+  node
+) => {
+  const p = new Printer(path, options, print, node);
+  const docs: { [Key in Docs<bq2cst.BreakContinueStatement>]: Doc } = {
+    leading_comments: printLeadingComments(path, options, print, node),
+    self: p.self("upper"),
+    trailing_comments: printTrailingComments(path, options, print, node),
+    label: p.child("label", asItIs, "all"),
+    semicolon: p.child("semicolon"),
+  };
+  return [
+    docs.leading_comments,
+    docs.self,
+    docs.trailing_comments,
+    p.has("label") ? " " : "",
+    docs.label,
+    docs.semicolon,
+    p.newLine(),
+  ];
 };
 
 const printCallingArrayAccessingFunction: //
@@ -1572,14 +1621,14 @@ const printCallStatement: PrintFunc<bq2cst.CallStatement> = (
   ];
 };
 
-const printCaseArm: PrintFunc<bq2cst.CaseArm> = (
+const printCaseExprArm: PrintFunc<bq2cst.CaseExprArm> = (
   path,
   options,
   print,
   node
 ) => {
   const p = new Printer(path, options, print, node);
-  const docs: { [Key in Docs<bq2cst.CaseArm>]: Doc } = {
+  const docs: { [Key in Docs<bq2cst.CaseExprArm>]: Doc } = {
     leading_comments: printLeadingComments(path, options, print, node),
     self: p.self(),
     trailing_comments: printTrailingComments(path, options, print, node),
@@ -2984,7 +3033,22 @@ const printLoopStatement: PrintFunc<bq2cst.LoopStatement> = (
 ) => {
   const p = new Printer(path, options, print, node);
   p.setNotRoot("stmts");
+
+  let leading_label_comments: Doc = "";
+  if (
+    node.children.leading_label &&
+    node.children.leading_label.Node.children.leading_comments
+  ) {
+    leading_label_comments =
+      node.children.leading_label.Node.children.leading_comments.NodeVec.map(
+        (n) => [n.token.literal, hardline]
+      );
+    p.consumeLeadingCommentsOfX("leading_label");
+  }
+
   const docs: { [Key in Docs<bq2cst.LoopStatement>]: Doc } = {
+    leading_label: p.child("leading_label"),
+    colon: p.child("colon", asItIs, "all"),
     leading_comments: printLeadingComments(path, options, print, node),
     self: p.self("upper"),
     trailing_comments: printTrailingComments(path, options, print, node),
@@ -2993,16 +3057,23 @@ const printLoopStatement: PrintFunc<bq2cst.LoopStatement> = (
         ? p.child("stmts", (x) => [line, x])
         : p.child("stmts", (x) => [hardline, x]),
     end_loop: group(p.child("end_loop", asItIs, "none", line)),
+    trailing_label: p.child("trailing_label", asItIs, "all"),
     semicolon: p.child("semicolon"),
   };
   return [
+    leading_label_comments,
     docs.leading_comments,
     group([
+      docs.leading_label,
+      docs.colon,
+      p.has("leading_label") ? " " : "",
       docs.self,
       docs.trailing_comments,
       indent(docs.stmts),
       line,
       docs.end_loop,
+      p.has("trailing_label") ? " " : "",
+      docs.trailing_label,
       softline,
       docs.semicolon,
     ]),
@@ -3837,19 +3908,38 @@ const printWhileStatement: PrintFunc<bq2cst.WhileStatement> = (
   p.setBreakRecommended("condition"); // AND or OR
   p.setGroupRecommended("condition"); // other binary operator
 
+  let leading_label_comments: Doc = "";
+  if (
+    node.children.leading_label &&
+    node.children.leading_label.Node.children.leading_comments
+  ) {
+    leading_label_comments =
+      node.children.leading_label.Node.children.leading_comments.NodeVec.map(
+        (n) => [n.token.literal, hardline]
+      );
+    p.consumeLeadingCommentsOfX("leading_label");
+  }
+
   const docs: { [Key in Docs<bq2cst.WhileStatement>]: Doc } = {
+    leading_label: p.child("leading_label"),
+    colon: p.child("colon", asItIs, "all"),
     leading_comments: printLeadingComments(path, options, print, node),
     self: p.self("upper"),
     trailing_comments: printTrailingComments(path, options, print, node),
     condition: p.child("condition"),
     do: p.child("do", asItIs, "all"),
     end_while: group(p.child("end_while", asItIs, "none", line)),
+    trailing_label: p.child("trailing_label", asItIs, "all"),
     semicolon: p.child("semicolon"),
   };
   return [
+    leading_label_comments,
     docs.leading_comments,
     group([
       group([
+        docs.leading_label,
+        docs.colon,
+        p.has("leading_label") ? " " : "",
         docs.self,
         docs.trailing_comments,
         indent([line, docs.condition]),
@@ -3858,6 +3948,8 @@ const printWhileStatement: PrintFunc<bq2cst.WhileStatement> = (
       docs.do,
       line,
       docs.end_while,
+      p.has("trailing_label") ? " " : "",
+      docs.trailing_label,
       softline,
       docs.semicolon,
     ]),
