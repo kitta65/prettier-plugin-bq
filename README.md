@@ -32,5 +32,6 @@ Below are the options that `@dr666m1/prettier-plugin-bq` currently supports.
 This plugin doesn't follow any famous style guides,
 because none of them satisfies me.
 
-## Contributing
-I'm not ready to accept PR, but your feedback is always welcome.
+## Feedback
+I'm not ready to accept pull requests, but your feedback is always welcome.
+If you find any bugs, please feel free to create an issue.
