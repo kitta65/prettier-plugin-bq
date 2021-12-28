@@ -2676,12 +2676,12 @@ const printGroupedStatement: PrintFunc<bq2cst.GroupedStatement> = (
         docs.rparen,
         docs.pivot,
       ]),
-      docs.alias,
-      docs.order,
-      docs.comma,
       p.has("semicolon") ? softline : "",
       docs.semicolon,
     ]),
+    docs.alias,
+    docs.order,
+    docs.comma,
     p.newLine(),
   ];
 };

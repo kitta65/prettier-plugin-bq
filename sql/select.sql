@@ -88,6 +88,11 @@ select as value struct(1 as a, 2 as b) xyz;
 -- sub query
 select (select 1);
 
+select
+  -- break
+  (select 1), (select 2)
+;
+
 select (select 1 except distinct select 2);
 
 select ((select 1));
