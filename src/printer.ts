@@ -645,6 +645,8 @@ export const printSQL = (
       return printLoopStatement(path, options, print, node);
     case "MergeStatement":
       return printMergeStatement(path, options, print, node);
+    case "MultiTokenIdentifier":
+      return printMultiTokenIdentifier(path, options, print, node);
     case "NullLiteral":
       return printNullLiteral(path, options, print, node);
     case "NumericLiteral":
@@ -3182,6 +3184,43 @@ const printMergeStatement: PrintFunc<bq2cst.MergeStatement> = (
       docs.semicolon,
     ]),
     p.newLine(),
+  ];
+};
+
+const printMultiTokenIdentifier: PrintFunc<bq2cst.MultiTokenIdentifier> = (
+  path,
+  options,
+  print,
+  node
+) => {
+  const p = new Printer(path, options, print, node);
+  const docs: { [Key in Docs<bq2cst.MultiTokenIdentifier>]: Doc } = {
+    leading_comments: "", // eslint-disable-line unicorn/no-unused-properties
+    self: p.self(),
+    trailing_comments: "", // eslint-disable-line unicorn/no-unused-properties
+    left: p.child("left"),
+    right: p.child("right", asItIs, "all"),
+    as: "", // eslint-disable-line unicorn/no-unused-properties
+    alias: printAlias(path, options, print, node),
+    for_system_time_as_of: p.child("for_system_time_as_of", asItIs, "all"),
+    pivot: printPivotOrUnpivotOperator(path, options, print, node),
+    unpivot: "", // eslint-disable-line unicorn/no-unused-properties
+    tablesample: p.child("tablesample", asItIs, "all"),
+    // NOTE order, null_order, comma may be unnecessary for the time being.
+    order: printOrder(path, options, print, node),
+    null_order: "", // eslint-disable-line unicorn/no-unused-properties
+    comma: printComma(path, options, print, node),
+  };
+  return [
+    docs.left,
+    docs.self,
+    docs.right,
+    docs.alias,
+    p.has("for_system_time_as_of") ? [" ", docs.for_system_time_as_of] : "",
+    docs.pivot,
+    p.has("tablesample") ? [" ", docs.tablesample] : "",
+    docs.order,
+    docs.comma,
   ];
 };
 

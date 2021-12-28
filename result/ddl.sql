@@ -9,6 +9,8 @@ OPTIONS ()
 ----- CREATE TABLE statement -----
 CREATE TABLE table_name (x INT64);
 
+CREATE TABLE dataset-name.example (x INT64);
+
 CREATE TEMP TABLE table_name (x INT64, y STRING(10));
 
 CREATE OR REPLACE TABLE table_name (

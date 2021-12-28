@@ -100,6 +100,15 @@ select * from (
 );
 
 ----- FROM clause -----
+-- dash
+select * from region-us.INFORMATION_SCHEMA.JOBS_BY_USER;
+
+select *
+from
+  -- comment
+  region-us.INFORMATION_SCHEMA.JOBS_BY_USER
+;
+
 -- alias
 select 1
 from t as tmp

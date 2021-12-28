@@ -115,6 +115,15 @@ SELECT * FROM ((SELECT 1) UNION ALL SELECT 2);
 SELECT * FROM (((SELECT 1)) UNION ALL SELECT 2);
 
 ----- FROM clause -----
+-- dash
+SELECT * FROM region-us.INFORMATION_SCHEMA.JOBS_BY_USER;
+
+SELECT *
+FROM
+  -- comment
+  region-us.INFORMATION_SCHEMA.JOBS_BY_USER
+;
+
 -- alias
 SELECT 1 FROM t AS tmp;
 
