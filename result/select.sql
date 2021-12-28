@@ -5,6 +5,9 @@ SELECT 1, 2 FROM t;
 
 (SELECT 1);
 
+SELECT 1;
+SELECT 2;
+
 ----- set operator -----
 SELECT 1
 UNION ALL
@@ -47,6 +50,9 @@ SELECT 2
 ;
 
 ----- WITH clause -----
+WITH a AS (SELECT 1)
+SELECT 2
+; -- do not insert blank line
 WITH a AS (SELECT 1)
 -- before select
 SELECT *

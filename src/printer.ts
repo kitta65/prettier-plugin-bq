@@ -428,17 +428,25 @@ const asItIs = (x: Doc) => {
   return x;
 };
 
-const getFirstNode = (node: bq2cst.UnknownNode): bq2cst.UnknownNode => {
+const getFirstNode = (
+  node: bq2cst.UnknownNode,
+  includeComment = false
+): bq2cst.UnknownNode => {
   const candidates = [];
   for (const [k, v] of Object.entries(node.children)) {
-    if (["leading_comments", "trailing_comments"].includes(k)) {
+    if (
+      ["leading_comments", "trailing_comments"].includes(k) &&
+      !includeComment
+    ) {
       continue;
     }
     if (isNodeChild(v)) {
-      candidates.push(getFirstNode(v.Node));
+      candidates.push(getFirstNode(v.Node, includeComment));
     } else if (isNodeVecChild(v)) {
       // NOTE maybe you don't have to check 2nd, 3rd, or latter node
-      v.NodeVec.forEach((x) => candidates.push(getFirstNode(x)));
+      v.NodeVec.forEach((x) =>
+        candidates.push(getFirstNode(x, includeComment))
+      );
     }
   }
   let res = node;
@@ -488,15 +496,7 @@ export const printSQL = (
             }
           }
           // start of statement
-          let startNode = node[i + 1];
-          while (startNode.node_type === "SetOperator") {
-            const with_ = startNode.children.with;
-            if (with_) {
-              startNode = with_.Node;
-            } else {
-              startNode = startNode.children.left.Node;
-            }
-          }
+          const startNode = getFirstNode(node[i + 1], true);
           let startLine;
           if (startNode.token) {
             startLine = startNode.token.line;
@@ -504,13 +504,7 @@ export const printSQL = (
             // EOF
             startLine = endLine + 1;
           }
-          const leading_comments = startNode.children.leading_comments;
-          if (leading_comments) {
-            const comments = leading_comments.NodeVec;
-            const first_comments = comments[0];
-            startLine = first_comments.token.line;
-          }
-          node[i].emptyLines = startLine - endLine - 1; // >= 0
+          node[i].emptyLines = startLine - endLine - 1; // >= -1
         }
       }
     }

@@ -8,6 +8,8 @@ from t;
 
 (select 1);
 
+select 1; select 2;
+
 ----- set operator -----
 select 1 union all select 2;
 
@@ -27,6 +29,7 @@ union all
 select 2;
 
 ----- WITH clause -----
+with a as (select 1) select 2; -- do not insert blank line
 with a as (select 1)
 -- before select
 select * from a;
