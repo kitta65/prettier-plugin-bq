@@ -569,6 +569,8 @@ export const printSQL = (
       return printCreateProcedureStatement(path, options, print, node);
     case "CreateReservationStatement":
       return printCreateReservationStatement(path, options, print, node);
+    case "CreateRowAccessPolicyStatement":
+      return printCreateRowAccessPolicyStatement(path, options, print, node);
     case "CreateSchemaStatement":
       return printCreateSchemaStatement(path, options, print, node);
     case "CreateTableStatement":
@@ -1886,6 +1888,53 @@ const printCreateReservationStatement: PrintFunc<bq2cst.CreateReservationStateme
         docs.json,
         " ",
         docs.json_string,
+        softline,
+        docs.semicolon,
+      ]),
+      p.newLine(),
+    ];
+  };
+
+const printCreateRowAccessPolicyStatement: PrintFunc<bq2cst.CreateRowAccessPolicyStatement> =
+  (path, options, print, node) => {
+    const p = new Printer(path, options, print, node);
+    const docs: { [Key in Docs<bq2cst.CreateRowAccessPolicyStatement>]: Doc } =
+      {
+        leading_comments: printLeadingComments(path, options, print, node),
+        self: p.self("upper"),
+        trailing_comments: printTrailingComments(path, options, print, node),
+        or_replace: p.child("or_replace", (x) => group([line, x])),
+        what: p.child("what", asItIs, "all", " "),
+        if_not_exists: p.child("if_not_exists", (x) => group([line, x])),
+        ident: p.child("ident", asItIs, "all"),
+        on: p.child("on"),
+        grant: p.child("grant"),
+        to: p.child("to", asItIs, "all"),
+        filter: p.child("filter"),
+        using: p.child("using", asItIs, "all"),
+        semicolon: p.child("semicolon"),
+      };
+    return [
+      docs.leading_comments,
+      group([
+        docs.self,
+        docs.trailing_comments,
+        docs.or_replace,
+        " ",
+        docs.what,
+        docs.if_not_exists,
+        " ",
+        docs.ident,
+        line,
+        docs.on,
+        p.has("grant") ? line : "",
+        docs.grant,
+        p.has("to") ? " " : "",
+        docs.to,
+        line,
+        docs.filter,
+        " ",
+        docs.using,
         softline,
         docs.semicolon,
       ]),

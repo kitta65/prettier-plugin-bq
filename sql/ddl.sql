@@ -119,6 +119,18 @@ create procedure abc(
 options(dummy = 'dummy')
 begin select 'abc'; end;
 
+----- CREATE ROW ACCESS POLICY statement -----
+create row access policy filter_name
+on t
+filter using (true)
+;
+
+create or replace row access policy if not exists filter_name
+on tablename
+grant to ('a.example.com', 'b.example.com')
+filter using (email = session_user())
+;
+
 ----- ALTER SCHEMA statement -----
 alter schema prettier_plugin_bq_test set options();
 

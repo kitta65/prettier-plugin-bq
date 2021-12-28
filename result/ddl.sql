@@ -119,6 +119,15 @@ OPTIONS (dummy = 'dummy')
 BEGIN SELECT 'abc'; END
 ;
 
+----- CREATE ROW ACCESS POLICY statement -----
+CREATE ROW ACCESS POLICY filter_name ON t FILTER USING (TRUE);
+
+CREATE OR REPLACE ROW ACCESS POLICY IF NOT EXISTS filter_name
+ON tablename
+GRANT TO ('a.example.com', 'b.example.com')
+FILTER USING (email = SESSION_USER())
+;
+
 ----- ALTER SCHEMA statement -----
 ALTER SCHEMA prettier_plugin_bq_test SET OPTIONS ();
 
