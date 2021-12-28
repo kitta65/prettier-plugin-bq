@@ -585,6 +585,8 @@ export const printSQL = (
       return printDotOperator(path, options, print, node);
     case "DropColumnClause":
       return printDropColumnClause(path, options, print, node);
+    case "DropRowAccessPolicyStatement":
+      return printDropRowAccessPolicyStatement(path, options, print, node);
     case "DropStatement":
       return printDropStatement(path, options, print, node);
     case "ElseIfClause":
@@ -2237,6 +2239,38 @@ const printDropColumnClause: PrintFunc<bq2cst.DropColumnClause> = (
     ]),
   ];
 };
+
+const printDropRowAccessPolicyStatement: PrintFunc<bq2cst.DropRowAccessPolicyStatement> =
+  (path, options, print, node) => {
+    const p = new Printer(path, options, print, node);
+    const docs: { [Key in Docs<bq2cst.DropRowAccessPolicyStatement>]: Doc } = {
+      leading_comments: printLeadingComments(path, options, print, node),
+      self: p.self("upper"),
+      trailing_comments: printTrailingComments(path, options, print, node),
+      what: p.child("what", asItIs, "all", " "),
+      if_exists: p.child("if_exists", (x) => group([line, x])),
+      ident: p.child("ident", asItIs, "all"),
+      on: p.child("on"),
+      semicolon: p.child("semicolon"),
+    };
+    return [
+      docs.leading_comments,
+      group([
+        docs.self,
+        docs.trailing_comments,
+        " ",
+        docs.what,
+        docs.if_exists,
+        p.has("ident") ? " " : "",
+        docs.ident,
+        line,
+        docs.on,
+        softline,
+        docs.semicolon,
+      ]),
+      p.newLine(),
+    ];
+  };
 
 const printDropStatement: PrintFunc<bq2cst.DropStatement> = (
   path,

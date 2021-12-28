@@ -184,6 +184,7 @@ ALTER VIEW example SET OPTIONS (dummy = 'dummy', description = 'abc');
 ALTER MATERIALIZED VIEW IF EXISTS example SET OPTIONS (dummy = 'dummy');
 
 ----- DROP statement -----
+-- general
 DROP TABLE example;
 
 DROP EXTERNAL TABLE IF EXISTS example;
@@ -193,3 +194,10 @@ DROP MATERIALIZED VIEW example;
 DROP SCHEMA example CASCADE;
 
 DROP TABLE FUNCTION prettier_plugin_bq_test.tvf;
+
+-- row access policy
+DROP ROW ACCESS POLICY ident ON t;
+
+DROP ROW ACCESS POLICY IF EXISTS ident ON t;
+
+DROP ALL ROW ACCESS POLICIES ON t;

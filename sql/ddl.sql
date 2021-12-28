@@ -188,6 +188,7 @@ alter view example set options (
 alter materialized view if exists example set options (dummy = 'dummy');
 
 ----- DROP statement -----
+-- general
 drop table example;
 
 drop external table if exists example;
@@ -197,3 +198,10 @@ drop materialized view example;
 drop schema example cascade;
 
 drop table function prettier_plugin_bq_test.tvf;
+
+-- row access policy
+drop row access policy ident on t;
+
+drop row access policy if exists ident on t;
+
+drop all row access policies on t;
