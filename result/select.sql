@@ -275,6 +275,15 @@ WHERE
   AND (float < 100 OR 1000 < float)
 ;
 
+SELECT str
+FROM t
+WHERE
+  -- comment1
+  TRUE
+  -- comment2
+  AND FALSE
+;
+
 ----- GROUP BY clause -----
 SELECT
   str,

@@ -239,6 +239,14 @@ select str from t where true;
 
 select str from t where str = 'abc' and ts < current_timestamp() and int < 100 and (float < 100 or 1000 < float);
 
+select str from t
+where
+  -- comment1
+  true
+  -- comment2
+  and false
+;
+
 ----- GROUP BY clause -----
 select str, int
 -- break

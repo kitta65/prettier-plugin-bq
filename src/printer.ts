@@ -1208,6 +1208,7 @@ const printBooleanLiteral: PrintFunc<bq2cst.BooleanLiteral> = (
   ];
 };
 
+// TODO Define another function for AND, OR.
 const printBinaryOperator: PrintFunc<bq2cst.BinaryOperator> = (
   path,
   options,
@@ -1218,11 +1219,12 @@ const printBinaryOperator: PrintFunc<bq2cst.BinaryOperator> = (
   p.setNotRoot("left");
   p.setNotRoot("right");
   const leading_comments = p.consumeLeadingCommentsOfX("left", false);
+  const logical = p.includedIn(["AND", "OR"]);
   const docs: { [Key in Docs<bq2cst.BinaryOperator>]: Doc } = {
     leading_comments: leading_comments,
     left: p.child("left"),
     not: p.child("not", asItIs, "all"),
-    self: p.self("upper", true),
+    self: logical ? p.self("upper") : p.self("upper", true),
     trailing_comments: printTrailingComments(path, options, print, node),
     right: p.child("right", asItIs, "all"),
     as: "", // eslint-disable-line unicorn/no-unused-properties
@@ -1232,9 +1234,9 @@ const printBinaryOperator: PrintFunc<bq2cst.BinaryOperator> = (
     comma: printComma(path, options, print, node),
   };
 
-  const logical = p.includedIn(["AND", "OR"]);
-  // directly asigning to `docs.left` is not good idea
-  // because it disturbs eslint-plugin-unicorn
+  // NOTE
+  // If you reassign `docs.left`, eslint-plugin-unicorn does not work.
+  // So define new variable here.
   let left = docs.left;
   let right = docs.right;
   if (logical) {
@@ -1258,8 +1260,12 @@ const printBinaryOperator: PrintFunc<bq2cst.BinaryOperator> = (
   }
   let res: Doc = [
     left,
-    logical && node.breakRecommended ? hardline : line,
+    (logical && node.breakRecommended) || p.has("leading_comments")
+      ? hardline
+      : line,
     p.has("not") && !p.includedIn(["IS"]) ? [docs.not, " "] : "",
+    // NOTE If self is not logical, leading_comments has already been consumed.
+    printLeadingComments(path, options, print, node),
     docs.self,
     p.has("not") && p.includedIn(["IS"]) ? [" ", docs.not] : "",
     " ",
