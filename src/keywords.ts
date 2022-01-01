@@ -325,6 +325,12 @@ export const globalFunctions = [
   "UNIX_SECONDS",
   "UNIX_MILLIS",
   "UNIX_MICROS",
+  // interval function
+  "MAKE_INTERVAL",
+  "EXTRACT",
+  "JUSTIFY_DAYS",
+  "JUSTIFY_HOURS",
+  "JUSTIFY_INTERVAL",
   // geography functions
   "S2_COVERINGCELLIDS",
   "S2_CELLIDFROMPOINT",
@@ -442,4 +448,3 @@ export const netFunctions = [
   "PUBLIC_SUFFIX",
   "REG_DOMAIN",
 ];
-
