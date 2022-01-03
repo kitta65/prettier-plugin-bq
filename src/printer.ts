@@ -3278,11 +3278,10 @@ const printMultiTokenIdentifier: PrintFunc<bq2cst.MultiTokenIdentifier> = (
 ) => {
   const p = new Printer(path, options, print, node);
   const docs: { [Key in Docs<bq2cst.MultiTokenIdentifier>]: Doc } = {
-    leading_comments: "", // eslint-disable-line unicorn/no-unused-properties
+    leading_comments: printLeadingComments(path, options, print, node),
     self: p.self(),
-    trailing_comments: "", // eslint-disable-line unicorn/no-unused-properties
-    left: p.child("left"),
-    right: p.child("right", asItIs, "all"),
+    trailing_comments:  printTrailingComments(path, options, print, node),
+    trailing_idents: p.child("trailing_idents", asItIs, "all"),
     as: "", // eslint-disable-line unicorn/no-unused-properties
     alias: printAlias(path, options, print, node),
     for_system_time_as_of: p.child("for_system_time_as_of", asItIs, "all"),
@@ -3295,9 +3294,10 @@ const printMultiTokenIdentifier: PrintFunc<bq2cst.MultiTokenIdentifier> = (
     comma: printComma(path, options, print, node),
   };
   return [
-    docs.left,
+    docs.leading_comments,
     docs.self,
-    docs.right,
+    docs.trailing_comments,
+    docs.trailing_idents,
     docs.alias,
     p.has("for_system_time_as_of") ? [" ", docs.for_system_time_as_of] : "",
     docs.pivot,
