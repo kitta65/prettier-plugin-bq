@@ -716,7 +716,7 @@ export const printSQL = (
     case "XXXByExprs":
       return printXXXByExprs(path, options, print, node);
     default:
-      return "not implemented";
+      throw new Error(`Not implemented node type: ${JSON.stringify(node)}`);
   }
 };
 
