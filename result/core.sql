@@ -75,6 +75,11 @@ SELECT
   DATE_ADD('2000-01-01', INTERVAL 1 DAY),
 ;
 
+----- JSON -----
+SELECT JSON '{"key": "value"}';
+
+SELECT json['key'] FROM t;
+
 ----- CASE expr -----
 SELECT
   CASE int

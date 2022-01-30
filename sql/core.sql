@@ -80,13 +80,18 @@ select
 ;
 
 ----- interval literal -----
-SELECT
-  INTERVAL 1 YEAR,
-  INTERVAL 1 + 1 MONTH,
-  INTERVAL '1' DAY,
-  INTERVAL '1:2:3' HOUR TO SECOND,
-  DATE_ADD('2000-01-01', INTERVAL 1 DAY),
+select
+  interval 1 year,
+  interval 1 + 1 month,
+  interval '1' day,
+  interval '1:2:3' hour to second,
+  date_add('2000-01-01', interval 1 day),
 ;
+
+----- JSON -----
+select json '{"key": "value"}';
+
+select json['key'] from t;
 
 ----- CASE expr -----
 select

@@ -511,6 +511,8 @@ export const printSQL = (
     return path.map(print);
   }
   switch (node.node_type) {
+    case "AccessOperator":
+      return printAccessOperator(path, options, print, node);
     case "AddColumnClause":
       return printAddColumnClause(path, options, print, node);
     case "AlterColumnStatement":
@@ -521,8 +523,6 @@ export const printSQL = (
       return printAlterTableStatement(path, options, print, node);
     case "AlterViewStatement":
       return printAlterViewStatement(path, options, print, node);
-    case "ArrayAccessing":
-      return printArrayAccessing(path, options, print, node);
     case "ArrayLiteral":
       return printArrayLiteral(path, options, print, node);
     case "AssertStatement":
@@ -539,8 +539,6 @@ export const printSQL = (
       return printBinaryOperator(path, options, print, node);
     case "BreakContinueStatement":
       return printBreakContinueStatement(path, options, print, node);
-    case "CallingArrayAccessingFunction":
-      return printCallingArrayAccessingFunction(path, options, print, node);
     case "CallingFunction":
       return printCallingFunction(path, options, print, node);
     case "CallingTableFunction":
@@ -720,6 +718,40 @@ export const printSQL = (
     default:
       return "not implemented";
   }
+};
+
+const printAccessOperator: PrintFunc<bq2cst.AccessOperator> = (
+  path,
+  options,
+  print,
+  node
+) => {
+  const p = new Printer(path, options, print, node);
+  const docs: { [Key in Docs<bq2cst.AccessOperator>]: Doc } = {
+    leading_comments: "", // eslint-disable-line unicorn/no-unused-properties
+    left: p.child("left"),
+    self: p.self("asItIs", true),
+    trailing_comments: printTrailingComments(path, options, print, node),
+    right: p.child("right", asItIs, "all"),
+    rparen: p.child("rparen", asItIs, "all"),
+    as: "", // eslint-disable-line unicorn/no-unused-properties
+    alias: printAlias(path, options, print, node),
+    order: printOrder(path, options, print, node),
+    null_order: "", // eslint-disable-line unicorn/no-unused-properties
+    comma: printComma(path, options, print, node),
+  };
+  return [
+    group([
+      docs.left,
+      docs.self,
+      docs.trailing_comments,
+      docs.right,
+      docs.rparen,
+      docs.alias,
+      docs.order,
+    ]),
+    docs.comma,
+  ];
 };
 
 const printAddColumnClause: PrintFunc<bq2cst.AddColumnClause> = (
@@ -958,40 +990,6 @@ const printAsterisk: PrintFunc<bq2cst.Asterisk> = (
     docs.except,
     docs.replace,
     docs.alias,
-    docs.comma,
-  ];
-};
-
-const printArrayAccessing: PrintFunc<bq2cst.ArrayAccessing> = (
-  path,
-  options,
-  print,
-  node
-) => {
-  const p = new Printer(path, options, print, node);
-  const docs: { [Key in Docs<bq2cst.ArrayAccessing>]: Doc } = {
-    leading_comments: "", // eslint-disable-line unicorn/no-unused-properties
-    left: p.child("left"),
-    self: p.self("asItIs", true),
-    trailing_comments: printTrailingComments(path, options, print, node),
-    right: p.child("right", asItIs, "all"),
-    rparen: p.child("rparen", asItIs, "all"),
-    as: "", // eslint-disable-line unicorn/no-unused-properties
-    alias: printAlias(path, options, print, node),
-    order: printOrder(path, options, print, node),
-    null_order: "", // eslint-disable-line unicorn/no-unused-properties
-    comma: printComma(path, options, print, node),
-  };
-  return [
-    group([
-      docs.left,
-      docs.self,
-      docs.trailing_comments,
-      docs.right,
-      docs.rparen,
-      docs.alias,
-      docs.order,
-    ]),
     docs.comma,
   ];
 };
@@ -1301,33 +1299,6 @@ const printBreakContinueStatement: PrintFunc<bq2cst.BreakContinueStatement> = (
     docs.semicolon,
     p.newLine(),
   ];
-};
-
-const printCallingArrayAccessingFunction: //
-PrintFunc<bq2cst.CallingArrayAccessingFunction> = (
-  path,
-  options,
-  print,
-  node
-) => {
-  const p = new Printer(path, options, print, node);
-  p.setNotRoot("args");
-  if (2 <= p.len("args")) {
-    throw "Only one argument is expected!";
-  }
-  const funcToken = p.children.func.Node.token;
-  if (globalFunctions.includes(funcToken.literal.toUpperCase())) {
-    funcToken.literal = funcToken.literal.toUpperCase();
-  }
-  const docs: { [Key in Docs<bq2cst.CallingArrayAccessingFunction>]: Doc } = {
-    leading_comments: "", // eslint-disable-line unicorn/no-unused-properties
-    func: p.child("func"),
-    self: p.self("asItIs", true),
-    trailing_comments: printTrailingComments(path, options, print, node),
-    args: p.child("args", (x) => group(x), "all", line),
-    rparen: p.child("rparen", asItIs, "all"),
-  };
-  return [docs.func, docs.self, docs.trailing_comments, docs.args, docs.rparen];
 };
 
 const printCallingFunction: PrintFunc<bq2cst.CallingFunction> = (

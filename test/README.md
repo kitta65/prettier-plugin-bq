@@ -19,6 +19,7 @@ CREATE OR REPLACE TABLE prettier_plugin_bq_test.t (
   ts TIMESTAMP,
   dt DATE,
   bool BOOLEAN,
+  json JSON,
   nested STRUCT<
     arr ARRAY<INT64>,
     str STRING,
@@ -29,7 +30,7 @@ CREATE OR REPLACE TABLE prettier_plugin_bq_test.u AS
 SELECT * FROM prettier_plugin_bq_test.t
 ;
 CREATE OR REPLACE TABLE prettier_plugin_bq_test.v (str STRING, int INT64);
-CREATE TABLE FUNCTION prettier_plugin_bq_test.tvf() AS SELECT 1 AS one;
+CREATE OR REPLACE TABLE FUNCTION prettier_plugin_bq_test.tvf() AS SELECT 1 AS one;
 ```
 
 ## How to execute tests?
