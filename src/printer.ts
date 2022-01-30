@@ -1733,162 +1733,85 @@ const printComment: PrintFunc<bq2cst.Comment> = (
   return docs.self;
 };
 
-const printCreateFunctionStatement: PrintFunc<bq2cst.CreateFunctionStatement> =
-  (path, options, print, node) => {
-    const p = new Printer(path, options, print, node);
-    p.setLiteral("temp", options.printKeywordsInUpperCase ? "TEMP" : "temp");
-    const docs: { [Key in Docs<bq2cst.CreateFunctionStatement>]: Doc } = {
-      leading_comments: printLeadingComments(path, options, print, node),
-      self: p.self("upper"),
-      trailing_comments: printTrailingComments(path, options, print, node),
-      or_replace: p.child("or_replace", (x) => group([line, x])),
-      temp: p.child("temp", asItIs, "all"),
-      table: p.child("table", asItIs, "all"),
-      what: p.child("what", asItIs, "all"),
-      if_not_exists: p.child("if_not_exists", (x) => group([line, x])),
-      ident: p.child("ident", asItIs, "all"),
-      group: p.child("group", asItIs, "all"),
-      returns: p.child("returns"),
-      determinism: group(p.child("determinism", asItIs, "none", line)),
-      language: p.child("language"),
-      options: p.child("options"),
-      as: p.child("as"),
-      semicolon: p.child("semicolon"),
-    };
-    return [
-      docs.leading_comments,
-      group([
-        group([
-          docs.self,
-          docs.trailing_comments,
-          docs.or_replace,
-          p.has("temp") ? " " : "",
-          docs.temp,
-          p.has("table") ? " " : "",
-          docs.table,
-          " ",
-          docs.what,
-          docs.if_not_exists,
-          " ",
-          docs.ident,
-          docs.group,
-        ]),
-        p.has("returns") ? line : "",
-        docs.returns,
-        p.has("determinism") ? line : "",
-        docs.determinism,
-        p.has("language") ? line : "",
-        docs.language,
-        p.has("options") ? line : "",
-        docs.options,
-        line,
-        docs.as,
-        softline,
-        docs.semicolon,
-      ]),
-      p.newLine(),
-    ];
+const printCreateFunctionStatement: PrintFunc<
+  bq2cst.CreateFunctionStatement
+> = (path, options, print, node) => {
+  const p = new Printer(path, options, print, node);
+  p.setLiteral("temp", options.printKeywordsInUpperCase ? "TEMP" : "temp");
+  const docs: { [Key in Docs<bq2cst.CreateFunctionStatement>]: Doc } = {
+    leading_comments: printLeadingComments(path, options, print, node),
+    self: p.self("upper"),
+    trailing_comments: printTrailingComments(path, options, print, node),
+    or_replace: p.child("or_replace", (x) => group([line, x])),
+    temp: p.child("temp", asItIs, "all"),
+    table: p.child("table", asItIs, "all"),
+    what: p.child("what", asItIs, "all"),
+    if_not_exists: p.child("if_not_exists", (x) => group([line, x])),
+    ident: p.child("ident", asItIs, "all"),
+    group: p.child("group", asItIs, "all"),
+    returns: p.child("returns"),
+    determinism: group(p.child("determinism", asItIs, "none", line)),
+    language: p.child("language"),
+    options: p.child("options"),
+    as: p.child("as"),
+    semicolon: p.child("semicolon"),
   };
-
-const printCreateProcedureStatement: PrintFunc<bq2cst.CreateProcedureStatement> =
-  (path, options, print, node) => {
-    const p = new Printer(path, options, print, node);
-    p.setNotRoot("stmt");
-    const docs: { [Key in Docs<bq2cst.CreateProcedureStatement>]: Doc } = {
-      leading_comments: printLeadingComments(path, options, print, node),
-      self: p.self("upper"),
-      trailing_comments: printTrailingComments(path, options, print, node),
-      or_replace: p.child("or_replace", (x) => group([line, x])),
-      what: p.child("what", asItIs, "all"),
-      if_not_exists: p.child("if_not_exists", (x) => group([line, x])),
-      ident: p.child("ident", asItIs, "all"),
-      group: p.child("group", asItIs, "all"),
-      options: p.child("options"),
-      stmt: p.child("stmt"),
-      semicolon: p.child("semicolon"),
-    };
-    return [
-      docs.leading_comments,
-      group([
-        group([
-          docs.self,
-          docs.trailing_comments,
-          docs.or_replace,
-          " ",
-          docs.what,
-          docs.if_not_exists,
-          " ",
-          docs.ident,
-          docs.group,
-        ]),
-        p.has("options") ? line : "",
-        docs.options,
-        line,
-        docs.stmt,
-        softline,
-        docs.semicolon,
-      ]),
-      p.newLine(),
-    ];
-  };
-
-const printCreateReservationStatement: PrintFunc<bq2cst.CreateReservationStatement> =
-  (path, options, print, node) => {
-    const p = new Printer(path, options, print, node);
-    const docs: { [Key in Docs<bq2cst.CreateReservationStatement>]: Doc } = {
-      leading_comments: printLeadingComments(path, options, print, node),
-      self: p.self("upper"),
-      trailing_comments: printTrailingComments(path, options, print, node),
-      what: p.child("what", asItIs, "all"),
-      ident: p.child("ident", asItIs, "all"),
-      as: p.child("as"),
-      json: p.child("json", asItIs, "all"),
-      json_string: p.child("json_string", asItIs, "all"),
-      semicolon: p.child("semicolon"),
-    };
-    return [
-      docs.leading_comments,
+  return [
+    docs.leading_comments,
+    group([
       group([
         docs.self,
         docs.trailing_comments,
+        docs.or_replace,
+        p.has("temp") ? " " : "",
+        docs.temp,
+        p.has("table") ? " " : "",
+        docs.table,
         " ",
         docs.what,
+        docs.if_not_exists,
         " ",
         docs.ident,
-        line,
-        docs.as,
-        " ",
-        docs.json,
-        " ",
-        docs.json_string,
-        softline,
-        docs.semicolon,
+        docs.group,
       ]),
-      p.newLine(),
-    ];
-  };
+      p.has("returns") ? line : "",
+      docs.returns,
+      p.has("determinism") ? line : "",
+      docs.determinism,
+      p.has("language") ? line : "",
+      docs.language,
+      p.has("options") ? line : "",
+      docs.options,
+      line,
+      docs.as,
+      softline,
+      docs.semicolon,
+    ]),
+    p.newLine(),
+  ];
+};
 
-const printCreateRowAccessPolicyStatement: PrintFunc<bq2cst.CreateRowAccessPolicyStatement> =
-  (path, options, print, node) => {
-    const p = new Printer(path, options, print, node);
-    const docs: { [Key in Docs<bq2cst.CreateRowAccessPolicyStatement>]: Doc } =
-      {
-        leading_comments: printLeadingComments(path, options, print, node),
-        self: p.self("upper"),
-        trailing_comments: printTrailingComments(path, options, print, node),
-        or_replace: p.child("or_replace", (x) => group([line, x])),
-        what: p.child("what", asItIs, "all", " "),
-        if_not_exists: p.child("if_not_exists", (x) => group([line, x])),
-        ident: p.child("ident", asItIs, "all"),
-        on: p.child("on"),
-        grant: p.child("grant"),
-        to: p.child("to", asItIs, "all"),
-        filter: p.child("filter"),
-        using: p.child("using", asItIs, "all"),
-        semicolon: p.child("semicolon"),
-      };
-    return [
-      docs.leading_comments,
+const printCreateProcedureStatement: PrintFunc<
+  bq2cst.CreateProcedureStatement
+> = (path, options, print, node) => {
+  const p = new Printer(path, options, print, node);
+  p.setNotRoot("stmt");
+  const docs: { [Key in Docs<bq2cst.CreateProcedureStatement>]: Doc } = {
+    leading_comments: printLeadingComments(path, options, print, node),
+    self: p.self("upper"),
+    trailing_comments: printTrailingComments(path, options, print, node),
+    or_replace: p.child("or_replace", (x) => group([line, x])),
+    what: p.child("what", asItIs, "all"),
+    if_not_exists: p.child("if_not_exists", (x) => group([line, x])),
+    ident: p.child("ident", asItIs, "all"),
+    group: p.child("group", asItIs, "all"),
+    options: p.child("options"),
+    stmt: p.child("stmt"),
+    semicolon: p.child("semicolon"),
+  };
+  return [
+    docs.leading_comments,
+    group([
       group([
         docs.self,
         docs.trailing_comments,
@@ -1898,22 +1821,102 @@ const printCreateRowAccessPolicyStatement: PrintFunc<bq2cst.CreateRowAccessPolic
         docs.if_not_exists,
         " ",
         docs.ident,
-        line,
-        docs.on,
-        p.has("grant") ? line : "",
-        docs.grant,
-        p.has("to") ? " " : "",
-        docs.to,
-        line,
-        docs.filter,
-        " ",
-        docs.using,
-        softline,
-        docs.semicolon,
+        docs.group,
       ]),
-      p.newLine(),
-    ];
+      p.has("options") ? line : "",
+      docs.options,
+      line,
+      docs.stmt,
+      softline,
+      docs.semicolon,
+    ]),
+    p.newLine(),
+  ];
+};
+
+const printCreateReservationStatement: PrintFunc<
+  bq2cst.CreateReservationStatement
+> = (path, options, print, node) => {
+  const p = new Printer(path, options, print, node);
+  const docs: { [Key in Docs<bq2cst.CreateReservationStatement>]: Doc } = {
+    leading_comments: printLeadingComments(path, options, print, node),
+    self: p.self("upper"),
+    trailing_comments: printTrailingComments(path, options, print, node),
+    what: p.child("what", asItIs, "all"),
+    ident: p.child("ident", asItIs, "all"),
+    as: p.child("as"),
+    json: p.child("json", asItIs, "all"),
+    json_string: p.child("json_string", asItIs, "all"),
+    semicolon: p.child("semicolon"),
   };
+  return [
+    docs.leading_comments,
+    group([
+      docs.self,
+      docs.trailing_comments,
+      " ",
+      docs.what,
+      " ",
+      docs.ident,
+      line,
+      docs.as,
+      " ",
+      docs.json,
+      " ",
+      docs.json_string,
+      softline,
+      docs.semicolon,
+    ]),
+    p.newLine(),
+  ];
+};
+
+const printCreateRowAccessPolicyStatement: PrintFunc<
+  bq2cst.CreateRowAccessPolicyStatement
+> = (path, options, print, node) => {
+  const p = new Printer(path, options, print, node);
+  const docs: { [Key in Docs<bq2cst.CreateRowAccessPolicyStatement>]: Doc } = {
+    leading_comments: printLeadingComments(path, options, print, node),
+    self: p.self("upper"),
+    trailing_comments: printTrailingComments(path, options, print, node),
+    or_replace: p.child("or_replace", (x) => group([line, x])),
+    what: p.child("what", asItIs, "all", " "),
+    if_not_exists: p.child("if_not_exists", (x) => group([line, x])),
+    ident: p.child("ident", asItIs, "all"),
+    on: p.child("on"),
+    grant: p.child("grant"),
+    to: p.child("to", asItIs, "all"),
+    filter: p.child("filter"),
+    using: p.child("using", asItIs, "all"),
+    semicolon: p.child("semicolon"),
+  };
+  return [
+    docs.leading_comments,
+    group([
+      docs.self,
+      docs.trailing_comments,
+      docs.or_replace,
+      " ",
+      docs.what,
+      docs.if_not_exists,
+      " ",
+      docs.ident,
+      line,
+      docs.on,
+      p.has("grant") ? line : "",
+      docs.grant,
+      p.has("to") ? " " : "",
+      docs.to,
+      line,
+      docs.filter,
+      " ",
+      docs.using,
+      softline,
+      docs.semicolon,
+    ]),
+    p.newLine(),
+  ];
+};
 
 const printCreateSchemaStatement: PrintFunc<bq2cst.CreateSchemaStatement> = (
   path,
@@ -2211,37 +2214,38 @@ const printDropColumnClause: PrintFunc<bq2cst.DropColumnClause> = (
   ];
 };
 
-const printDropRowAccessPolicyStatement: PrintFunc<bq2cst.DropRowAccessPolicyStatement> =
-  (path, options, print, node) => {
-    const p = new Printer(path, options, print, node);
-    const docs: { [Key in Docs<bq2cst.DropRowAccessPolicyStatement>]: Doc } = {
-      leading_comments: printLeadingComments(path, options, print, node),
-      self: p.self("upper"),
-      trailing_comments: printTrailingComments(path, options, print, node),
-      what: p.child("what", asItIs, "all", " "),
-      if_exists: p.child("if_exists", (x) => group([line, x])),
-      ident: p.child("ident", asItIs, "all"),
-      on: p.child("on"),
-      semicolon: p.child("semicolon"),
-    };
-    return [
-      docs.leading_comments,
-      group([
-        docs.self,
-        docs.trailing_comments,
-        " ",
-        docs.what,
-        docs.if_exists,
-        p.has("ident") ? " " : "",
-        docs.ident,
-        line,
-        docs.on,
-        softline,
-        docs.semicolon,
-      ]),
-      p.newLine(),
-    ];
+const printDropRowAccessPolicyStatement: PrintFunc<
+  bq2cst.DropRowAccessPolicyStatement
+> = (path, options, print, node) => {
+  const p = new Printer(path, options, print, node);
+  const docs: { [Key in Docs<bq2cst.DropRowAccessPolicyStatement>]: Doc } = {
+    leading_comments: printLeadingComments(path, options, print, node),
+    self: p.self("upper"),
+    trailing_comments: printTrailingComments(path, options, print, node),
+    what: p.child("what", asItIs, "all", " "),
+    if_exists: p.child("if_exists", (x) => group([line, x])),
+    ident: p.child("ident", asItIs, "all"),
+    on: p.child("on"),
+    semicolon: p.child("semicolon"),
   };
+  return [
+    docs.leading_comments,
+    group([
+      docs.self,
+      docs.trailing_comments,
+      " ",
+      docs.what,
+      docs.if_exists,
+      p.has("ident") ? " " : "",
+      docs.ident,
+      line,
+      docs.on,
+      softline,
+      docs.semicolon,
+    ]),
+    p.newLine(),
+  ];
+};
 
 const printDropStatement: PrintFunc<bq2cst.DropStatement> = (
   path,
@@ -2484,25 +2488,26 @@ const printForStatement: PrintFunc<bq2cst.ForStatement> = (
   ];
 };
 
-const printForSystemTimeAsOfclause: PrintFunc<bq2cst.ForSystemTimeAsOfClause> =
-  (path, options, print, node) => {
-    const p = new Printer(path, options, print, node);
-    const docs: { [Key in Docs<bq2cst.ForSystemTimeAsOfClause>]: Doc } = {
-      leading_comments: printLeadingComments(path, options, print, node),
-      self: p.self("upper"),
-      trailing_comments: printTrailingComments(path, options, print, node),
-      system_time_as_of: p.child("system_time_as_of", (x) => group([line, x])),
-      expr: p.child("expr", asItIs, "all"),
-    };
-    return [
-      docs.leading_comments,
-      docs.self,
-      docs.trailing_comments,
-      docs.system_time_as_of,
-      " ",
-      docs.expr,
-    ];
+const printForSystemTimeAsOfclause: PrintFunc<
+  bq2cst.ForSystemTimeAsOfClause
+> = (path, options, print, node) => {
+  const p = new Printer(path, options, print, node);
+  const docs: { [Key in Docs<bq2cst.ForSystemTimeAsOfClause>]: Doc } = {
+    leading_comments: printLeadingComments(path, options, print, node),
+    self: p.self("upper"),
+    trailing_comments: printTrailingComments(path, options, print, node),
+    system_time_as_of: p.child("system_time_as_of", (x) => group([line, x])),
+    expr: p.child("expr", asItIs, "all"),
   };
+  return [
+    docs.leading_comments,
+    docs.self,
+    docs.trailing_comments,
+    docs.system_time_as_of,
+    " ",
+    docs.expr,
+  ];
+};
 
 const printGrantStatement: PrintFunc<bq2cst.GrantStatement> = (
   path,
@@ -2687,25 +2692,26 @@ const printGroupedType: PrintFunc<bq2cst.GroupedType> = (
   ];
 };
 
-const printGroupedTypeDeclarations: PrintFunc<bq2cst.GroupedTypeDeclarations> =
-  (path, options, print, node) => {
-    const p = new Printer(path, options, print, node);
-    const docs: { [Key in Docs<bq2cst.GroupedTypeDeclarations>]: Doc } = {
-      leading_comments: printLeadingComments(path, options, print, node),
-      self: p.self(),
-      trailing_comments: printTrailingComments(path, options, print, node),
-      declarations: p.child("declarations", (x) => group(x), "none", line),
-      rparen: p.child("rparen"),
-    };
-    return [
-      docs.leading_comments,
-      docs.self,
-      docs.trailing_comments,
-      indent([p.has("declarations") ? softline : "", docs.declarations]),
-      p.has("declarations") ? softline : "",
-      docs.rparen,
-    ];
+const printGroupedTypeDeclarations: PrintFunc<
+  bq2cst.GroupedTypeDeclarations
+> = (path, options, print, node) => {
+  const p = new Printer(path, options, print, node);
+  const docs: { [Key in Docs<bq2cst.GroupedTypeDeclarations>]: Doc } = {
+    leading_comments: printLeadingComments(path, options, print, node),
+    self: p.self(),
+    trailing_comments: printTrailingComments(path, options, print, node),
+    declarations: p.child("declarations", (x) => group(x), "none", line),
+    rparen: p.child("rparen"),
   };
+  return [
+    docs.leading_comments,
+    docs.self,
+    docs.trailing_comments,
+    indent([p.has("declarations") ? softline : "", docs.declarations]),
+    p.has("declarations") ? softline : "",
+    docs.rparen,
+  ];
+};
 
 const printIdentifier: PrintFunc<bq2cst.Identifier | bq2cst.Parameter> = (
   path,
@@ -3251,7 +3257,7 @@ const printMultiTokenIdentifier: PrintFunc<bq2cst.MultiTokenIdentifier> = (
   const docs: { [Key in Docs<bq2cst.MultiTokenIdentifier>]: Doc } = {
     leading_comments: printLeadingComments(path, options, print, node),
     self: p.self(),
-    trailing_comments:  printTrailingComments(path, options, print, node),
+    trailing_comments: printTrailingComments(path, options, print, node),
     trailing_idents: p.child("trailing_idents", asItIs, "all"),
     as: "", // eslint-disable-line unicorn/no-unused-properties
     alias: printAlias(path, options, print, node),
@@ -4318,27 +4324,28 @@ const printWithClause: PrintFunc<bq2cst.WithClause> = (
   ];
 };
 
-const printWithPartitionColumnsClause: PrintFunc<bq2cst.WithPartitionColumnsClause> =
-  (path, options, print, node) => {
-    const p = new Printer(path, options, print, node);
-    const docs: { [Key in Docs<bq2cst.WithPartitionColumnsClause>]: Doc } = {
-      leading_comments: printLeadingComments(path, options, print, node),
-      self: p.self(),
-      trailing_comments: printTrailingComments(path, options, print, node),
-      partition_columns: p.child("partition_columns", (x) => group([line, x])),
-      column_schema_group: p.child("column_schema_group", asItIs, "all"),
-    };
-    return [
-      docs.leading_comments,
-      group([
-        docs.self,
-        docs.trailing_comments,
-        docs.partition_columns,
-        p.has("column_schema_group") ? " " : "",
-        docs.column_schema_group,
-      ]),
-    ];
+const printWithPartitionColumnsClause: PrintFunc<
+  bq2cst.WithPartitionColumnsClause
+> = (path, options, print, node) => {
+  const p = new Printer(path, options, print, node);
+  const docs: { [Key in Docs<bq2cst.WithPartitionColumnsClause>]: Doc } = {
+    leading_comments: printLeadingComments(path, options, print, node),
+    self: p.self(),
+    trailing_comments: printTrailingComments(path, options, print, node),
+    partition_columns: p.child("partition_columns", (x) => group([line, x])),
+    column_schema_group: p.child("column_schema_group", asItIs, "all"),
   };
+  return [
+    docs.leading_comments,
+    group([
+      docs.self,
+      docs.trailing_comments,
+      docs.partition_columns,
+      p.has("column_schema_group") ? " " : "",
+      docs.column_schema_group,
+    ]),
+  ];
+};
 
 const printWithQuery: PrintFunc<bq2cst.WithQuery> = (
   path,
