@@ -543,10 +543,10 @@ export const printSQL = (
       return printCallingUnnest(path, options, print, node);
     case "CallStatement":
       return printCallStatement(path, options, print, node);
-    case "CaseExprArm":
-      return printCaseExprArm(path, options, print, node);
     case "CaseExpr":
       return printCaseExpr(path, options, print, node);
+    case "CaseExprArm":
+      return printCaseExprArm(path, options, print, node);
     case "CastArgument":
       return printCastArgument(path, options, print, node);
     case "Comment":
@@ -1598,30 +1598,6 @@ const printCallStatement: PrintFunc<bq2cst.CallStatement> = (
   ];
 };
 
-const printCaseExprArm: PrintFunc<bq2cst.CaseExprArm> = (
-  path,
-  options,
-  print,
-  node
-) => {
-  const p = new Printer(path, options, print, node);
-  const docs: { [Key in Docs<bq2cst.CaseExprArm>]: Doc } = {
-    leading_comments: printLeadingComments(path, options, print, node),
-    self: p.self(),
-    trailing_comments: printTrailingComments(path, options, print, node),
-    expr: p.child("expr", undefined, "all"),
-    then: p.child("then", undefined),
-    result: p.child("result"),
-  };
-  return [
-    docs.leading_comments,
-    docs.self,
-    docs.trailing_comments,
-    group([indent([p.has("expr") ? line : "", docs.expr])]),
-    indent([p.has("then") ? line : "", group([docs.then, " ", docs.result])]),
-  ];
-};
-
 const printCaseExpr: PrintFunc<bq2cst.CaseExpr> = (
   path,
   options,
@@ -1655,6 +1631,30 @@ const printCaseExpr: PrintFunc<bq2cst.CaseExpr> = (
     res = group(res);
   }
   return [docs.leading_comments, res, docs.alias, docs.order, docs.comma];
+};
+
+const printCaseExprArm: PrintFunc<bq2cst.CaseExprArm> = (
+  path,
+  options,
+  print,
+  node
+) => {
+  const p = new Printer(path, options, print, node);
+  const docs: { [Key in Docs<bq2cst.CaseExprArm>]: Doc } = {
+    leading_comments: printLeadingComments(path, options, print, node),
+    self: p.self(),
+    trailing_comments: printTrailingComments(path, options, print, node),
+    expr: p.child("expr", undefined, "all"),
+    then: p.child("then", undefined),
+    result: p.child("result"),
+  };
+  return [
+    docs.leading_comments,
+    docs.self,
+    docs.trailing_comments,
+    group([indent([p.has("expr") ? line : "", docs.expr])]),
+    indent([p.has("then") ? line : "", group([docs.then, " ", docs.result])]),
+  ];
 };
 
 const printCastArgument: PrintFunc<bq2cst.CastArgument> = (
