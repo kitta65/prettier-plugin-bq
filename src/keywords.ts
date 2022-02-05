@@ -262,6 +262,11 @@ export const globalFunctions = [
   "PARSE_JSON",
   "TO_JSON",
   "TO_JSON_STRING",
+  "STRING",
+  "BOOL",
+  "INT64",
+  "FLOAT64",
+  "JSON_TYPE",
   // array functions
   "ARRAY",
   "ARRAY_CONCAT",
