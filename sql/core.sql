@@ -94,6 +94,8 @@ select json '{"key": "value"}';
 select json['key'] from t;
 
 ----- CASE expr -----
+select case 1 when 1 then 'one' when 2 then 'two' end;
+
 select
   case int
     when 1 then 'one'

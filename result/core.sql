@@ -81,6 +81,8 @@ SELECT JSON '{"key": "value"}';
 SELECT json['key'] FROM t;
 
 ----- CASE expr -----
+SELECT CASE 1 WHEN 1 THEN 'one' WHEN 2 THEN 'two' END;
+
 SELECT
   CASE int
     WHEN 1 THEN 'one'

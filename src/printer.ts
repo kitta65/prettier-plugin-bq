@@ -4311,6 +4311,7 @@ const printWithClause: PrintFunc<bq2cst.WithClause> = (
     leading_comments: printLeadingComments(path, options, print, node),
     self: p.self("upper"),
     trailing_comments: printTrailingComments(path, options, print, node),
+    recursive: p.child("recursive", asItIs, "all"),
     queries:
       p.len("queries") === 1 && !p.hasLeadingComments("queries")
         ? [" ", p.child("queries", asItIs)]
