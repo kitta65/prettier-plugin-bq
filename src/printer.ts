@@ -4316,6 +4316,8 @@ const printWithClause: PrintFunc<bq2cst.WithClause> = (
   return [
     docs.leading_comments,
     docs.self,
+    p.has("recursive") ? " " : "",
+    docs.recursive,
     docs.trailing_comments,
     docs.queries,
   ];

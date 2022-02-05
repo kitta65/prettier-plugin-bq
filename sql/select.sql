@@ -55,6 +55,15 @@ select 3
 
 with a as (select 1) (select 2);
 
+-- recursive
+with recursive temp as (
+  select 1 as n
+  union all
+  select n + 1 from temp where n < 3
+)
+select n from temp
+;
+
 ----- SELECT clause -----
 -- distinct
 select distinct str from t;

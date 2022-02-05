@@ -83,6 +83,14 @@ WITH a AS (SELECT 1)
 (SELECT 2)
 ;
 
+-- recursive
+WITH RECURSIVE temp AS (
+  SELECT 1 AS n UNION ALL SELECT n + 1 FROM temp WHERE n < 3
+)
+SELECT n
+FROM temp
+;
+
 ----- SELECT clause -----
 -- distinct
 SELECT DISTINCT str FROM t;
