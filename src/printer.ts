@@ -424,10 +424,6 @@ class Printer<T extends bq2cst.UnknownNode> {
   }
 }
 
-const asItIs = (x: Doc) => {
-  return x;
-};
-
 const getFirstNode = (
   node: bq2cst.UnknownNode,
   includeComment = false
@@ -732,8 +728,8 @@ const printAccessOperator: PrintFunc<bq2cst.AccessOperator> = (
     left: p.child("left"),
     self: p.self("asItIs", true),
     trailing_comments: printTrailingComments(path, options, print, node),
-    right: p.child("right", asItIs, "all"),
-    rparen: p.child("rparen", asItIs, "all"),
+    right: p.child("right", undefined, "all"),
+    rparen: p.child("rparen", undefined, "all"),
     as: "", // eslint-disable-line unicorn/no-unused-properties
     alias: printAlias(path, options, print, node),
     order: printOrder(path, options, print, node),
@@ -765,10 +761,10 @@ const printAddColumnClause: PrintFunc<bq2cst.AddColumnClause> = (
     leading_comments: printLeadingComments(path, options, print, node),
     self: p.self("upper"),
     trailing_comments: printTrailingComments(path, options, print, node),
-    column: p.child("column", asItIs, "all"),
+    column: p.child("column", undefined, "all"),
     if_not_exists: p.child("if_not_exists", (x) => group([line, x])),
     type_declaration: p.child("type_declaration"),
-    comma: p.child("comma", asItIs, "all"),
+    comma: p.child("comma", undefined, "all"),
   };
   return [
     docs.leading_comments,
@@ -796,13 +792,13 @@ const printAlterColumnStatement: PrintFunc<bq2cst.AlterColumnStatement> = (
     leading_comments: printLeadingComments(path, options, print, node),
     self: p.self("upper"),
     trailing_comments: printTrailingComments(path, options, print, node),
-    what: p.child("what", asItIs, "all"),
+    what: p.child("what", undefined, "all"),
     if_exists: p.child("if_exists", (x) => group([line, x])),
-    ident: p.child("ident", asItIs, "all"),
+    ident: p.child("ident", undefined, "all"),
     set: p.child("set"),
-    data_type: p.child("data_type", asItIs, "all", " "),
-    type: p.child("type", asItIs, "all"),
-    options: p.child("options", asItIs, "all"),
+    data_type: p.child("data_type", undefined, "all", " "),
+    type: p.child("type", undefined, "all"),
+    options: p.child("options", undefined, "all"),
     drop_not_null: p.child("drop_not_null", (x) => group([line, x])),
   };
   return [
@@ -839,11 +835,11 @@ const printAlterSchemaStatement: PrintFunc<bq2cst.AlterSchemaStatement> = (
     leading_comments: printLeadingComments(path, options, print, node),
     self: p.self("upper"),
     trailing_comments: printTrailingComments(path, options, print, node),
-    what: p.child("what", asItIs, "all"),
+    what: p.child("what", undefined, "all"),
     if_exists: p.child("if_exists", (x) => group([line, x])),
-    ident: p.child("ident", asItIs, "all"),
+    ident: p.child("ident", undefined, "all"),
     set: p.child("set"),
-    options: p.child("options", asItIs, "all"),
+    options: p.child("options", undefined, "all"),
     semicolon: p.child("semicolon"),
   };
   return [
@@ -878,17 +874,17 @@ const printAlterTableStatement: PrintFunc<bq2cst.AlterTableStatement> = (
     leading_comments: printLeadingComments(path, options, print, node),
     self: p.self("upper"),
     trailing_comments: printTrailingComments(path, options, print, node),
-    what: p.child("what", asItIs, "all"),
+    what: p.child("what", undefined, "all"),
     if_exists: p.child("if_exists", (x) => group([line, x])),
-    ident: p.child("ident", asItIs, "all"),
+    ident: p.child("ident", undefined, "all"),
     // SET
     set: p.child("set"),
-    options: p.child("options", asItIs, "all"),
+    options: p.child("options", undefined, "all"),
     // ADD COLUMNS
     add_columns: p.child("add_columns", (x) => [line, x]),
     // RENAMTE TO
     rename: p.child("rename"),
-    to: p.child("to", asItIs, "all"),
+    to: p.child("to", undefined, "all"),
     // DROP COLUMNS
     drop_columns: p.child("drop_columns", (x) => [line, x]),
     // ALTER COLUMN satatement
@@ -935,12 +931,12 @@ const printAlterViewStatement: PrintFunc<bq2cst.AlterViewStatement> = (
     leading_comments: printLeadingComments(path, options, print, node),
     self: p.self("upper"),
     trailing_comments: printTrailingComments(path, options, print, node),
-    materialized: p.child("materialized", asItIs, "all"),
-    what: p.child("what", asItIs, "all"),
+    materialized: p.child("materialized", undefined, "all"),
+    what: p.child("what", undefined, "all"),
     if_exists: p.child("if_exists", (x) => group([line, x])),
-    ident: p.child("ident", asItIs, "all"),
+    ident: p.child("ident", undefined, "all"),
     set: p.child("set"),
-    options: p.child("options", asItIs, "all"),
+    options: p.child("options", undefined, "all"),
     semicolon: p.child("semicolon"),
   };
   return [
@@ -1050,10 +1046,10 @@ const printAssertStatement: PrintFunc<bq2cst.AssertStatement> = (
       ["GroupedExpr", "GroupedStatement", "CallingFunction"].includes(
         node.children.expr.Node.node_type
       )
-        ? [" ", p.child("expr", asItIs, "all")]
+        ? [" ", p.child("expr", undefined, "all")]
         : indent([line, p.child("expr")]),
     as: p.child("as"),
-    description: p.child("description", asItIs, "all"),
+    description: p.child("description", undefined, "all"),
     semicolon: p.child("semicolon"),
   };
   return [
@@ -1096,7 +1092,7 @@ const printBeginStatement: PrintFunc<bq2cst.BeginStatement> = (
 
   const docs: { [Key in Docs<bq2cst.BeginStatement>]: Doc } = {
     leading_label: p.child("leading_label"),
-    colon: p.child("colon", asItIs, "all"),
+    colon: p.child("colon", undefined, "all"),
     leading_comments: printLeadingComments(path, options, print, node),
     self: p.self("upper"),
     trailing_comments: printTrailingComments(path, options, print, node),
@@ -1105,11 +1101,11 @@ const printBeginStatement: PrintFunc<bq2cst.BeginStatement> = (
         ? p.child("stmts", (x) => [line, x])
         : p.child("stmts", (x) => [hardline, x]),
     exception_when_error: group(
-      p.child("exception_when_error", asItIs, "none", line)
+      p.child("exception_when_error", undefined, "none", line)
     ),
-    then: p.child("then", asItIs, "all"),
+    then: p.child("then", undefined, "all"),
     end: p.child("end"),
-    trailing_label: p.child("trailing_label", asItIs, "all"),
+    trailing_label: p.child("trailing_label", undefined, "all"),
     semicolon: p.child("semicolon"),
   };
   return [
@@ -1147,12 +1143,12 @@ const printBetweenOperator: PrintFunc<bq2cst.BetweenOperator> = (
   const docs: { [Key in Docs<bq2cst.BetweenOperator>]: Doc } = {
     leading_comments: "", // eslint-disable-line unicorn/no-unused-properties
     left: p.child("left"),
-    not: p.child("not", asItIs, "all"),
+    not: p.child("not", undefined, "all"),
     self: p.self("upper", true),
     trailing_comments: printTrailingComments(path, options, print, node),
     right_min: p.child("right_min"),
     and: p.child("and"),
-    right_max: p.child("right_max", asItIs, "all"),
+    right_max: p.child("right_max", undefined, "all"),
     as: "", // eslint-disable-line unicorn/no-unused-properties
     alias: printAlias(path, options, print, node),
     order: printOrder(path, options, print, node),
@@ -1221,10 +1217,10 @@ const printBinaryOperator: PrintFunc<bq2cst.BinaryOperator> = (
   const docs: { [Key in Docs<bq2cst.BinaryOperator>]: Doc } = {
     leading_comments: leading_comments,
     left: p.child("left"),
-    not: p.child("not", asItIs, "all"),
+    not: p.child("not", undefined, "all"),
     self: logical ? p.self("upper") : p.self("upper", true),
     trailing_comments: printTrailingComments(path, options, print, node),
-    right: p.child("right", asItIs, "all"),
+    right: p.child("right", undefined, "all"),
     as: "", // eslint-disable-line unicorn/no-unused-properties
     alias: printAlias(path, options, print, node),
     order: printOrder(path, options, print, node),
@@ -1287,7 +1283,7 @@ const printBreakContinueStatement: PrintFunc<bq2cst.BreakContinueStatement> = (
     leading_comments: printLeadingComments(path, options, print, node),
     self: p.self("upper"),
     trailing_comments: printTrailingComments(path, options, print, node),
-    label: p.child("label", asItIs, "all"),
+    label: p.child("label", undefined, "all"),
     semicolon: p.child("semicolon"),
   };
   return [
@@ -1457,7 +1453,7 @@ const printCallingFunctionGeneral: PrintFunc<
     trailing_comments: printTrailingComments(path, options, print, node),
     distinct: p.child("distinct", (x) => [x, line]),
     args: p.child("args", (x) => group(x), "none", line),
-    ignore_nulls: p.child("ignore_nulls", asItIs, "none", line),
+    ignore_nulls: p.child("ignore_nulls", undefined, "none", line),
     orderby: p.child("orderby"),
     limit: p.child("limit"),
     rparen: p.child("rparen"),
@@ -1545,8 +1541,8 @@ const printCallingUnnest: PrintFunc<bq2cst.CallingUnnest> = (
   const docs: { [Key in Docs<bq2cst.CallingUnnest>]: Doc } = {
     self: printCallingFunctionGeneral(path, options, print, node),
     with_offset: p.child("with_offset", (x) => group([line, x])),
-    offset_as: p.child("offset_as", asItIs, "all"),
-    offset_alias: p.child("offset_alias", asItIs, "all"),
+    offset_as: p.child("offset_as", undefined, "all"),
+    offset_alias: p.child("offset_alias", undefined, "all"),
     pivot: printPivotOrUnpivotOperator(path, options, print, node),
     unpivot: "", // eslint-disable-line unicorn/no-unused-properties
 
@@ -1585,7 +1581,7 @@ const printCallStatement: PrintFunc<bq2cst.CallStatement> = (
     leading_comments: printLeadingComments(path, options, print, node),
     self: p.self("upper"),
     trailing_comments: printTrailingComments(path, options, print, node),
-    procedure: p.child("procedure", asItIs, "all"),
+    procedure: p.child("procedure", undefined, "all"),
     semicolon: p.child("semicolon"),
   };
   return [
@@ -1613,8 +1609,8 @@ const printCaseExprArm: PrintFunc<bq2cst.CaseExprArm> = (
     leading_comments: printLeadingComments(path, options, print, node),
     self: p.self(),
     trailing_comments: printTrailingComments(path, options, print, node),
-    expr: p.child("expr", asItIs, "all"),
-    then: p.child("then", asItIs),
+    expr: p.child("expr", undefined, "all"),
+    then: p.child("then", undefined),
     result: p.child("result"),
   };
   return [
@@ -1637,9 +1633,9 @@ const printCaseExpr: PrintFunc<bq2cst.CaseExpr> = (
     leading_comments: printLeadingComments(path, options, print, node),
     self: p.self(),
     trailing_comments: printTrailingComments(path, options, print, node),
-    expr: p.child("expr", asItIs, "all"),
+    expr: p.child("expr", undefined, "all"),
     arms: p.child("arms", (x) => [line, group(x)], "none"),
-    end: p.child("end", asItIs, "all"),
+    end: p.child("end", undefined, "all"),
     as: "", // eslint-disable-line unicorn/no-unused-properties
     alias: printAlias(path, options, print, node),
     order: printOrder(path, options, print, node),
@@ -1673,8 +1669,8 @@ const printCastArgument: PrintFunc<bq2cst.CastArgument> = (
     cast_from: p.child("cast_from"),
     self: p.self("upper", true),
     trailing_comments: printTrailingComments(path, options, print, node),
-    cast_to: p.child("cast_to", asItIs, "all"),
-    format: p.child("format", asItIs, "all"),
+    cast_to: p.child("cast_to", undefined, "all"),
+    format: p.child("format", undefined, "all"),
   };
   return [
     docs.cast_from,
@@ -1743,14 +1739,14 @@ const printCreateFunctionStatement: PrintFunc<
     self: p.self("upper"),
     trailing_comments: printTrailingComments(path, options, print, node),
     or_replace: p.child("or_replace", (x) => group([line, x])),
-    temp: p.child("temp", asItIs, "all"),
-    table: p.child("table", asItIs, "all"),
-    what: p.child("what", asItIs, "all"),
+    temp: p.child("temp", undefined, "all"),
+    table: p.child("table", undefined, "all"),
+    what: p.child("what", undefined, "all"),
     if_not_exists: p.child("if_not_exists", (x) => group([line, x])),
-    ident: p.child("ident", asItIs, "all"),
-    group: p.child("group", asItIs, "all"),
+    ident: p.child("ident", undefined, "all"),
+    group: p.child("group", undefined, "all"),
     returns: p.child("returns"),
-    determinism: group(p.child("determinism", asItIs, "none", line)),
+    determinism: group(p.child("determinism", undefined, "none", line)),
     language: p.child("language"),
     options: p.child("options"),
     as: p.child("as"),
@@ -1801,10 +1797,10 @@ const printCreateProcedureStatement: PrintFunc<
     self: p.self("upper"),
     trailing_comments: printTrailingComments(path, options, print, node),
     or_replace: p.child("or_replace", (x) => group([line, x])),
-    what: p.child("what", asItIs, "all"),
+    what: p.child("what", undefined, "all"),
     if_not_exists: p.child("if_not_exists", (x) => group([line, x])),
-    ident: p.child("ident", asItIs, "all"),
-    group: p.child("group", asItIs, "all"),
+    ident: p.child("ident", undefined, "all"),
+    group: p.child("group", undefined, "all"),
     options: p.child("options"),
     stmt: p.child("stmt"),
     semicolon: p.child("semicolon"),
@@ -1842,11 +1838,11 @@ const printCreateReservationStatement: PrintFunc<
     leading_comments: printLeadingComments(path, options, print, node),
     self: p.self("upper"),
     trailing_comments: printTrailingComments(path, options, print, node),
-    what: p.child("what", asItIs, "all"),
-    ident: p.child("ident", asItIs, "all"),
+    what: p.child("what", undefined, "all"),
+    ident: p.child("ident", undefined, "all"),
     as: p.child("as"),
-    json: p.child("json", asItIs, "all"),
-    json_string: p.child("json_string", asItIs, "all"),
+    json: p.child("json", undefined, "all"),
+    json_string: p.child("json_string", undefined, "all"),
     semicolon: p.child("semicolon"),
   };
   return [
@@ -1880,14 +1876,14 @@ const printCreateRowAccessPolicyStatement: PrintFunc<
     self: p.self("upper"),
     trailing_comments: printTrailingComments(path, options, print, node),
     or_replace: p.child("or_replace", (x) => group([line, x])),
-    what: p.child("what", asItIs, "all", " "),
+    what: p.child("what", undefined, "all", " "),
     if_not_exists: p.child("if_not_exists", (x) => group([line, x])),
-    ident: p.child("ident", asItIs, "all"),
+    ident: p.child("ident", undefined, "all"),
     on: p.child("on"),
     grant: p.child("grant"),
-    to: p.child("to", asItIs, "all"),
+    to: p.child("to", undefined, "all"),
     filter: p.child("filter"),
-    using: p.child("using", asItIs, "all"),
+    using: p.child("using", undefined, "all"),
     semicolon: p.child("semicolon"),
   };
   return [
@@ -1929,9 +1925,9 @@ const printCreateSchemaStatement: PrintFunc<bq2cst.CreateSchemaStatement> = (
     leading_comments: printLeadingComments(path, options, print, node),
     self: p.self("upper"),
     trailing_comments: printTrailingComments(path, options, print, node),
-    what: p.child("what", asItIs, "all"),
+    what: p.child("what", undefined, "all"),
     if_not_exists: p.child("if_not_exists", (x) => group([line, x])),
-    ident: p.child("ident", asItIs, "all"),
+    ident: p.child("ident", undefined, "all"),
     options: p.child("options"),
     semicolon: p.child("semicolon"),
   };
@@ -1967,21 +1963,21 @@ const printCreateTableStatement: PrintFunc<bq2cst.CreateTableStatement> = (
     self: p.self("upper"),
     trailing_comments: printTrailingComments(path, options, print, node),
     or_replace: p.child("or_replace", (x) => group([line, x])),
-    temp: p.child("temp", asItIs, "all"),
-    external: p.child("external", asItIs, "all"),
-    snapshot: p.child("snapshot", asItIs, "all"),
-    what: p.child("what", asItIs, "all"),
+    temp: p.child("temp", undefined, "all"),
+    external: p.child("external", undefined, "all"),
+    snapshot: p.child("snapshot", undefined, "all"),
+    what: p.child("what", undefined, "all"),
     if_not_exists: p.child("if_not_exists", (x) => group([line, x])),
-    ident: p.child("ident", asItIs, "all"),
+    ident: p.child("ident", undefined, "all"),
     like_or_copy: p.child("like_or_copy"),
-    source_table: p.child("source_table", asItIs, "all"),
-    column_schema_group: p.child("column_schema_group", asItIs, "all"),
+    source_table: p.child("source_table", undefined, "all"),
+    column_schema_group: p.child("column_schema_group", undefined, "all"),
     partitionby: p.child("partitionby"),
     clusterby: p.child("clusterby"),
     with_partition_columns: p.child("with_partition_columns"),
     clone: p.child("clone"),
     options: p.child("options"),
-    as: p.child("as", asItIs, "all"),
+    as: p.child("as", undefined, "all"),
     semicolon: p.child("semicolon"),
   };
   return [
@@ -2038,15 +2034,15 @@ const printCreateViewStatement: PrintFunc<bq2cst.CreateViewStatement> = (
     self: p.self("upper"),
     trailing_comments: printTrailingComments(path, options, print, node),
     or_replace: p.child("or_replace", (x) => group([line, x])),
-    materialized: p.child("materialized", asItIs, "all"),
-    what: p.child("what", asItIs, "all"),
+    materialized: p.child("materialized", undefined, "all"),
+    what: p.child("what", undefined, "all"),
     if_not_exists: p.child("if_not_exists", (x) => group([line, x])),
-    ident: p.child("ident", asItIs, "all"),
-    column_name_list: p.child("column_name_list", asItIs, "all"),
+    ident: p.child("ident", undefined, "all"),
+    column_name_list: p.child("column_name_list", undefined, "all"),
     partitionby: p.child("partitionby"),
     clusterby: p.child("clusterby"),
     options: p.child("options"),
-    as: p.child("as", asItIs, "all"),
+    as: p.child("as", undefined, "all"),
     semicolon: p.child("semicolon"),
   };
   return [
@@ -2124,7 +2120,7 @@ const printDeleteStatement: PrintFunc<bq2cst.DeleteStatement> = (
     self: p.self("upper"),
     trailing_comments: printTrailingComments(path, options, print, node),
     from: p.consumeAllCommentsOfX("from"),
-    table_name: p.child("table_name", asItIs, "all"),
+    table_name: p.child("table_name", undefined, "all"),
     where: p.child("where"),
     semicolon: p.child("semicolon"),
   };
@@ -2158,13 +2154,13 @@ const printDotOperator: PrintFunc<bq2cst.DotOperator> = (
     left: p.child("left"),
     self: p.self("upper", true),
     trailing_comments: printTrailingComments(path, options, print, node),
-    right: p.child("right", asItIs, "all"),
+    right: p.child("right", undefined, "all"),
     as: "", // eslint-disable-line unicorn/no-unused-properties
     alias: printAlias(path, options, print, node),
-    for_system_time_as_of: p.child("for_system_time_as_of", asItIs, "all"),
+    for_system_time_as_of: p.child("for_system_time_as_of", undefined, "all"),
     pivot: printPivotOrUnpivotOperator(path, options, print, node),
     unpivot: "", // eslint-disable-line unicorn/no-unused-properties
-    tablesample: p.child("tablesample", asItIs, "all"),
+    tablesample: p.child("tablesample", undefined, "all"),
     order: printOrder(path, options, print, node),
     null_order: "", // eslint-disable-line unicorn/no-unused-properties
     comma: printComma(path, options, print, node),
@@ -2194,10 +2190,10 @@ const printDropColumnClause: PrintFunc<bq2cst.DropColumnClause> = (
     leading_comments: printLeadingComments(path, options, print, node),
     self: p.self("upper"),
     trailing_comments: printTrailingComments(path, options, print, node),
-    column: p.child("column", asItIs, "all"),
+    column: p.child("column", undefined, "all"),
     if_exists: p.child("if_exists", (x) => group([line, x])),
-    ident: p.child("ident", asItIs, "all"),
-    comma: p.child("comma", asItIs, "all"),
+    ident: p.child("ident", undefined, "all"),
+    comma: p.child("comma", undefined, "all"),
   };
   return [
     docs.leading_comments,
@@ -2222,9 +2218,9 @@ const printDropRowAccessPolicyStatement: PrintFunc<
     leading_comments: printLeadingComments(path, options, print, node),
     self: p.self("upper"),
     trailing_comments: printTrailingComments(path, options, print, node),
-    what: p.child("what", asItIs, "all", " "),
+    what: p.child("what", undefined, "all", " "),
     if_exists: p.child("if_exists", (x) => group([line, x])),
-    ident: p.child("ident", asItIs, "all"),
+    ident: p.child("ident", undefined, "all"),
     on: p.child("on"),
     semicolon: p.child("semicolon"),
   };
@@ -2258,13 +2254,13 @@ const printDropStatement: PrintFunc<bq2cst.DropStatement> = (
     leading_comments: printLeadingComments(path, options, print, node),
     self: p.self("upper"),
     trailing_comments: printTrailingComments(path, options, print, node),
-    external: p.child("external", asItIs, "all"),
-    table: p.child("table", asItIs, "all"),
-    materialized: p.child("materialized", asItIs, "all"),
-    what: p.child("what", asItIs, "all"),
+    external: p.child("external", undefined, "all"),
+    table: p.child("table", undefined, "all"),
+    materialized: p.child("materialized", undefined, "all"),
+    what: p.child("what", undefined, "all"),
     if_exists: p.child("if_exists", (x) => group([line, x])),
-    ident: p.child("ident", asItIs, "all"),
-    cascade_or_restrict: p.child("cascade_or_restrict", asItIs, "all"),
+    ident: p.child("ident", undefined, "all"),
+    cascade_or_restrict: p.child("cascade_or_restrict", undefined, "all"),
     semicolon: p.child("semicolon"),
   };
   return [
@@ -2303,8 +2299,8 @@ const printElseIfClause: PrintFunc<bq2cst.ElseIfClause> = (
     leading_comments: printLeadingComments(path, options, print, node),
     self: p.self("upper"),
     trailing_comments: printTrailingComments(path, options, print, node),
-    condition: p.child("condition", asItIs, "all"),
-    then: p.child("then", asItIs, "all"),
+    condition: p.child("condition", undefined, "all"),
+    then: p.child("then", undefined, "all"),
   };
   return [
     docs.leading_comments,
@@ -2336,8 +2332,8 @@ const printExecuteStatement: PrintFunc<bq2cst.ExecuteStatement> = (
     leading_comments: printLeadingComments(path, options, print, node),
     self: p.self("upper"),
     trailing_comments: printTrailingComments(path, options, print, node),
-    immediate: p.child("immediate", asItIs, "all"),
-    sql_expr: p.child("sql_expr", asItIs, "all"),
+    immediate: p.child("immediate", undefined, "all"),
+    sql_expr: p.child("sql_expr", undefined, "all"),
     into: p.child("into"),
     using: p.child("using"),
     semicolon: p.child("semicolon"),
@@ -2373,7 +2369,7 @@ const printExportStatement: PrintFunc<bq2cst.ExportStatement> = (
     leading_comments: printLeadingComments(path, options, print, node),
     self: p.self("upper"),
     trailing_comments: printTrailingComments(path, options, print, node),
-    data: p.child("data", asItIs, "all"),
+    data: p.child("data", undefined, "all"),
     options: p.child("options"),
     as: p.child("as"),
     semicolon: p.child("semicolon"),
@@ -2409,9 +2405,9 @@ const printExtractArgument: PrintFunc<bq2cst.ExtractArgument> = (
     extract_datepart: p.child("extract_datepart"),
     self: p.self("upper", true),
     trailing_comments: printTrailingComments(path, options, print, node),
-    extract_from: p.child("extract_from", asItIs, "all"),
-    at_time_zone: p.child("at_time_zone", asItIs, "all", " "),
-    time_zone: p.child("time_zone", asItIs, "all"),
+    extract_from: p.child("extract_from", undefined, "all"),
+    at_time_zone: p.child("at_time_zone", undefined, "all", " "),
+    time_zone: p.child("time_zone", undefined, "all"),
   };
   return [
     docs.extract_datepart,
@@ -2449,15 +2445,15 @@ const printForStatement: PrintFunc<bq2cst.ForStatement> = (
 
   const docs: { [Key in Docs<bq2cst.ForStatement>]: Doc } = {
     leading_label: p.child("leading_label"),
-    colon: p.child("colon", asItIs, "all"),
+    colon: p.child("colon", undefined, "all"),
     leading_comments: printLeadingComments(path, options, print, node),
     self: p.self("upper"),
     trailing_comments: printTrailingComments(path, options, print, node),
-    ident: p.child("ident", asItIs, "all"),
-    in: p.child("in", asItIs, "all"),
-    do: p.child("do", asItIs, "all"),
-    end_for: group(p.child("end_for", asItIs, "none", line)),
-    trailing_label: p.child("trailing_label", asItIs, "all"),
+    ident: p.child("ident", undefined, "all"),
+    in: p.child("in", undefined, "all"),
+    do: p.child("do", undefined, "all"),
+    end_for: group(p.child("end_for", undefined, "none", line)),
+    trailing_label: p.child("trailing_label", undefined, "all"),
     semicolon: p.child("semicolon"),
   };
   return [
@@ -2497,7 +2493,7 @@ const printForSystemTimeAsOfclause: PrintFunc<
     self: p.self("upper"),
     trailing_comments: printTrailingComments(path, options, print, node),
     system_time_as_of: p.child("system_time_as_of", (x) => group([line, x])),
-    expr: p.child("expr", asItIs, "all"),
+    expr: p.child("expr", undefined, "all"),
   };
   return [
     docs.leading_comments,
@@ -2522,8 +2518,8 @@ const printGrantStatement: PrintFunc<bq2cst.GrantStatement> = (
     trailing_comments: printTrailingComments(path, options, print, node),
     roles: p.child("roles", (x) => [line, x]),
     on: p.child("on"),
-    resource_type: p.child("resource_type", asItIs, "all"),
-    ident: p.child("ident", asItIs, "all"),
+    resource_type: p.child("resource_type", undefined, "all"),
+    ident: p.child("ident", undefined, "all"),
     to: p.child("to"),
     semicolon: p.child("semicolon"),
   };
@@ -2596,15 +2592,15 @@ const printGroupedExprs: PrintFunc<bq2cst.GroupedExprs> = (
     leading_comments: printLeadingComments(path, options, print, node),
     self: p.self(),
     trailing_comments: printTrailingComments(path, options, print, node),
-    exprs: p.child("exprs", asItIs, "none", line),
+    exprs: p.child("exprs", undefined, "none", line),
     rparen: p.child("rparen"),
     as: p.has("as")
-      ? p.child("as", asItIs, "all")
+      ? p.child("as", undefined, "all")
       : options.printKeywordsInUpperCase
       ? "AS"
       : "as",
-    row_value_alias: p.child("row_value_alias", asItIs, "all"),
-    comma: p.child("comma", asItIs, "all"),
+    row_value_alias: p.child("row_value_alias", undefined, "all"),
+    comma: p.child("comma", undefined, "all"),
   };
   return [
     docs.leading_comments,
@@ -2643,7 +2639,7 @@ const printGroupedStatement: PrintFunc<bq2cst.GroupedStatement> = (
     order: printOrder(path, options, print, node),
     null_order: "", // eslint-disable-line unicorn/no-unused-properties
     comma: printComma(path, options, print, node),
-    semicolon: p.child("semicolon", asItIs, "all"),
+    semicolon: p.child("semicolon", undefined, "all"),
   };
   return [
     group([docs.with, p.has("with") ? hardline : ""]),
@@ -2727,10 +2723,10 @@ const printIdentifier: PrintFunc<bq2cst.Identifier | bq2cst.Parameter> = (
     trailing_comments: printTrailingComments(path, options, print, node),
     as: "", // eslint-disable-line unicorn/no-unused-properties
     alias: printAlias(path, options, print, node),
-    for_system_time_as_of: p.child("for_system_time_as_of", asItIs, "all"),
+    for_system_time_as_of: p.child("for_system_time_as_of", undefined, "all"),
     pivot: printPivotOrUnpivotOperator(path, options, print, node),
     unpivot: "", // eslint-disable-line unicorn/no-unused-properties
-    tablesample: p.child("tablesample", asItIs, "all"),
+    tablesample: p.child("tablesample", undefined, "all"),
     order: printOrder(path, options, print, node),
     null_order: "", // eslint-disable-line unicorn/no-unused-properties
     comma: printComma(path, options, print, node),
@@ -2759,11 +2755,11 @@ const printIfStatement: PrintFunc<bq2cst.IfStatement> = (
     leading_comments: printLeadingComments(path, options, print, node),
     self: p.self("upper"),
     trailing_comments: printTrailingComments(path, options, print, node),
-    condition: p.child("condition", asItIs, "all"),
-    then: p.child("then", asItIs, "all"),
+    condition: p.child("condition", undefined, "all"),
+    then: p.child("then", undefined, "all"),
     elseifs: p.child("elseifs", (x) => [hardline, x]),
     else: p.child("else"),
-    end_if: group(p.child("end_if", asItIs, "none", line)),
+    end_if: group(p.child("end_if", undefined, "none", line)),
     semicolon: p.child("semicolon"),
   };
   return [
@@ -2801,7 +2797,7 @@ const printInOperator: PrintFunc<bq2cst.InOperator> = (
     not: p.child("not"),
     self: p.self("asItIs", true),
     trailing_comments: printTrailingComments(path, options, print, node),
-    right: p.child("right", asItIs, "all"),
+    right: p.child("right", undefined, "all"),
     as: "", // eslint-disable-line unicorn/no-unused-properties
     alias: printAlias(path, options, print, node),
     order: printOrder(path, options, print, node),
@@ -2835,8 +2831,8 @@ const printInsertStatement: PrintFunc<bq2cst.InsertStatement> = (
     self: p.self("upper"),
     trailing_comments: printTrailingComments(path, options, print, node),
     into: p.consumeAllCommentsOfX("into"),
-    target_name: p.child("target_name", asItIs, "all"),
-    columns: p.child("columns", asItIs, "all"),
+    target_name: p.child("target_name", undefined, "all"),
+    columns: p.child("columns", undefined, "all"),
     input: p.child("input"),
     semicolon: p.child("semicolon"),
   };
@@ -2870,10 +2866,10 @@ const printIntervalLiteral: PrintFunc<bq2cst.IntervalLiteral> = (
     leading_comments: printLeadingComments(path, options, print, node),
     self: p.self("upper"),
     trailing_comments: printTrailingComments(path, options, print, node),
-    expr: p.child("expr", asItIs, "all"),
-    date_part: p.child("date_part", asItIs, "all"),
-    to: p.child("to", asItIs, "all"),
-    to_date_part: p.child("to_date_part", asItIs, "all"),
+    expr: p.child("expr", undefined, "all"),
+    date_part: p.child("date_part", undefined, "all"),
+    to: p.child("to", undefined, "all"),
+    to_date_part: p.child("to_date_part", undefined, "all"),
     as: "", // eslint-disable-line unicorn/no-unused-properties
     alias: printAlias(path, options, print, node),
     comma: printComma(path, options, print, node),
@@ -2911,9 +2907,9 @@ const printJoinOperator: PrintFunc<bq2cst.JoinOperator> = (
     outer: p.consumeAllCommentsOfX("outer"),
     self: p.self("upper", true),
     trailing_comments: printTrailingComments(path, options, print, node),
-    right: p.child("right", asItIs, "all"),
-    on: p.child("on", asItIs, "all"),
-    using: p.child("using", asItIs, "all"),
+    right: p.child("right", undefined, "all"),
+    on: p.child("on", undefined, "all"),
+    using: p.child("using", undefined, "all"),
     as: "", // eslint-disable-line unicorn/no-unused-properties
     alias: printAlias(path, options, print, node),
     pivot: printPivotOrUnpivotOperator(path, options, print, node),
@@ -2997,7 +2993,7 @@ const printKeywordWithExpr: PrintFunc<bq2cst.KeywordWithExpr> = (
     trailing_comments: printTrailingComments(path, options, print, node),
     expr: indentExpr
       ? indent([line, p.child("expr")])
-      : [" ", p.child("expr", asItIs, "all")],
+      : [" ", p.child("expr", undefined, "all")],
   };
   return [
     docs.leading_comments,
@@ -3038,7 +3034,7 @@ const printKeywordWithGroupedXXX: PrintFunc<bq2cst.KeywordWithGroupedXXX> = (
     leading_comments: printLeadingComments(path, options, print, node),
     self: p.self("upper"),
     trailing_comments: printTrailingComments(path, options, print, node),
-    group: p.child("group", asItIs, "all"),
+    group: p.child("group", undefined, "all"),
   };
   return [
     docs.leading_comments,
@@ -3143,7 +3139,7 @@ const printLimitClause: PrintFunc<bq2cst.LimitClause> = (
     trailing_comments: printTrailingComments(path, options, print, node),
     // NOTE expr is literal or parameter value
     expr: p.child("expr"),
-    offset: p.child("offset", asItIs, "all"),
+    offset: p.child("offset", undefined, "all"),
   };
   return [
     docs.leading_comments,
@@ -3176,7 +3172,7 @@ const printLoopStatement: PrintFunc<bq2cst.LoopStatement> = (
 
   const docs: { [Key in Docs<bq2cst.LoopStatement>]: Doc } = {
     leading_label: p.child("leading_label"),
-    colon: p.child("colon", asItIs, "all"),
+    colon: p.child("colon", undefined, "all"),
     leading_comments: printLeadingComments(path, options, print, node),
     self: p.self("upper"),
     trailing_comments: printTrailingComments(path, options, print, node),
@@ -3184,8 +3180,8 @@ const printLoopStatement: PrintFunc<bq2cst.LoopStatement> = (
       p.len("stmts") <= 1
         ? p.child("stmts", (x) => [line, x])
         : p.child("stmts", (x) => [hardline, x]),
-    end_loop: group(p.child("end_loop", asItIs, "none", line)),
-    trailing_label: p.child("trailing_label", asItIs, "all"),
+    end_loop: group(p.child("end_loop", undefined, "none", line)),
+    trailing_label: p.child("trailing_label", undefined, "all"),
     semicolon: p.child("semicolon"),
   };
   return [
@@ -3221,7 +3217,7 @@ const printMergeStatement: PrintFunc<bq2cst.MergeStatement> = (
     self: p.self("upper"),
     trailing_comments: printTrailingComments(path, options, print, node),
     into: p.consumeAllCommentsOfX("into"),
-    table_name: p.child("table_name", asItIs, "all"),
+    table_name: p.child("table_name", undefined, "all"),
     using: p.child("using"),
     on: p.child("on"),
     whens: p.child("whens", (x) => [line, x]),
@@ -3258,13 +3254,13 @@ const printMultiTokenIdentifier: PrintFunc<bq2cst.MultiTokenIdentifier> = (
     leading_comments: printLeadingComments(path, options, print, node),
     self: p.self(),
     trailing_comments: printTrailingComments(path, options, print, node),
-    trailing_idents: p.child("trailing_idents", asItIs, "all"),
+    trailing_idents: p.child("trailing_idents", undefined, "all"),
     as: "", // eslint-disable-line unicorn/no-unused-properties
     alias: printAlias(path, options, print, node),
-    for_system_time_as_of: p.child("for_system_time_as_of", asItIs, "all"),
+    for_system_time_as_of: p.child("for_system_time_as_of", undefined, "all"),
     pivot: printPivotOrUnpivotOperator(path, options, print, node),
     unpivot: "", // eslint-disable-line unicorn/no-unused-properties
-    tablesample: p.child("tablesample", asItIs, "all"),
+    tablesample: p.child("tablesample", undefined, "all"),
     // NOTE order, null_order, comma may be unnecessary for the time being.
     order: printOrder(path, options, print, node),
     null_order: "", // eslint-disable-line unicorn/no-unused-properties
@@ -3367,7 +3363,7 @@ const printPivotConfig: PrintFunc<bq2cst.PivotConfig> = (
     trailing_comments: printTrailingComments(path, options, print, node),
     exprs: p.child("exprs", (x) => [x, line]),
     for: p.child("for"),
-    in: p.child("in", asItIs, "all"),
+    in: p.child("in", undefined, "all"),
     rparen: p.child("rparen"),
   };
   return [
@@ -3391,9 +3387,9 @@ const printPivotOperator: PrintFunc<bq2cst.PivotOperator> = (
     leading_comments: printLeadingComments(path, options, print, node),
     self: p.self("upper"),
     trailing_comments: printTrailingComments(path, options, print, node),
-    config: p.child("config", asItIs, "all"),
-    as: p.child("as", asItIs, "all"),
-    alias: p.child("alias", asItIs, "all"),
+    config: p.child("config", undefined, "all"),
+    as: p.child("as", undefined, "all"),
+    alias: p.child("alias", undefined, "all"),
   };
   return [
     docs.leading_comments,
@@ -3421,8 +3417,8 @@ const printRevokeStatement: PrintFunc<bq2cst.RevokeStatement> = (
     trailing_comments: printTrailingComments(path, options, print, node),
     roles: p.child("roles", (x) => [line, x]),
     on: p.child("on"),
-    resource_type: p.child("resource_type", asItIs, "all"),
-    ident: p.child("ident", asItIs, "all"),
+    resource_type: p.child("resource_type", undefined, "all"),
+    ident: p.child("ident", undefined, "all"),
     from: p.child("from"),
     semicolon: p.child("semicolon"),
   };
@@ -3456,7 +3452,7 @@ const printRaiseStatement: PrintFunc<bq2cst.RaiseStatement> = (
     leading_comments: printLeadingComments(path, options, print, node),
     self: p.self("upper"),
     trailing_comments: printTrailingComments(path, options, print, node),
-    using: p.child("using", asItIs, "all"),
+    using: p.child("using", undefined, "all"),
     semicolon: p.child("semicolon"),
   };
   return [
@@ -3496,7 +3492,7 @@ const printRepeatStatement: PrintFunc<bq2cst.RepeatStatement> = (
 
   const docs: { [Key in Docs<bq2cst.RepeatStatement>]: Doc } = {
     leading_label: p.child("leading_label"),
-    colon: p.child("colon", asItIs, "all"),
+    colon: p.child("colon", undefined, "all"),
     leading_comments: printLeadingComments(path, options, print, node),
     self: p.self("upper"),
     trailing_comments: printTrailingComments(path, options, print, node),
@@ -3505,8 +3501,8 @@ const printRepeatStatement: PrintFunc<bq2cst.RepeatStatement> = (
         ? p.child("stmts", (x) => [line, x])
         : p.child("stmts", (x) => [hardline, x]),
     until: p.child("until"),
-    end_repeat: group(p.child("end_repeat", asItIs, "none", line)),
-    trailing_label: p.child("trailing_label", asItIs, "all"),
+    end_repeat: group(p.child("end_repeat", undefined, "none", line)),
+    trailing_label: p.child("trailing_label", undefined, "all"),
     semicolon: p.child("semicolon"),
   };
   return [
@@ -3547,7 +3543,7 @@ const printSelectStatement: PrintFunc<bq2cst.SelectStatement> = (
     leading_comments: printLeadingComments(path, options, print, node),
     // SELECT clause
     self: p.self("upper"),
-    as_struct_or_value: p.child("as_struct_or_value", asItIs, "all", " "),
+    as_struct_or_value: p.child("as_struct_or_value", undefined, "all", " "),
     distinct_or_all: p.child("distinct_or_all"),
     trailing_comments: printTrailingComments(path, options, print, node),
     exprs: p.child("exprs", (x) => [line, x]),
@@ -3567,7 +3563,7 @@ const printSelectStatement: PrintFunc<bq2cst.SelectStatement> = (
     orderby: p.child("orderby"),
     // LIMIT clause
     limit: p.child("limit"),
-    semicolon: p.child("semicolon", asItIs, "all"),
+    semicolon: p.child("semicolon", undefined, "all"),
   };
   const select = [
     docs.self,
@@ -3634,9 +3630,9 @@ const printSetOperator: PrintFunc<bq2cst.SetOperator> = (
     leading_comments: printLeadingComments(path, options, print, node),
     self: p.self("upper"),
     trailing_comments: printTrailingComments(path, options, print, node),
-    distinct_or_all: p.child("distinct_or_all", asItIs, "all"),
+    distinct_or_all: p.child("distinct_or_all", undefined, "all"),
     right: p.child("right"),
-    semicolon: p.child("semicolon", asItIs, "all"),
+    semicolon: p.child("semicolon", undefined, "all"),
   };
   const res = [
     docs.with,
@@ -3799,9 +3795,9 @@ const printTableSampleClause: PrintFunc<bq2cst.TableSampleClause> = (
   const docs: { [Key in Docs<bq2cst.TableSampleClause>]: Doc } = {
     leading_comments: printLeadingComments(path, options, print, node),
     self: p.self("upper"),
-    system: p.child("system", asItIs, "all"),
+    system: p.child("system", undefined, "all"),
     trailing_comments: printTrailingComments(path, options, print, node),
-    group: p.child("group", asItIs, "all"),
+    group: p.child("group", undefined, "all"),
   };
   return [
     docs.leading_comments,
@@ -3824,10 +3820,10 @@ const printTableSampleRatio: PrintFunc<bq2cst.TableSampleRatio> = (
   const docs: { [Key in Docs<bq2cst.TableSampleRatio>]: Doc } = {
     leading_comments: printLeadingComments(path, options, print, node),
     self: p.self("upper"),
-    expr: p.child("expr", asItIs, "all"),
+    expr: p.child("expr", undefined, "all"),
     trailing_comments: printTrailingComments(path, options, print, node),
-    percent: p.child("percent", asItIs, "all"),
-    rparen: p.child("rparen", asItIs, "all"),
+    percent: p.child("percent", undefined, "all"),
+    rparen: p.child("rparen", undefined, "all"),
   };
   return [
     docs.leading_comments,
@@ -3851,8 +3847,8 @@ const printTransactionStatement: PrintFunc<bq2cst.TransactionStatement> = (
     leading_comments: printLeadingComments(path, options, print, node),
     self: p.self("upper"),
     trailing_comments: printTrailingComments(path, options, print, node),
-    transaction: p.child("transaction", asItIs, "all"),
-    semicolon: p.child("semicolon", asItIs, "all"),
+    transaction: p.child("transaction", undefined, "all"),
+    semicolon: p.child("semicolon", undefined, "all"),
   };
   return [
     docs.leading_comments,
@@ -3875,10 +3871,10 @@ const printTruncateStatement: PrintFunc<bq2cst.TruncateStatement> = (
   const docs: { [Key in Docs<bq2cst.TruncateStatement>]: Doc } = {
     leading_comments: printLeadingComments(path, options, print, node),
     self: p.self("upper"),
-    table: p.child("table", asItIs, "all"),
+    table: p.child("table", undefined, "all"),
     trailing_comments: printTrailingComments(path, options, print, node),
-    table_name: p.child("table_name", asItIs, "all"),
-    semicolon: p.child("semicolon", asItIs, "all"),
+    table_name: p.child("table_name", undefined, "all"),
+    semicolon: p.child("semicolon", undefined, "all"),
   };
   return [
     docs.leading_comments,
@@ -3899,11 +3895,11 @@ const printType: PrintFunc<bq2cst.Type> = (path, options, print, node) => {
     leading_comments: printLeadingComments(path, options, print, node),
     self: p.self("upper"),
     trailing_comments: printTrailingComments(path, options, print, node),
-    type: p.child("type", asItIs, "all"),
-    type_declaration: p.child("type_declaration", asItIs, "all"),
-    parameter: p.child("parameter", asItIs, "all"),
+    type: p.child("type", undefined, "all"),
+    type_declaration: p.child("type_declaration", undefined, "all"),
+    parameter: p.child("parameter", undefined, "all"),
     not_null: p.child("not_null", (x) => group([line, x])),
-    options: p.child("options", asItIs, "all"),
+    options: p.child("options", undefined, "all"),
   };
   return [
     docs.leading_comments,
@@ -3931,8 +3927,8 @@ const printTypeDeclaration: PrintFunc<bq2cst.TypeDeclaration> = (
     in_out: p.child("in_out"),
     self: p.self("asItIs", true),
     trailing_comments: printTrailingComments(path, options, print, node),
-    type: p.child("type", asItIs, "all"),
-    comma: p.child("comma", asItIs, "all"),
+    type: p.child("type", undefined, "all"),
+    comma: p.child("comma", undefined, "all"),
   };
   return [
     docs.in_out,
@@ -3968,7 +3964,7 @@ const printUnaryOperator: PrintFunc<bq2cst.UnaryOperator> = (
     leading_comments: printLeadingComments(path, options, print, node),
     self: p.includedIn(lowerCaseOperators) ? p.self("lower") : p.self("upper"),
     trailing_comments: printTrailingComments(path, options, print, node),
-    right: p.child("right", asItIs, "all"),
+    right: p.child("right", undefined, "all"),
     as: "", // eslint-disable-line unicorn/no-unused-properties
     alias: printAlias(path, options, print, node),
     order: printOrder(path, options, print, node),
@@ -4000,7 +3996,7 @@ const printUnpivotConfig: PrintFunc<bq2cst.UnpivotConfig> = (
     trailing_comments: printTrailingComments(path, options, print, node),
     expr: p.child("expr"),
     for: p.child("for"),
-    in: p.child("in", asItIs, "all"),
+    in: p.child("in", undefined, "all"),
     rparen: p.child("rparen"),
   };
   return [
@@ -4027,9 +4023,9 @@ const printUnpivotOperator: PrintFunc<bq2cst.UnpivotOperator> = (
       group([line, x])
     ),
     trailing_comments: printTrailingComments(path, options, print, node),
-    config: p.child("config", asItIs, "all"),
-    as: p.child("as", asItIs, "all"),
-    alias: p.child("alias", asItIs, "all"),
+    config: p.child("config", undefined, "all"),
+    as: p.child("as", undefined, "all"),
+    alias: p.child("alias", undefined, "all"),
   };
   return [
     docs.leading_comments,
@@ -4056,7 +4052,7 @@ const printUpdateStatement: PrintFunc<bq2cst.UpdateStatement> = (
     leading_comments: printLeadingComments(path, options, print, node),
     self: p.self("upper"),
     trailing_comments: printTrailingComments(path, options, print, node),
-    table_name: p.child("table_name", asItIs, "all"),
+    table_name: p.child("table_name", undefined, "all"),
     set: p.child("set"),
     from: p.child("from"),
     where: p.child("where"),
@@ -4092,14 +4088,14 @@ const printWhenClause: PrintFunc<bq2cst.WhenClause> = (
   const docs: { [Key in Docs<bq2cst.WhenClause>]: Doc } = {
     leading_comments: printLeadingComments(path, options, print, node),
     self: p.self("upper"),
-    not: p.child("not", asItIs, "all"),
+    not: p.child("not", undefined, "all"),
     trailing_comments: printTrailingComments(path, options, print, node),
-    matched: p.child("matched", asItIs, "all"),
+    matched: p.child("matched", undefined, "all"),
     by_target_or_source: p.child("by_target_or_source", (x) =>
       group([line, x])
     ),
-    and: p.child("and", asItIs, "all"),
-    then: p.child("then", asItIs, "all"),
+    and: p.child("and", undefined, "all"),
+    then: p.child("then", undefined, "all"),
   };
   return [
     docs.leading_comments,
@@ -4146,14 +4142,14 @@ const printWhileStatement: PrintFunc<bq2cst.WhileStatement> = (
 
   const docs: { [Key in Docs<bq2cst.WhileStatement>]: Doc } = {
     leading_label: p.child("leading_label"),
-    colon: p.child("colon", asItIs, "all"),
+    colon: p.child("colon", undefined, "all"),
     leading_comments: printLeadingComments(path, options, print, node),
     self: p.self("upper"),
     trailing_comments: printTrailingComments(path, options, print, node),
     condition: p.child("condition"),
-    do: p.child("do", asItIs, "all"),
-    end_while: group(p.child("end_while", asItIs, "none", line)),
-    trailing_label: p.child("trailing_label", asItIs, "all"),
+    do: p.child("do", undefined, "all"),
+    end_while: group(p.child("end_while", undefined, "none", line)),
+    trailing_label: p.child("trailing_label", undefined, "all"),
     semicolon: p.child("semicolon"),
   };
   return [
@@ -4216,9 +4212,9 @@ const printWindowExpr: PrintFunc<bq2cst.WindowExpr> = (
     leading_comments: printLeadingComments(path, options, print, node),
     self: p.self(),
     trailing_comments: printTrailingComments(path, options, print, node),
-    as: p.child("as", asItIs, "all"),
-    window: p.child("window", asItIs, "all"),
-    comma: p.child("comma", asItIs, "all"),
+    as: p.child("as", undefined, "all"),
+    window: p.child("window", undefined, "all"),
+    comma: p.child("comma", undefined, "all"),
   };
   return [
     docs.leading_comments,
@@ -4243,10 +4239,10 @@ const printWindowFrameClause: PrintFunc<bq2cst.WindowFrameClause> = (
     leading_comments: printLeadingComments(path, options, print, node),
     self: p.self("upper"),
     trailing_comments: printTrailingComments(path, options, print, node),
-    between: p.child("between", asItIs, "all"),
-    start: p.child("start", asItIs, "none", line),
+    between: p.child("between", undefined, "all"),
+    start: p.child("start", undefined, "none", line),
     and: p.child("and"),
-    end: p.child("end", asItIs, "all", line),
+    end: p.child("end", undefined, "all", line),
   };
   docs.leading_comments;
   return [
@@ -4283,7 +4279,7 @@ const printWindowSpecification: PrintFunc<bq2cst.WindowSpecification> = (
     partitionby: p.child("partitionby", (x) => group(x)),
     orderby: p.child("orderby", (x) => group(x)),
     frame: p.child("frame", (x) => group(x)),
-    rparen: p.child("rparen", asItIs),
+    rparen: p.child("rparen", undefined),
   };
   return [
     docs.self,
@@ -4311,11 +4307,11 @@ const printWithClause: PrintFunc<bq2cst.WithClause> = (
     leading_comments: printLeadingComments(path, options, print, node),
     self: p.self("upper"),
     trailing_comments: printTrailingComments(path, options, print, node),
-    recursive: p.child("recursive", asItIs, "all"),
+    recursive: p.child("recursive", undefined, "all"),
     queries:
       p.len("queries") === 1 && !p.hasLeadingComments("queries")
-        ? [" ", p.child("queries", asItIs)]
-        : indent([line, p.child("queries", asItIs, "none", line)]),
+        ? [" ", p.child("queries", undefined)]
+        : indent([line, p.child("queries", undefined, "none", line)]),
   };
   return [
     docs.leading_comments,
@@ -4334,7 +4330,7 @@ const printWithPartitionColumnsClause: PrintFunc<
     self: p.self(),
     trailing_comments: printTrailingComments(path, options, print, node),
     partition_columns: p.child("partition_columns", (x) => group([line, x])),
-    column_schema_group: p.child("column_schema_group", asItIs, "all"),
+    column_schema_group: p.child("column_schema_group", undefined, "all"),
   };
   return [
     docs.leading_comments,
@@ -4360,9 +4356,9 @@ const printWithQuery: PrintFunc<bq2cst.WithQuery> = (
     leading_comments: printLeadingComments(path, options, print, node),
     self: p.self(),
     trailing_comments: printTrailingComments(path, options, print, node),
-    as: p.child("as", asItIs, "all"),
-    stmt: p.child("stmt", asItIs, "all"),
-    comma: p.child("comma", asItIs, "all"),
+    as: p.child("as", undefined, "all"),
+    stmt: p.child("stmt", undefined, "all"),
+    comma: p.child("comma", undefined, "all"),
   };
   return [
     docs.leading_comments,
@@ -4388,7 +4384,7 @@ const printXXXByExprs: PrintFunc<bq2cst.XXXByExprs> = (
     leading_comments: printLeadingComments(path, options, print, node),
     self: p.self("upper"),
     trailing_comments: printTrailingComments(path, options, print, node),
-    by: p.child("by", asItIs, "all"),
+    by: p.child("by", undefined, "all"),
     exprs: indent(p.child("exprs", (x) => [line, x])),
   };
   return [
@@ -4418,11 +4414,11 @@ const printAlias: PrintFunc<bq2cst.Expr & bq2cst.UnknownNode> = (
     return "";
   }
   if (p.has("as")) {
-    as_ = p.child("as", asItIs, "all");
+    as_ = p.child("as", undefined, "all");
   } else {
     as_ = options.printKeywordsInUpperCase ? "AS" : "as";
   }
-  return [" ", as_, " ", p.child("alias", asItIs, "all")];
+  return [" ", as_, " ", p.child("alias", undefined, "all")];
 };
 
 const printComma: PrintFunc<bq2cst.Expr & bq2cst.UnknownNode> = (
@@ -4434,11 +4430,11 @@ const printComma: PrintFunc<bq2cst.Expr & bq2cst.UnknownNode> = (
   const p = new Printer(path, options, print, node);
   if (p.node.isFinalColumn) {
     return ifBreak(
-      p.child("comma", asItIs, "all") || ",",
+      p.child("comma", undefined, "all") || ",",
       p.consumeAllCommentsOfX("comma")
     );
   } else {
-    return p.child("comma", asItIs, "all");
+    return p.child("comma", undefined, "all");
   }
 };
 
@@ -4460,7 +4456,7 @@ const printOrder: PrintFunc<bq2cst.Expr & bq2cst.UnknownNode> = (
 ) => {
   const p = new Printer(path, options, print, node);
   return [
-    p.has("order") ? [" ", p.child("order", asItIs, "all")] : "",
+    p.has("order") ? [" ", p.child("order", undefined, "all")] : "",
     p.has("null_order") ? p.child("null_order", (x) => group([line, x])) : "",
   ];
 };
@@ -4469,9 +4465,9 @@ const printPivotOrUnpivotOperator: PrintFunc<
   bq2cst.FromItemExpr & bq2cst.UnknownNode
 > = (path, options, print, node) => {
   const p = new Printer(path, options, print, node);
-  const pivot = p.has("pivot") ? [" ", p.child("pivot", asItIs, "all")] : "";
+  const pivot = p.has("pivot") ? [" ", p.child("pivot", undefined, "all")] : "";
   const unpivot = p.has("unpivot")
-    ? [" ", p.child("unpivot", asItIs, "all")]
+    ? [" ", p.child("unpivot", undefined, "all")]
     : "";
   return [pivot, unpivot];
 };
