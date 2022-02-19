@@ -32,6 +32,12 @@ clone t for system_time as of current_timestamp()
 options (description = "dummy")
 ;
 
+-- SNAPSHOT
+create table dataset.clone
+clone t for system_time as of current_timestamp()
+options (description = "dummy")
+;
+
 -- EXTERNAL
 create external table table_name
 with partition columns
