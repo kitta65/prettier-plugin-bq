@@ -55,6 +55,18 @@ options (
   format = csv
 );
 
+create external table dataset.new_table (
+  col string
+)
+options (
+  format = 'CSV',
+  uris = ['dummy']
+);
+
+create external table dataset.new_table
+with connection ident
+options (dummy = 'dummy');
+
 ----- CREATE VIEW statement -----
 create view view_name
 as
@@ -114,6 +126,15 @@ as
   -- break
   select 1 as one
 ;
+
+-- remote function
+/**
+ * NOTE I have to opt in.
+ * create function dataset.abc()
+ * returns int64
+ * remote with connection `project.us.connection`
+ * options (endpoint = 'https://region-project.cloudfunctions.net/function');
+ */
 
 ----- CREATE PROCEDURE statement -----
 create procedure abc() begin select 'abc'; end;

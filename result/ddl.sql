@@ -56,6 +56,17 @@ WITH PARTITION COLUMNS (col1 STRING)
 OPTIONS (uris = ['dummy'], format = csv)
 ;
 
+CREATE EXTERNAL TABLE dataset.new_table (
+  col STRING
+)
+OPTIONS (format = 'CSV', uris = ['dummy'])
+;
+
+CREATE EXTERNAL TABLE dataset.new_table
+WITH CONNECTION ident
+OPTIONS (dummy = 'dummy')
+;
+
 ----- CREATE VIEW statement -----
 CREATE VIEW view_name AS SELECT * FROM t;
 
@@ -113,6 +124,14 @@ AS
   SELECT 1 AS one
 ;
 
+-- remote function
+/**
+ * NOTE I have to opt in.
+ * create function dataset.abc()
+ * returns int64
+ * remote with connection `project.us.connection`
+ * options (endpoint = 'https://region-project.cloudfunctions.net/function');
+ */
 ----- CREATE PROCEDURE statement -----
 CREATE PROCEDURE abc() BEGIN SELECT 'abc'; END;
 

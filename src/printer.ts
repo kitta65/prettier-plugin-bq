@@ -655,6 +655,8 @@ export const printSQL = (
       return printRevokeStatement(path, options, print, node);
     case "RaiseStatement":
       return printRaiseStatement(path, options, print, node);
+    case "RemoteWithConnectionClause":
+      return printRemoteWithConnectionClause(path, options, print, node);
     case "RepeatStatement":
       return printRepeatStatement(path, options, print, node);
     case "SelectStatement":
@@ -705,6 +707,8 @@ export const printSQL = (
       return printWindowSpecification(path, options, print, node);
     case "WithClause":
       return printWithClause(path, options, print, node);
+    case "WithConnectionClause":
+      return printWithConnectionClause(path, options, print, node);
     case "WithPartitionColumnsClause":
       return printWithPartitionColumnsClause(path, options, print, node);
     case "WithQuery":
@@ -1746,6 +1750,7 @@ const printCreateFunctionStatement: PrintFunc<
     ident: p.child("ident", undefined, "all"),
     group: p.child("group", undefined, "all"),
     returns: p.child("returns"),
+    remote: p.child("remote"),
     determinism: group(p.child("determinism", undefined, "none", line)),
     language: p.child("language"),
     options: p.child("options"),
@@ -1772,13 +1777,15 @@ const printCreateFunctionStatement: PrintFunc<
       ]),
       p.has("returns") ? line : "",
       docs.returns,
+      p.has("remote") ? line : "",
+      docs.remote,
       p.has("determinism") ? line : "",
       docs.determinism,
       p.has("language") ? line : "",
       docs.language,
       p.has("options") ? line : "",
       docs.options,
-      line,
+      p.has("as") ? line : "",
       docs.as,
       softline,
       docs.semicolon,
@@ -1974,6 +1981,7 @@ const printCreateTableStatement: PrintFunc<bq2cst.CreateTableStatement> = (
     column_schema_group: p.child("column_schema_group", undefined, "all"),
     partitionby: p.child("partitionby"),
     clusterby: p.child("clusterby"),
+    with_connection: p.child("with_connection"),
     with_partition_columns: p.child("with_partition_columns"),
     clone: p.child("clone"),
     options: p.child("options"),
@@ -2007,6 +2015,8 @@ const printCreateTableStatement: PrintFunc<bq2cst.CreateTableStatement> = (
       docs.partitionby,
       p.has("clusterby") ? line : "",
       docs.clusterby,
+      p.has("with_connection") ? line : "",
+      docs.with_connection,
       p.has("with_partition_columns") ? line : "",
       docs.with_partition_columns,
       p.has("clone") ? line : "",
@@ -3469,6 +3479,31 @@ const printRaiseStatement: PrintFunc<bq2cst.RaiseStatement> = (
   ];
 };
 
+const printRemoteWithConnectionClause: PrintFunc<
+  bq2cst.RemoteWithConnectionClause
+> = (path, options, print, node) => {
+  const p = new Printer(path, options, print, node);
+  const docs: { [Key in Docs<bq2cst.RemoteWithConnectionClause>]: Doc } = {
+    leading_comments: printLeadingComments(path, options, print, node),
+    self: p.self("upper"),
+    trailing_comments: printTrailingComments(path, options, print, node),
+    with: p.child("with", undefined, "all"),
+    connection: p.child("connection", undefined, "all"),
+    ident: p.child("ident", undefined, "all"),
+  };
+  return [
+    docs.leading_comments,
+    docs.self,
+    docs.trailing_comments,
+    " ",
+    docs.with,
+    " ",
+    docs.connection,
+    " ",
+    docs.ident,
+  ];
+};
+
 const printRepeatStatement: PrintFunc<bq2cst.RepeatStatement> = (
   path,
   options,
@@ -4320,6 +4355,31 @@ const printWithClause: PrintFunc<bq2cst.WithClause> = (
     docs.recursive,
     docs.trailing_comments,
     docs.queries,
+  ];
+};
+
+const printWithConnectionClause: PrintFunc<bq2cst.WithConnectionClause> = (
+  path,
+  options,
+  print,
+  node
+) => {
+  const p = new Printer(path, options, print, node);
+  const docs: { [Key in Docs<bq2cst.WithConnectionClause>]: Doc } = {
+    leading_comments: printLeadingComments(path, options, print, node),
+    self: p.self("upper"),
+    trailing_comments: printTrailingComments(path, options, print, node),
+    connection: p.child("connection", undefined, "all"),
+    ident: p.child("ident", undefined, "all"),
+  };
+  return [
+    docs.leading_comments,
+    docs.self,
+    docs.trailing_comments,
+    " ",
+    docs.connection,
+    " ",
+    docs.ident,
   ];
 };
 
