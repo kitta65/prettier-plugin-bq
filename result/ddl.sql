@@ -1,5 +1,5 @@
 ----- CREATE SCHAMA statement -----
-CREATE SCHEMA dataset_name ;
+CREATE SCHEMA dataset_name;
 
 CREATE SCHEMA IF NOT EXISTS dataset_name
 -- break

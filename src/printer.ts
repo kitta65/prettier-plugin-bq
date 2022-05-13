@@ -844,6 +844,7 @@ const printAlterSchemaStatement: PrintFunc<bq2cst.AlterSchemaStatement> = (
     ident: p.child("ident", undefined, "all"),
     set: p.child("set"),
     options: p.child("options", undefined, "all"),
+    default_collate: p.child("default_collate", undefined, "all"),
     semicolon: p.child("semicolon"),
   };
   return [
@@ -859,6 +860,7 @@ const printAlterSchemaStatement: PrintFunc<bq2cst.AlterSchemaStatement> = (
       line,
       docs.set,
       " ",
+      docs.default_collate,
       docs.options,
       softline,
       docs.semicolon,
@@ -884,6 +886,7 @@ const printAlterTableStatement: PrintFunc<bq2cst.AlterTableStatement> = (
     // SET
     set: p.child("set"),
     options: p.child("options", undefined, "all"),
+    default_collate: p.child("default_collate", undefined, "all"),
     // ADD COLUMNS
     add_columns: p.child("add_columns", (x) => [line, x]),
     // RENAMTE TO
@@ -909,6 +912,7 @@ const printAlterTableStatement: PrintFunc<bq2cst.AlterTableStatement> = (
       docs.set,
       p.has("set") ? " " : "",
       docs.options,
+      docs.default_collate,
       docs.add_columns,
       p.has("rename") ? line : "",
       docs.rename,
@@ -1935,6 +1939,7 @@ const printCreateSchemaStatement: PrintFunc<bq2cst.CreateSchemaStatement> = (
     what: p.child("what", undefined, "all"),
     if_not_exists: p.child("if_not_exists", (x) => group([line, x])),
     ident: p.child("ident", undefined, "all"),
+    default_collate: p.child("default_collate"),
     options: p.child("options"),
     semicolon: p.child("semicolon"),
   };
@@ -1948,7 +1953,9 @@ const printCreateSchemaStatement: PrintFunc<bq2cst.CreateSchemaStatement> = (
       docs.if_not_exists,
       " ",
       docs.ident,
-      line,
+      p.has("default_collate")? line : "",
+      docs.default_collate,
+      p.has("options")? line : "",
       docs.options,
       softline,
       docs.semicolon,
@@ -1979,6 +1986,7 @@ const printCreateTableStatement: PrintFunc<bq2cst.CreateTableStatement> = (
     like_or_copy: p.child("like_or_copy"),
     source_table: p.child("source_table", undefined, "all"),
     column_schema_group: p.child("column_schema_group", undefined, "all"),
+    default_collate: p.child("default_collate"),
     partitionby: p.child("partitionby"),
     clusterby: p.child("clusterby"),
     with_connection: p.child("with_connection"),
@@ -2011,6 +2019,8 @@ const printCreateTableStatement: PrintFunc<bq2cst.CreateTableStatement> = (
       docs.source_table,
       p.has("column_schema_group") ? " " : "",
       docs.column_schema_group,
+      p.has("default_collate") ? line : "",
+      docs.default_collate,
       p.has("partitionby") ? line : "",
       docs.partitionby,
       p.has("clusterby") ? line : "",
@@ -2270,6 +2280,7 @@ const printDropStatement: PrintFunc<bq2cst.DropStatement> = (
     what: p.child("what", undefined, "all"),
     if_exists: p.child("if_exists", (x) => group([line, x])),
     ident: p.child("ident", undefined, "all"),
+    on: p.child("on"),
     cascade_or_restrict: p.child("cascade_or_restrict", undefined, "all"),
     semicolon: p.child("semicolon"),
   };
@@ -2289,6 +2300,8 @@ const printDropStatement: PrintFunc<bq2cst.DropStatement> = (
       docs.if_exists,
       " ",
       docs.ident,
+      p.has("on") ? line : "",
+      docs.on,
       p.has("cascade_or_restrict") ? " " : "",
       docs.cascade_or_restrict,
       softline,
@@ -3933,6 +3946,7 @@ const printType: PrintFunc<bq2cst.Type> = (path, options, print, node) => {
     type: p.child("type", undefined, "all"),
     type_declaration: p.child("type_declaration", undefined, "all"),
     parameter: p.child("parameter", undefined, "all"),
+    collate: p.child("collate", undefined, "all"),
     not_null: p.child("not_null", (x) => group([line, x])),
     options: p.child("options", undefined, "all"),
   };
@@ -3944,6 +3958,8 @@ const printType: PrintFunc<bq2cst.Type> = (path, options, print, node) => {
     docs.type,
     docs.type_declaration,
     docs.parameter,
+    p.has("collate") ? " " : "",
+    docs.collate,
     docs.not_null,
     p.has("options") ? " " : "",
     docs.options,
