@@ -1,9 +1,5 @@
-import { BigQuery } from "@google-cloud/bigquery";
 import prettier from "prettier";
 import * as fs from "fs";
-
-jest.setTimeout(30 * 1000); // each test case must have shorter timeout than default
-const client = new BigQuery();
 
 const format = (sql: string) => {
   const res = prettier.format(sql, {
@@ -13,61 +9,32 @@ const format = (sql: string) => {
   return res;
 };
 
-const dryRun = async (sql: string) => {
-  const options = {
-    query: sql,
-    dryRun: true,
-    defaultDataset: {
-      datasetId: "prettier_plugin_bq_test",
-    },
-  };
-  await client.createQueryJob(options);
-};
+let targets = [
+  "core.sql",
+  "select.sql",
+  "ddl.sql",
+  "dml.sql",
+  "dcl.sql",
+  "script.sql",
+  "debug.sql",
+  "other.sql",
+];
 
-const read = (path: string) => {
-  return new Promise<string>((resolve) => {
-    fs.readFile(path, { encoding: "utf8" }, (_, data) => {
-      resolve(data);
+for (let t of targets) {
+  describe(t, () => {
+    const input = fs.readFileSync("./input/" + t, "utf8");
+    const actualOutput = format(input);
+    fs.writeFileSync("./actual_output/" + t, actualOutput);
+
+    test("Additional formatting does not make any changes", () => {
+      const actualOutput = fs.readFileSync("./actual_output/" + t, "utf8");
+      expect(actualOutput).toBe(format(actualOutput));
+    });
+
+    test("Compare actual_output with expected_output", () => {
+      const actualOutput = fs.readFileSync("./actual_output/" + t, "utf8");
+      const expectedOutput = fs.readFileSync("./expected_output/" + t, "utf8");
+      expect(actualOutput).toBe(expectedOutput);
     });
   });
-};
-
-test("core.sql", async () => {
-  const sql = await read("./result/core.sql");
-  await dryRun(format(sql));
-});
-
-test("select.sql", async () => {
-  const sql = await read("./result/select.sql");
-  await dryRun(format(sql));
-});
-
-test("dml.sql", async () => {
-  const sql = await read("./result/dml.sql");
-  await dryRun(format(sql));
-});
-
-test("ddl.sql", async () => {
-  const sql = await read("./result/ddl.sql");
-  await dryRun(format(sql));
-});
-
-test("dcl.sql", async () => {
-  const sql = await read("./result/dcl.sql");
-  await dryRun(format(sql));
-});
-
-test("script.sql", async () => {
-  const sql = await read("./result/script.sql");
-  await dryRun(format(sql));
-});
-
-test("debug.sql", async () => {
-  const sql = await read("./result/debug.sql");
-  await dryRun(format(sql));
-});
-
-test("other.sql", async () => {
-  const sql = await read("./result/other.sql");
-  await dryRun(format(sql));
-});
+}

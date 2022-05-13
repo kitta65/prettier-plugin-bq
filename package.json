@@ -4,8 +4,7 @@
   "description": "",
   "main": "dist/index.js",
   "scripts": {
-    "test": "tsc && mkdir -p ./result && cp ./sql/* ./result && prettier --write --plugin . ./result && prettier --check --plugin . ./result/* && jest",
-    "sample": "tsc && mkdir -p ./result && cp ./sql/* ./result && prettier --write --plugin . ./result"
+    "test": "eslint-config-prettier .eslintrc.json && eslint ./src && prettier --check ./src && tsc && jest"
   },
   "keywords": [],
   "author": "dr666m1 <skndr666m1@gmail.com>",
