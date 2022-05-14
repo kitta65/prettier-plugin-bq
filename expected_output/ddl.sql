@@ -6,6 +6,14 @@ CREATE SCHEMA IF NOT EXISTS dataset_name
 OPTIONS ()
 ;
 
+-- collate
+CREATE SCHEMA dataset_name DEFAULT COLLATE 'und:ci';
+
+CREATE SCHEMA dataset_name
+-- before default
+DEFAULT COLLATE 'und:ci' -- before collate
+;
+
 ----- CREATE TABLE statement -----
 CREATE TABLE table_name (x INT64);
 
@@ -32,6 +40,10 @@ CREATE TABLE new_table LIKE source_table;
 CREATE TABLE new_table COPY source_table;
 
 CREATE TABLE from_snap CLONE snap;
+
+CREATE TABLE example (x STRING COLLATE 'und:ci' NOT NULL);
+
+CREATE TABLE example (x STRING) DEFAULT COLLATE 'und:ci';
 
 -- SNAPSHOT
 CREATE SNAPSHOT TABLE snap
@@ -158,9 +170,13 @@ ALTER SCHEMA prettier_plugin_bq_test SET OPTIONS ();
 
 ALTER SCHEMA IF EXISTS prettier_plugin_bq_test SET OPTIONS (dummy = 'dummy');
 
+ALTER SCHEMA dataset_name SET DEFAULT COLLATE 'und:ci';
+
 ----- ALTER TABLE statement -----
 -- SET
 ALTER TABLE t SET OPTIONS (dummy = 'dummy');
+
+ALTER TABLE example SET DEFAULT COLLATE 'und:ci';
 
 -- ADD COLUMN
 ALTER TABLE t ADD COLUMN x INT64;
@@ -169,6 +185,8 @@ ALTER TABLE t
 ADD COLUMN IF NOT EXISTS x INT64 OPTIONS (description = 'dummy'),
 ADD COLUMN y STRUCT<z INT64 NOT NULL>
 ;
+
+ALTER TABLE ident ADD COLUMN col1 STRING COLLATE 'und:ci';
 
 -- RENAME
 ALTER TABLE IF EXISTS t1
@@ -200,6 +218,10 @@ SET OPTIONS (description = 'description')
 
 ALTER TABLE t
 ALTER COLUMN int SET DATA TYPE NUMERIC
+;
+
+ALTER TABLE t
+ALTER COLUMN s SET DATA TYPE STRING COLLATE 'und:ci'
 ;
 
 ----- ALTER VIEW statement -----

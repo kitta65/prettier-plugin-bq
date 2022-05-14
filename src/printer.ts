@@ -617,6 +617,8 @@ export const printSQL = (
       return printJoinOperator(path, options, print, node);
     case "Keyword":
       return printKeyword(path, options, print, node);
+    case "KeywordSequence":
+      return printKeywordSequence(path, options, print, node);
     case "KeywordWithExpr":
       return printKeywordWithExpr(path, options, print, node);
     case "KeywordWithExprs":
@@ -2974,6 +2976,28 @@ const printKeyword: PrintFunc<bq2cst.Keyword> = (
     trailing_comments: printTrailingComments(path, options, print, node),
   };
   return [docs.leading_comments, docs.self, docs.trailing_comments];
+};
+
+const printKeywordSequence: PrintFunc<bq2cst.KeywordSequence> = (
+  path,
+  options,
+  print,
+  node
+) => {
+  const p = new Printer(path, options, print, node);
+  const docs: { [Key in Docs<bq2cst.KeywordSequence>]: Doc } = {
+    leading_comments: printLeadingComments(path, options, print, node),
+    self: p.self("upper"),
+    next_keyword: p.child("next_keyword", undefined, "all"),
+    trailing_comments: printTrailingComments(path, options, print, node),
+  };
+  return [
+    docs.leading_comments,
+    docs.self,
+    docs.trailing_comments,
+    " ",
+    docs.next_keyword,
+  ];
 };
 
 const printKeywordWithExpr: PrintFunc<bq2cst.KeywordWithExpr> = (

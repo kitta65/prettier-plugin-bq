@@ -206,6 +206,7 @@ export const globalFunctions = [
   "CHR",
   "CODE_POINTS_TO_BYTES",
   "CODE_POINTS_TO_STRING",
+  "COLLATE",
   "CONCAT",
   "CONTAINS_SUBSTR",
   "ENDS_WITH",

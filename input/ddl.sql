@@ -5,6 +5,15 @@ create schema if not exists dataset_name
 -- break
 options();
 
+-- collate
+create schema dataset_name default collate 'und:ci';
+
+create schema dataset_name
+-- before default
+default
+-- before collate
+collate 'und:ci';
+
 ----- CREATE TABLE statement -----
 create table table_name (x int64);
 
@@ -25,6 +34,12 @@ create table new_table like source_table;
 create table new_table copy source_table;
 
 create table from_snap clone snap;
+
+create table example (x string collate 'und:ci' not null);
+
+create table example (x string)
+default collate 'und:ci'
+;
 
 -- SNAPSHOT
 create snapshot table snap
@@ -163,9 +178,13 @@ alter schema prettier_plugin_bq_test set options();
 
 alter schema if exists prettier_plugin_bq_test set options(dummy = 'dummy');
 
+alter schema dataset_name set default collate 'und:ci';
+
 ----- ALTER TABLE statement -----
 -- SET
 alter table t set options (dummy='dummy');
+
+alter table example set default collate 'und:ci';
 
 -- ADD COLUMN
 alter table t
@@ -174,6 +193,8 @@ add column x int64;
 alter table t
 add column if not exists x int64 options (description = 'dummy'),
 add column y struct<z int64 not null>;
+
+alter table ident add column col1 string collate 'und:ci';
 
 -- RENAME
 alter table if exists t1
@@ -203,6 +224,10 @@ set options (description = 'description')
 alter table t
 alter column int
 set data type numeric
+;
+
+alter table t alter column s
+set data type string collate 'und:ci'
 ;
 
 ----- ALTER VIEW statement -----
