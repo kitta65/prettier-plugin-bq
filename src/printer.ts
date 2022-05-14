@@ -637,6 +637,8 @@ export const printSQL = (
       return printLanguageSpecifier(path, options, print, node);
     case "LimitClause":
       return printLimitClause(path, options, print, node);
+    case "LoadStatement":
+      return printLoadStatement(path, options, print, node);
     case "LoopStatement":
       return printLoopStatement(path, options, print, node);
     case "MergeStatement":
@@ -3234,6 +3236,70 @@ const printLimitClause: PrintFunc<bq2cst.LimitClause> = (
     group([docs.self, docs.trailing_comments, " ", docs.expr]),
     p.has("offset") ? " " : "",
     docs.offset,
+  ];
+};
+
+const printLoadStatement: PrintFunc<bq2cst.LoadStatement> = (
+  path,
+  options,
+  print,
+  node
+) => {
+  const p = new Printer(path, options, print, node);
+  const docs: { [Key in Docs<bq2cst.LoadStatement>]: Doc } = {
+    leading_comments: printLeadingComments(path, options, print, node),
+    self: p.self("upper"),
+    trailing_comments: printTrailingComments(path, options, print, node),
+    data: p.child("data", undefined, "all"),
+    into: p.child("into", undefined, "all"),
+    ident: p.child("ident", undefined, "all"),
+    column_group: p.child("column_group", undefined, "all"),
+    partitionby: p.child("partitionby"),
+    clusterby: p.child("clusterby"),
+    options: p.child("options"),
+    from: p.child("from"),
+    files: p.child("files", undefined, "all"),
+    from_files: p.child("from_files", undefined, "all"),
+    with: p.child("with"),
+    connection: p.child("connection", undefined, "all"),
+    connection_name: p.child("connection_name", undefined, "all"),
+    semicolon: p.child("semicolon"),
+  };
+  return [
+    docs.leading_comments,
+    group([
+      docs.self,
+      docs.trailing_comments,
+      " ",
+      docs.data,
+      " ",
+      docs.into,
+      " ",
+      docs.ident,
+      p.has("column_group") ? " " : "",
+      docs.column_group,
+      p.has("partitionby") ? line : "",
+      docs.partitionby,
+      p.has("clusterby") ? line : "",
+      docs.clusterby,
+      p.has("options") ? line : "",
+      docs.options,
+      line,
+      docs.from,
+      " ",
+      docs.files,
+      " ",
+      docs.from_files,
+      line,
+      docs.with,
+      " ",
+      docs.connection,
+      " ",
+      docs.connection_name,
+      softline,
+      docs.semicolon,
+    ]),
+    p.newLine(),
   ];
 };
 
