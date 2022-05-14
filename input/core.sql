@@ -63,6 +63,7 @@ multiline string'''
 
 ----- ARRAY -----
 select
+  [],
   [1,2],
   array[1,2],
   array<int64>[1],

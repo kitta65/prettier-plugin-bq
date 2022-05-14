@@ -50,6 +50,7 @@ multiline string''',
 
 ----- ARRAY -----
 SELECT
+  [],
   [1, 2],
   ARRAY[1, 2],
   ARRAY<INT64>[1],

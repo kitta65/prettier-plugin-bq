@@ -276,7 +276,7 @@ class Printer<T extends bq2cst.UnknownNode> {
     let firstNode;
     if (isNodeChild(child)) {
       firstNode = getFirstNode(child.Node);
-    } else if (isNodeVecChild(child)) {
+    } else if (isNodeVecChild(child) && child.NodeVec.length > 0) {
       firstNode = getFirstNode(child.NodeVec[0]);
     } else {
       return null;
