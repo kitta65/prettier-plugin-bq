@@ -561,6 +561,8 @@ export const printSQL = (
       return printCreateRowAccessPolicyStatement(path, options, print, node);
     case "CreateSchemaStatement":
       return printCreateSchemaStatement(path, options, print, node);
+    case "CreateSearchIndexStatement":
+      return printCreateSearchIndexStatement(path, options, print, node);
     case "CreateTableStatement":
       return printCreateTableStatement(path, options, print, node);
     case "CreateViewStatement":
@@ -1959,6 +1961,45 @@ const printCreateSchemaStatement: PrintFunc<bq2cst.CreateSchemaStatement> = (
       docs.default_collate,
       p.has("options") ? line : "",
       docs.options,
+      softline,
+      docs.semicolon,
+    ]),
+    p.newLine(),
+  ];
+};
+
+const printCreateSearchIndexStatement: PrintFunc<
+  bq2cst.CreateSearchIndexStatement
+> = (path, options, print, node) => {
+  const p = new Printer(path, options, print, node);
+  const docs: { [Key in Docs<bq2cst.CreateSearchIndexStatement>]: Doc } = {
+    leading_comments: printLeadingComments(path, options, print, node),
+    self: p.self("upper"),
+    trailing_comments: printTrailingComments(path, options, print, node),
+    what: p.child("what", undefined, "all"),
+    if_not_exists: p.child("if_not_exists", (x) => group([line, x])),
+    ident: p.child("ident", undefined, "all"),
+    on: p.child("on"),
+    tablename: p.child("tablename", undefined, "all"),
+    column_group: p.child("column_group", undefined, "all"),
+    semicolon: p.child("semicolon"),
+  };
+  return [
+    docs.leading_comments,
+    group([
+      docs.self,
+      docs.trailing_comments,
+      " ",
+      docs.what,
+      docs.if_not_exists,
+      " ",
+      docs.ident,
+      line,
+      docs.on,
+      " ",
+      docs.tablename,
+      " ",
+      docs.column_group,
       softline,
       docs.semicolon,
     ]),

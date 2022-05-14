@@ -165,6 +165,11 @@ GRANT TO ('a.example.com', 'b.example.com')
 FILTER USING (email = SESSION_USER())
 ;
 
+----- CREATE SEARCH INDEX statement -----
+CREATE SEARCH INDEX new_index ON tablename (ALL COLUMNS);
+
+CREATE SEARCH INDEX IF NOT EXISTS new_index ON tablename (a, b);
+
 ----- ALTER SCHEMA statement -----
 ALTER SCHEMA prettier_plugin_bq_test SET OPTIONS ();
 
@@ -241,6 +246,8 @@ DROP MATERIALIZED VIEW example;
 DROP SCHEMA example CASCADE;
 
 DROP TABLE FUNCTION prettier_plugin_bq_test.tvf;
+
+DROP SEARCH INDEX ident ON tablename;
 
 -- row access policy
 DROP ROW ACCESS POLICY ident ON t;
