@@ -135,6 +135,8 @@ export const globalFunctions = [
   "CUME_DIST",
   "NTILE",
   "ROW_NUMBER",
+  // search functions
+  "SEARCH",
   // bit functions
   "BIT_COUNT",
   // conversion functions
