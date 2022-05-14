@@ -55,6 +55,14 @@ select
 from t
 ;
 
+-- IS DISTINCT FROM
+select 1 is distinct from 2;
+
+select
+  -- break
+  1 + 0 is not distinct from 1 + 1 as distinct_result
+;
+
 ----- STRING -----
 select """
 multiline string""", R'''

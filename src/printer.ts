@@ -615,6 +615,8 @@ export const printSQL = (
       return printInsertStatement(path, options, print, node);
     case "IntervalLiteral":
       return printIntervalLiteral(path, options, print, node);
+    case "IsDistinctFromOperator":
+      return printIsDistinctFromOperator(path, options, print, node);
     case "JoinOperator":
       return printJoinOperator(path, options, print, node);
     case "Keyword":
@@ -2955,6 +2957,54 @@ const printIntervalLiteral: PrintFunc<bq2cst.IntervalLiteral> = (
     p.has("to_date_part") ? " " : "",
     docs.to_date_part,
     docs.alias,
+    docs.comma,
+  ];
+};
+
+const printIsDistinctFromOperator: PrintFunc<bq2cst.IsDistinctFromOperator> = (
+  path,
+  options,
+  print,
+  node
+) => {
+  const p = new Printer(path, options, print, node);
+  const leading_comments = p.consumeLeadingCommentsOfX("left", false);
+  const docs: { [Key in Docs<bq2cst.IsDistinctFromOperator>]: Doc } = {
+    leading_comments: leading_comments,
+    left: p.child("left"),
+    self: p.self("upper", true),
+    trailing_comments: printTrailingComments(path, options, print, node),
+    not: p.child("not", undefined, "all"),
+    distinct: p.child("distinct", undefined, "all"),
+    from: p.child("from", undefined, "all"),
+    right: p.child("right", undefined, "all"),
+    as: "", // eslint-disable-line unicorn/no-unused-properties
+    alias: printAlias(path, options, print, node),
+    order: printOrder(path, options, print, node),
+    null_order: "", // eslint-disable-line unicorn/no-unused-properties
+    comma: printComma(path, options, print, node),
+  };
+
+  return [
+    docs.leading_comments,
+    group([
+      group(docs.left),
+      line,
+      group([
+        docs.self,
+        docs.trailing_comments,
+        p.has("not") ? " " : "",
+        docs.not,
+        " ",
+        docs.distinct,
+        " ",
+        docs.from,
+        " ",
+        group(docs.right),
+      ]),
+    ]),
+    docs.alias,
+    docs.order,
     docs.comma,
   ];
 };

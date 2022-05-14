@@ -40,6 +40,14 @@ SELECT TRUE IS NULL, TRUE IS NOT NULL, TRUE IS NOT FALSE;
 -- '.'
 SELECT nested.int + 1, 1 + nested.int FROM t;
 
+-- IS DISTINCT FROM
+SELECT 1 IS DISTINCT FROM 2;
+
+SELECT
+  -- break
+  1 + 0 IS NOT DISTINCT FROM 1 + 1 AS distinct_result,
+;
+
 ----- STRING -----
 SELECT
   """
