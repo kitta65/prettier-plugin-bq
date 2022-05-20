@@ -9,7 +9,7 @@ const format = (sql: string) => {
   return res;
 };
 
-let targets = [
+const targets = [
   "core.sql",
   "select.sql",
   "ddl.sql",
@@ -20,7 +20,7 @@ let targets = [
   "other.sql",
 ];
 
-for (let t of targets) {
+for (const t of targets) {
   describe(t, () => {
     const input = fs.readFileSync("./input/" + t, "utf8");
     const actualOutput = format(input);
