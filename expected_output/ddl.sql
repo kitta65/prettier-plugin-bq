@@ -137,13 +137,12 @@ AS
 ;
 
 -- remote function
-/**
- * NOTE I have to opt in.
- * create function dataset.abc()
- * returns int64
- * remote with connection `project.us.connection`
- * options (endpoint = 'https://region-project.cloudfunctions.net/function');
- */
+CREATE FUNCTION dataset.abc()
+RETURNS INT64
+REMOTE WITH CONNECTION `project.us.connection`
+OPTIONS (endpoint = 'https://region-project.cloudfunctions.net/function')
+;
+
 ----- CREATE PROCEDURE statement -----
 CREATE PROCEDURE abc() BEGIN SELECT 'abc'; END;
 

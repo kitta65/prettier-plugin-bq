@@ -663,8 +663,6 @@ export const printSQL = (
       return printRevokeStatement(path, options, print, node);
     case "RaiseStatement":
       return printRaiseStatement(path, options, print, node);
-    case "RemoteWithConnectionClause":
-      return printRemoteWithConnectionClause(path, options, print, node);
     case "RepeatStatement":
       return printRepeatStatement(path, options, print, node);
     case "SelectStatement":
@@ -685,6 +683,8 @@ export const printSQL = (
       return printTableSampleClause(path, options, print, node);
     case "TableSampleRatio":
       return printTableSampleRatio(path, options, print, node);
+    case "Template":
+      return printIdentifier(path, options, print, node);
     case "TransactionStatement":
       return printTransactionStatement(path, options, print, node);
     case "TruncateStatement":
@@ -2779,12 +2779,9 @@ const printGroupedTypeDeclarations: PrintFunc<
   ];
 };
 
-const printIdentifier: PrintFunc<bq2cst.Identifier | bq2cst.Parameter> = (
-  path,
-  options,
-  print,
-  node
-) => {
+const printIdentifier: PrintFunc<
+  bq2cst.Identifier | bq2cst.Parameter | bq2cst.Template
+> = (path, options, print, node) => {
   const p = new Printer(path, options, print, node);
   const docs: { [Key in Docs<bq2cst.Identifier>]: Doc } = {
     leading_comments: printLeadingComments(path, options, print, node),
@@ -3670,31 +3667,6 @@ const printRaiseStatement: PrintFunc<bq2cst.RaiseStatement> = (
       docs.semicolon,
     ]),
     p.newLine(),
-  ];
-};
-
-const printRemoteWithConnectionClause: PrintFunc<
-  bq2cst.RemoteWithConnectionClause
-> = (path, options, print, node) => {
-  const p = new Printer(path, options, print, node);
-  const docs: { [Key in Docs<bq2cst.RemoteWithConnectionClause>]: Doc } = {
-    leading_comments: printLeadingComments(path, options, print, node),
-    self: p.self("upper"),
-    trailing_comments: printTrailingComments(path, options, print, node),
-    with: p.child("with", undefined, "all"),
-    connection: p.child("connection", undefined, "all"),
-    ident: p.child("ident", undefined, "all"),
-  };
-  return [
-    docs.leading_comments,
-    docs.self,
-    docs.trailing_comments,
-    " ",
-    docs.with,
-    " ",
-    docs.connection,
-    " ",
-    docs.ident,
   ];
 };
 

@@ -309,4 +309,3 @@ select * from t order by int nulls first, str desc nulls last;
 select * from t limit 100;
 
 select * from t limit 100 offset 10;
-

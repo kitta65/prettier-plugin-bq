@@ -205,3 +205,6 @@ window
   named_window1 as (partition by str),
   named_window2 as (partition by str order by int)
 ;
+
+----- template -----
+select {{variable}}, {variable};

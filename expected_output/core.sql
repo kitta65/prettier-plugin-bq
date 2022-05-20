@@ -198,3 +198,6 @@ WINDOW
   named_window1 AS (PARTITION BY str),
   named_window2 AS (PARTITION BY str ORDER BY int)
 ;
+
+----- template -----
+SELECT {{variable}}, {variable};
