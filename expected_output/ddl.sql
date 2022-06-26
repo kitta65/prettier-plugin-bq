@@ -169,6 +169,11 @@ CREATE SEARCH INDEX new_index ON tablename (ALL COLUMNS);
 
 CREATE SEARCH INDEX IF NOT EXISTS new_index ON tablename (a, b);
 
+----- ALTER BI_CAPACITY statement -----
+ALTER BI_CAPACITY `project.region-us.default`
+SET OPTIONS (preferred_tables = ['table1', 'table2'])
+;
+
 ----- ALTER SCHEMA statement -----
 ALTER SCHEMA prettier_plugin_bq_test SET OPTIONS ();
 

@@ -176,6 +176,10 @@ create search index new_index on tablename(all columns);
 
 create search index if not exists new_index on tablename(a, b);
 
+----- ALTER BI_CAPACITY statement -----
+alter bi_capacity `project.region-us.default`
+set options(preferred_tables = ['table1', 'table2']);
+
 ----- ALTER SCHEMA statement -----
 alter schema prettier_plugin_bq_test set options();
 

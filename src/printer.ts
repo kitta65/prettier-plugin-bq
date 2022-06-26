@@ -511,6 +511,8 @@ export const printSQL = (
       return printAccessOperator(path, options, print, node);
     case "AddColumnClause":
       return printAddColumnClause(path, options, print, node);
+    case "AlterBICapacityStatement":
+      return printAlterBICapacityStatement(path, options, print, node);
     case "AlterColumnStatement":
       return printAlterColumnStatement(path, options, print, node);
     case "AlterSchemaStatement":
@@ -790,6 +792,40 @@ const printAddColumnClause: PrintFunc<bq2cst.AddColumnClause> = (
       docs.type_declaration,
       docs.comma,
     ]),
+  ];
+};
+
+const printAlterBICapacityStatement: PrintFunc<
+  bq2cst.AlterBICapacityStatement
+> = (path, options, print, node) => {
+  const p = new Printer(path, options, print, node);
+  const docs: { [Key in Docs<bq2cst.AlterBICapacityStatement>]: Doc } = {
+    leading_comments: printLeadingComments(path, options, print, node),
+    self: p.self("upper"),
+    trailing_comments: printTrailingComments(path, options, print, node),
+    what: p.child("what", undefined, "all"),
+    ident: p.child("ident", undefined, "all"),
+    set: p.child("set"),
+    options: p.child("options", undefined, "all"),
+    semicolon: p.child("semicolon"),
+  };
+  return [
+    docs.leading_comments,
+    group([
+      docs.self,
+      docs.trailing_comments,
+      " ",
+      docs.what,
+      " ",
+      docs.ident,
+      line,
+      docs.set,
+      " ",
+      docs.options,
+      softline,
+      docs.semicolon,
+    ]),
+    p.newLine(),
   ];
 };
 
