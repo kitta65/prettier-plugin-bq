@@ -97,6 +97,10 @@ export const reservedKeywords = [
 ];
 
 export const globalFunctions = [
+  // AEAD encryption functions
+  "DETERMINISTIC_DECRYPT_BYTES",
+  "DETERMINISTIC_DECRYPT_STRING",
+  "DETERMINISTIC_ENCRYPT",
   // aggregate functions
   "ANY_VALUE",
   "ARRAY_AGG",
