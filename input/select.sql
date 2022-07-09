@@ -27,6 +27,12 @@ select * from tmp;
 (with tmp as (select 1) select * from tmp)
 union all
 select 2;
+select 1
+from
+  (select 2)
+union all
+select 3
+;
 
 ----- WITH clause -----
 with a as (select 1) select 2; -- do not insert blank line
