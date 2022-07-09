@@ -157,6 +157,10 @@ select *
 from prettier_plugin_bq_test.tvf()
 ;
 
+select * except(_change_type, _change_timestamp), _change_type as ct, _change_timestamp as cts
+-- since `appends` may be user defind tvf, it remains lowercase.
+from appends(table ident);
+
 -- FOR SYSTEM_TIME AS OF
 select str from t for system_time as of current_timestamp();
 

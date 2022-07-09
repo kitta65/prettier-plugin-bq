@@ -171,6 +171,14 @@ WHERE
 -- TVF
 SELECT * FROM prettier_plugin_bq_test.tvf();
 
+SELECT
+  * EXCEPT (_CHANGE_TYPE, _CHANGE_TIMESTAMP),
+  _CHANGE_TYPE AS ct,
+  _CHANGE_TIMESTAMP AS cts,
+-- since `appends` may be user defind tvf, it remains lowercase.
+FROM appends(TABLE ident)
+;
+
 -- FOR SYSTEM_TIME AS OF
 SELECT str FROM t FOR SYSTEM_TIME AS OF CURRENT_TIMESTAMP();
 

@@ -341,7 +341,10 @@ class Printer<T extends bq2cst.UnknownNode> {
         (literal.match(/^_PARTITION/i) ||
           literal.match(/^_TABLE_/i) ||
           literal.match(/^_FILE_/i) ||
-          literal.match(/^_RAW_TIMESTAMP/i))
+          literal.match(/^_RAW_TIMESTAMP/i) ||
+          literal.match(/^_CHANGE_TYPE/i) ||
+          literal.match(/^_CHANGE_TIMESTAMP/i) ||
+          literal.match(/^_CHANGE_SEQUENCE_NUMBER/i))
       ) {
         /**
          * NOTE
