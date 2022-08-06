@@ -195,6 +195,7 @@ export const globalFunctions = [
   "ATAN",
   "ATANH",
   "ATAN2",
+  "CBRT",
   "RANGE_BUCKET",
   // navigation functions
   "FIRST_VALUE",
