@@ -18,3 +18,7 @@ cluster by s
 options (dummy = 'dummy')
 from files (dummy = 'dummy')
 with connection `dummy.connection`;
+
+load data overwrite ident
+from files (dummy = 'dummy')
+with partition columns (x string);

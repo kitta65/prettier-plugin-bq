@@ -20,3 +20,8 @@ OPTIONS (dummy = 'dummy')
 FROM FILES (dummy = 'dummy')
 WITH CONNECTION `dummy.connection`
 ;
+
+LOAD DATA OVERWRITE ident
+FROM FILES (dummy = 'dummy')
+WITH PARTITION COLUMNS (x STRING)
+;
