@@ -518,6 +518,10 @@ export const printSQL = (
       return printAlterBICapacityStatement(path, options, print, node);
     case "AlterColumnStatement":
       return printAlterColumnStatement(path, options, print, node);
+    case "AlterOrganizationStatement":
+      return printAlterOrganizationStatement(path, options, print, node);
+    case "AlterProjectStatement":
+      return printAlterProjectStatement(path, options, print, node);
     case "AlterSchemaStatement":
       return printAlterSchemaStatement(path, options, print, node);
     case "AlterTableStatement":
@@ -872,6 +876,74 @@ const printAlterColumnStatement: PrintFunc<bq2cst.AlterColumnStatement> = (
       docs.options,
       docs.drop_not_null,
     ]),
+  ];
+};
+
+const printAlterOrganizationStatement: PrintFunc<
+  bq2cst.AlterOrganizationStatement
+> = (path, options, print, node) => {
+  const p = new Printer(path, options, print, node);
+  const docs: { [Key in Docs<bq2cst.AlterOrganizationStatement>]: Doc } = {
+    leading_comments: printLeadingComments(path, options, print, node),
+    self: p.self("upper"),
+    trailing_comments: printTrailingComments(path, options, print, node),
+    what: p.child("what", undefined, "all"),
+    set: p.child("set"),
+    options: p.child("options", undefined, "all"),
+    semicolon: p.child("semicolon"),
+  };
+  return [
+    docs.leading_comments,
+    group([
+      docs.self,
+      docs.trailing_comments,
+      " ",
+      docs.what,
+      line,
+      docs.set,
+      " ",
+      docs.options,
+      softline,
+      docs.semicolon,
+    ]),
+    p.newLine(),
+  ];
+};
+
+const printAlterProjectStatement: PrintFunc<bq2cst.AlterProjectStatement> = (
+  path,
+  options,
+  print,
+  node
+) => {
+  const p = new Printer(path, options, print, node);
+  const docs: { [Key in Docs<bq2cst.AlterProjectStatement>]: Doc } = {
+    leading_comments: printLeadingComments(path, options, print, node),
+    self: p.self("upper"),
+    trailing_comments: printTrailingComments(path, options, print, node),
+    what: p.child("what", undefined, "all"),
+    ident: p.child("ident", undefined, "all"),
+    set: p.child("set"),
+    options: p.child("options", undefined, "all"),
+    semicolon: p.child("semicolon"),
+  };
+  return [
+    docs.leading_comments,
+    group([
+      docs.self,
+      docs.trailing_comments,
+      " ",
+      docs.what,
+      p.has("ident") ? " " : "",
+      docs.ident,
+      line,
+      docs.set,
+      " ",
+      docs.options,
+      softline,
+      docs.semicolon,
+    ]),
+    p.newLine(),
   ];
 };
 

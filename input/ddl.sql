@@ -180,6 +180,19 @@ create search index if not exists new_index on tablename(a, b);
 alter bi_capacity `project.region-us.default`
 set options(preferred_tables = ['table1', 'table2']);
 
+----- ALTER ORGANIZATION statement -----
+alter organization
+set options (`region-us.default_time_zone` = 'Asia/Tokyo');
+
+----- ALTER PROJECT statement -----
+alter project
+set options (
+  `region-us.default_time_zone` = 'Asia/Tokyo',
+  `region-us.default_job_query_timeout_ms` = 1800000
+);
+alter project `project-id`
+set options (`region-us.default_time_zone` = 'Asia/Tokyo');
+
 ----- ALTER SCHEMA statement -----
 alter schema prettier_plugin_bq_test set options();
 

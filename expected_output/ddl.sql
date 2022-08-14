@@ -174,6 +174,20 @@ ALTER BI_CAPACITY `project.region-us.default`
 SET OPTIONS (preferred_tables = ['table1', 'table2'])
 ;
 
+----- ALTER ORGANIZATION statement -----
+ALTER ORGANIZATION SET OPTIONS (`region-us.default_time_zone` = 'Asia/Tokyo');
+
+----- ALTER PROJECT statement -----
+ALTER PROJECT
+SET OPTIONS (
+  `region-us.default_time_zone` = 'Asia/Tokyo',
+  `region-us.default_job_query_timeout_ms` = 1800000
+)
+;
+ALTER PROJECT `project-id`
+SET OPTIONS (`region-us.default_time_zone` = 'Asia/Tokyo')
+;
+
 ----- ALTER SCHEMA statement -----
 ALTER SCHEMA prettier_plugin_bq_test SET OPTIONS ();
 
