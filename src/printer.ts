@@ -672,6 +672,8 @@ export const printSQL = (
       return printRevokeStatement(path, options, print, node);
     case "RaiseStatement":
       return printRaiseStatement(path, options, print, node);
+    case "RenameColumnClause":
+      return printRenameColumnClause(path, options, print, node);
     case "RepeatStatement":
       return printRepeatStatement(path, options, print, node);
     case "SelectStatement":
@@ -853,8 +855,10 @@ const printAlterColumnStatement: PrintFunc<bq2cst.AlterColumnStatement> = (
     set: p.child("set"),
     data_type: p.child("data_type", undefined, "all", " "),
     type: p.child("type", undefined, "all"),
+    default: p.child("default", undefined, "all"),
     options: p.child("options", undefined, "all"),
     drop_not_null: p.child("drop_not_null", (x) => group([line, x])),
+    drop_default: p.child("drop_default", (x) => group([line, x])),
   };
   return [
     docs.leading_comments,
@@ -872,9 +876,12 @@ const printAlterColumnStatement: PrintFunc<bq2cst.AlterColumnStatement> = (
       docs.data_type,
       p.has("type") ? " " : "",
       docs.type,
+      p.has("default") ? " " : "",
+      docs.default,
       p.has("options") ? " " : "",
       docs.options,
       docs.drop_not_null,
+      docs.drop_default,
     ]),
   ];
 };
@@ -1011,8 +1018,10 @@ const printAlterTableStatement: PrintFunc<bq2cst.AlterTableStatement> = (
     // RENAMTE TO
     rename: p.child("rename"),
     to: p.child("to", undefined, "all"),
+    // RENAMTE COLUMN
+    rename_columns: p.child("rename_columns", (x) => [hardline, x]),
     // DROP COLUMNS
-    drop_columns: p.child("drop_columns", (x) => [line, x]),
+    drop_columns: p.child("drop_columns", (x) => [hardline, x]),
     // ALTER COLUMN satatement
     alter_column_stmt: p.child("alter_column_stmt"),
     semicolon: p.child("semicolon"),
@@ -1037,6 +1046,7 @@ const printAlterTableStatement: PrintFunc<bq2cst.AlterTableStatement> = (
       docs.rename,
       p.has("rename") ? " " : "",
       docs.to,
+      docs.rename_columns,
       docs.drop_columns,
       p.has("alter_column_stmt") ? hardline : "",
       docs.alter_column_stmt,
@@ -3784,6 +3794,41 @@ const printRaiseStatement: PrintFunc<bq2cst.RaiseStatement> = (
   ];
 };
 
+const printRenameColumnClause: PrintFunc<bq2cst.RenameColumnClause> = (
+  path,
+  options,
+  print,
+  node
+) => {
+  const p = new Printer(path, options, print, node);
+  const docs: { [Key in Docs<bq2cst.RenameColumnClause>]: Doc } = {
+    leading_comments: printLeadingComments(path, options, print, node),
+    self: p.self("upper"),
+    column: p.child("column", undefined, "all"),
+    if_exists: p.child("if_exists", undefined, "all"),
+    ident: p.child("ident", undefined, "all"),
+    to: p.child("to", undefined, "all"),
+    trailing_comments: printTrailingComments(path, options, print, node),
+    comma: p.child("comma", undefined, "all"),
+  };
+  return [
+    docs.leading_comments,
+    group([
+      docs.self,
+      docs.trailing_comments,
+      " ",
+      docs.column,
+      p.has("if_exists") ? " " : "",
+      docs.if_exists,
+      " ",
+      docs.ident,
+      " ",
+      docs.to,
+      docs.comma,
+    ]),
+  ];
+};
+
 const printRepeatStatement: PrintFunc<bq2cst.RepeatStatement> = (
   path,
   options,
@@ -4215,6 +4260,7 @@ const printType: PrintFunc<bq2cst.Type> = (path, options, print, node) => {
     parameter: p.child("parameter", undefined, "all"),
     collate: p.child("collate", undefined, "all"),
     not_null: p.child("not_null", (x) => group([line, x])),
+    default: p.child("default", undefined, "all"),
     options: p.child("options", undefined, "all"),
   };
   return [
@@ -4228,6 +4274,8 @@ const printType: PrintFunc<bq2cst.Type> = (path, options, print, node) => {
     p.has("collate") ? " " : "",
     docs.collate,
     docs.not_null,
+    p.has("default") ? " " : "",
+    docs.default,
     p.has("options") ? " " : "",
     docs.options,
   ];

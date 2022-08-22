@@ -41,6 +41,8 @@ create table example (x string)
 default collate 'und:ci'
 ;
 
+create table example (x string default 'hello');
+
 -- SNAPSHOT
 create snapshot table snap
 clone t for system_time as of current_timestamp()
@@ -230,6 +232,9 @@ drop column float;
 
 ----- ALTER COLUMN statement -----
 alter table t
+alter column c drop default;
+
+alter table t
 alter column int drop not null;
 
 alter table if exists t
@@ -248,6 +253,18 @@ set data type numeric
 
 alter table t alter column s
 set data type string collate 'und:ci'
+;
+
+alter table t alter column s
+set default current_timestamp()
+;
+
+alter table t
+rename column u to v
+;
+alter table t
+rename column u to v,
+rename column if exists w to x
 ;
 
 ----- ALTER VIEW statement -----
