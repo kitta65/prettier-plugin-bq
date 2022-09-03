@@ -277,6 +277,8 @@ select str, int
 from t group by str, int
 ;
 
+select x, sum(y) from t group by rollup(x);
+
 ----- HAVING clause -----
 select str, count(*) cnt from t group by 1 having cnt < 10;
 

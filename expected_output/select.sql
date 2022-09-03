@@ -323,6 +323,8 @@ GROUP BY
   int
 ;
 
+SELECT x, SUM(y) FROM t GROUP BY ROLLUP(x);
+
 ----- HAVING clause -----
 SELECT str, COUNT(*) AS cnt FROM t GROUP BY 1 HAVING cnt < 10;
 
