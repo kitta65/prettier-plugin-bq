@@ -363,7 +363,17 @@ SELECT * FROM t ORDER BY int ASC, ts;
 
 SELECT * FROM t ORDER BY int NULLS FIRST, str DESC NULLS LAST;
 
+(SELECT col FROM tablename ORDER BY 1)
+-- break
+ORDER BY 1 DESC
+;
+
 ----- LIMIT clause -----
 SELECT * FROM t LIMIT 100;
 
 SELECT * FROM t LIMIT 100 OFFSET 10;
+
+(SELECT 1 LIMIT 2)
+-- break
+LIMIT 3
+;

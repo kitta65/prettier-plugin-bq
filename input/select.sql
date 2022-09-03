@@ -317,7 +317,15 @@ select * from t order by int asc, ts;
 
 select * from t order by int nulls first, str desc nulls last;
 
+(select col from tablename order by 1)
+-- break
+order by 1 desc;
+
 ----- LIMIT clause -----
 select * from t limit 100;
 
 select * from t limit 100 offset 10;
+
+(select 1 limit 2)
+-- break
+limit 3;

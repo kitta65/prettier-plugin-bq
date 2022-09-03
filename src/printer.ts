@@ -2827,6 +2827,8 @@ const printGroupedStatement: PrintFunc<bq2cst.GroupedStatement> = (
     alias: printAlias(path, options, print, node),
     pivot: printPivotOrUnpivotOperator(path, options, print, node),
     unpivot: "", // eslint-disable-line unicorn/no-unused-properties
+    orderby: p.child("orderby"),
+    limit: p.child("limit"),
     order: printOrder(path, options, print, node),
     null_order: "", // eslint-disable-line unicorn/no-unused-properties
     comma: printComma(path, options, print, node),
@@ -2845,6 +2847,10 @@ const printGroupedStatement: PrintFunc<bq2cst.GroupedStatement> = (
         docs.rparen,
         docs.pivot,
       ]),
+      p.has("orderby") ? line : "",
+      docs.orderby,
+      p.has("limit") ? line : "",
+      docs.limit,
       p.has("semicolon") ? softline : "",
       docs.semicolon,
     ]),
