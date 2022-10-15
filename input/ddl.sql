@@ -161,6 +161,19 @@ create procedure abc(
 options(dummy = 'dummy')
 begin select 'abc'; end;
 
+-- apache spark
+create procedure procedure_ident()
+with connection connection_ident
+options (dummy = 'dummy')
+language python;
+
+create procedure procedure_ident()
+with connection connection_ident
+language python as r'''
+# python code
+from pyspark.sql import SparkSession
+''';
+
 ----- CREATE ROW ACCESS POLICY statement -----
 create row access policy filter_name
 on t

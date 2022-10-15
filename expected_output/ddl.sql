@@ -157,6 +157,22 @@ OPTIONS (dummy = 'dummy')
 BEGIN SELECT 'abc'; END
 ;
 
+-- apache spark
+CREATE PROCEDURE procedure_ident()
+WITH CONNECTION connection_ident
+OPTIONS (dummy = 'dummy')
+LANGUAGE python
+;
+
+CREATE PROCEDURE procedure_ident()
+WITH CONNECTION connection_ident
+LANGUAGE python
+AS r'''
+# python code
+from pyspark.sql import SparkSession
+'''
+;
+
 ----- CREATE ROW ACCESS POLICY statement -----
 CREATE ROW ACCESS POLICY filter_name ON t FILTER USING (TRUE);
 

@@ -644,8 +644,6 @@ export const printSQL = (
       return printKeywordWithStatements(path, options, print, node);
     case "KeywordWithType":
       return printKeywordWithType(path, options, print, node);
-    case "LanguageSpecifier":
-      return printLanguageSpecifier(path, options, print, node);
     case "LimitClause":
       return printLimitClause(path, options, print, node);
     case "LoadStatement":
@@ -726,8 +724,6 @@ export const printSQL = (
       return printWindowSpecification(path, options, print, node);
     case "WithClause":
       return printWithClause(path, options, print, node);
-    case "WithConnectionClause":
-      return printWithConnectionClause(path, options, print, node);
     case "WithPartitionColumnsClause":
       return printWithPartitionColumnsClause(path, options, print, node);
     case "WithQuery":
@@ -1941,8 +1937,11 @@ const printCreateProcedureStatement: PrintFunc<
     if_not_exists: p.child("if_not_exists", (x) => group([line, x])),
     ident: p.child("ident", undefined, "all"),
     group: p.child("group", undefined, "all"),
+    with_connection: p.child("with_connection"),
     options: p.child("options"),
+    language: p.child("language"),
     stmt: p.child("stmt"),
+    as: p.child("as"),
     semicolon: p.child("semicolon"),
   };
   return [
@@ -1959,10 +1958,16 @@ const printCreateProcedureStatement: PrintFunc<
         docs.ident,
         docs.group,
       ]),
+      p.has("with_connection") ? line : "",
+      docs.with_connection,
       p.has("options") ? line : "",
       docs.options,
-      line,
+      p.has("language") ? line : "",
+      docs.language,
+      p.has("stmt") ? line : "",
       docs.stmt,
+      p.has("as") ? line : "",
+      docs.as,
       softline,
       docs.semicolon,
     ]),
@@ -3370,25 +3375,6 @@ const printKeywordWithType: PrintFunc<bq2cst.KeywordWithType> = (
   ];
 };
 
-const printLanguageSpecifier: PrintFunc<bq2cst.LanguageSpecifier> = (
-  path,
-  options,
-  print,
-  node
-) => {
-  const p = new Printer(path, options, print, node);
-  const docs: { [Key in Docs<bq2cst.LanguageSpecifier>]: Doc } = {
-    leading_comments: printLeadingComments(path, options, print, node),
-    self: p.self("upper"),
-    trailing_comments: printTrailingComments(path, options, print, node),
-    language: p.child("language"),
-  };
-  return [
-    docs.leading_comments,
-    group([docs.self, docs.trailing_comments, indent([line, docs.language])]),
-  ];
-};
-
 const printLimitClause: PrintFunc<bq2cst.LimitClause> = (
   path,
   options,
@@ -4692,31 +4678,6 @@ const printWithClause: PrintFunc<bq2cst.WithClause> = (
     docs.recursive,
     docs.trailing_comments,
     docs.queries,
-  ];
-};
-
-const printWithConnectionClause: PrintFunc<bq2cst.WithConnectionClause> = (
-  path,
-  options,
-  print,
-  node
-) => {
-  const p = new Printer(path, options, print, node);
-  const docs: { [Key in Docs<bq2cst.WithConnectionClause>]: Doc } = {
-    leading_comments: printLeadingComments(path, options, print, node),
-    self: p.self("upper"),
-    trailing_comments: printTrailingComments(path, options, print, node),
-    connection: p.child("connection", undefined, "all"),
-    ident: p.child("ident", undefined, "all"),
-  };
-  return [
-    docs.leading_comments,
-    docs.self,
-    docs.trailing_comments,
-    " ",
-    docs.connection,
-    " ",
-    docs.ident,
   ];
 };
 
