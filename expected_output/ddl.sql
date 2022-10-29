@@ -185,7 +185,10 @@ FILTER USING (email = SESSION_USER())
 ----- CREATE SEARCH INDEX statement -----
 CREATE SEARCH INDEX new_index ON tablename (ALL COLUMNS);
 
-CREATE SEARCH INDEX IF NOT EXISTS new_index ON tablename (a, b);
+CREATE SEARCH INDEX IF NOT EXISTS new_index
+ON tablename (a, b)
+OPTIONS (dummy = 'dummy')
+;
 
 ----- ALTER BI_CAPACITY statement -----
 ALTER BI_CAPACITY `project.region-us.default`

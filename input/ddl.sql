@@ -189,7 +189,10 @@ filter using (email = session_user())
 ----- CREATE SEARCH INDEX statement -----
 create search index new_index on tablename(all columns);
 
-create search index if not exists new_index on tablename(a, b);
+create search index if not exists new_index
+on tablename(a, b)
+options (dummy = 'dummy')
+;
 
 ----- ALTER BI_CAPACITY statement -----
 alter bi_capacity `project.region-us.default`

@@ -2112,6 +2112,7 @@ const printCreateSearchIndexStatement: PrintFunc<
     on: p.child("on"),
     tablename: p.child("tablename", undefined, "all"),
     column_group: p.child("column_group", undefined, "all"),
+    options: p.child("options"),
     semicolon: p.child("semicolon"),
   };
   return [
@@ -2130,6 +2131,8 @@ const printCreateSearchIndexStatement: PrintFunc<
       docs.tablename,
       " ",
       docs.column_group,
+      p.has("options") ? line : "",
+      docs.options,
       softline,
       docs.semicolon,
     ]),
