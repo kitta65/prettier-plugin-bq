@@ -143,6 +143,8 @@ export const globalFunctions = [
   "SEARCH",
   // bit functions
   "BIT_COUNT",
+  // built-in table functions
+  "EXTERNAL_OBJECT_TRANSFORM",
   // conversion functions
   "CAST",
   "PARSE_BIGNUMERIC",

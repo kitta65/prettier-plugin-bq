@@ -283,6 +283,11 @@ FROM
   ) ON t2.str = t4.str
 ;
 
+-- built-in table functions
+SELECT uri
+FROM EXTERNAL_OBJECT_TRANSFORM(TABLE mydataset.myobjecttable, ['SIGNED_URL'])
+;
+
 ----- WHERE clause -----
 SELECT str FROM t WHERE TRUE;
 

@@ -253,6 +253,9 @@ from
 
 select * from t as t1 , t t2 join (t as t3 full outer join t t4 on t3.dt = t4.dt) on t2.str = t4.str;
 
+-- built-in table functions
+select uri from external_object_transform(table mydataset.myobjecttable, ['SIGNED_URL']);
+
 ----- WHERE clause -----
 select str from t where true;
 
