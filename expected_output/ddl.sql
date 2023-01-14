@@ -195,56 +195,6 @@ ALTER BI_CAPACITY `project.region-us.default`
 SET OPTIONS (preferred_tables = ['table1', 'table2'])
 ;
 
------ ALTER ORGANIZATION statement -----
-ALTER ORGANIZATION SET OPTIONS (`region-us.default_time_zone` = 'Asia/Tokyo');
-
------ ALTER PROJECT statement -----
-ALTER PROJECT
-SET OPTIONS (
-  `region-us.default_time_zone` = 'Asia/Tokyo',
-  `region-us.default_job_query_timeout_ms` = 1800000
-)
-;
-ALTER PROJECT `project-id`
-SET OPTIONS (`region-us.default_time_zone` = 'Asia/Tokyo')
-;
-
------ ALTER SCHEMA statement -----
-ALTER SCHEMA prettier_plugin_bq_test SET OPTIONS ();
-
-ALTER SCHEMA IF EXISTS prettier_plugin_bq_test SET OPTIONS (dummy = 'dummy');
-
-ALTER SCHEMA dataset_name SET DEFAULT COLLATE 'und:ci';
-
------ ALTER TABLE statement -----
--- SET
-ALTER TABLE t SET OPTIONS (dummy = 'dummy');
-
-ALTER TABLE example SET DEFAULT COLLATE 'und:ci';
-
--- ADD COLUMN
-ALTER TABLE t ADD COLUMN x INT64;
-
-ALTER TABLE t
-ADD COLUMN IF NOT EXISTS x INT64 OPTIONS (description = 'dummy'),
-ADD COLUMN y STRUCT<z INT64 NOT NULL>
-;
-
-ALTER TABLE ident ADD COLUMN col1 STRING COLLATE 'und:ci';
-
--- RENAME
-ALTER TABLE IF EXISTS t1
--- break
-RENAME TO t2
-;
-
--- DROP
-ALTER TABLE t
-DROP COLUMN IF EXISTS int,
--- break
-DROP COLUMN float
-;
-
 ----- ALTER COLUMN statement -----
 ALTER TABLE t
 ALTER COLUMN c DROP DEFAULT
@@ -282,6 +232,59 @@ RENAME COLUMN u TO v
 ALTER TABLE t
 RENAME COLUMN u TO v,
 RENAME COLUMN IF EXISTS w TO x
+;
+
+----- ALTER ORGANIZATION statement -----
+ALTER ORGANIZATION SET OPTIONS (`region-us.default_time_zone` = 'Asia/Tokyo');
+
+----- ALTER PROJECT statement -----
+ALTER PROJECT
+SET OPTIONS (
+  `region-us.default_time_zone` = 'Asia/Tokyo',
+  `region-us.default_job_query_timeout_ms` = 1800000
+)
+;
+ALTER PROJECT `project-id`
+SET OPTIONS (`region-us.default_time_zone` = 'Asia/Tokyo')
+;
+
+----- ALTER SCHEMA statement -----
+ALTER RESERVATION ident SET OPTIONS (plan = 'FLEX');
+
+----- ALTER SCHEMA statement -----
+ALTER SCHEMA prettier_plugin_bq_test SET OPTIONS ();
+
+ALTER SCHEMA IF EXISTS prettier_plugin_bq_test SET OPTIONS (dummy = 'dummy');
+
+ALTER SCHEMA dataset_name SET DEFAULT COLLATE 'und:ci';
+
+----- ALTER TABLE statement -----
+-- SET
+ALTER TABLE t SET OPTIONS (dummy = 'dummy');
+
+ALTER TABLE example SET DEFAULT COLLATE 'und:ci';
+
+-- ADD COLUMN
+ALTER TABLE t ADD COLUMN x INT64;
+
+ALTER TABLE t
+ADD COLUMN IF NOT EXISTS x INT64 OPTIONS (description = 'dummy'),
+ADD COLUMN y STRUCT<z INT64 NOT NULL>
+;
+
+ALTER TABLE ident ADD COLUMN col1 STRING COLLATE 'und:ci';
+
+-- RENAME
+ALTER TABLE IF EXISTS t1
+-- break
+RENAME TO t2
+;
+
+-- DROP
+ALTER TABLE t
+DROP COLUMN IF EXISTS int,
+-- break
+DROP COLUMN float
 ;
 
 ----- ALTER VIEW statement -----

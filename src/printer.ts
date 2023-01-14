@@ -522,6 +522,8 @@ export const printSQL = (
       return printAlterOrganizationStatement(path, options, print, node);
     case "AlterProjectStatement":
       return printAlterProjectStatement(path, options, print, node);
+    case "AlterReservationStatement":
+      return printAlterReservationStatement(path, options, print, node);
     case "AlterSchemaStatement":
       return printAlterSchemaStatement(path, options, print, node);
     case "AlterTableStatement":
@@ -938,6 +940,40 @@ const printAlterProjectStatement: PrintFunc<bq2cst.AlterProjectStatement> = (
       " ",
       docs.what,
       p.has("ident") ? " " : "",
+      docs.ident,
+      line,
+      docs.set,
+      " ",
+      docs.options,
+      softline,
+      docs.semicolon,
+    ]),
+    p.newLine(),
+  ];
+};
+
+const printAlterReservationStatement: PrintFunc<
+  bq2cst.AlterReservationStatement
+> = (path, options, print, node) => {
+  const p = new Printer(path, options, print, node);
+  const docs: { [Key in Docs<bq2cst.AlterReservationStatement>]: Doc } = {
+    leading_comments: printLeadingComments(path, options, print, node),
+    self: p.self("upper"),
+    trailing_comments: printTrailingComments(path, options, print, node),
+    what: p.child("what", undefined, "all"),
+    ident: p.child("ident", undefined, "all"),
+    set: p.child("set"),
+    options: p.child("options", undefined, "all"),
+    semicolon: p.child("semicolon"),
+  };
+  return [
+    docs.leading_comments,
+    group([
+      docs.self,
+      docs.trailing_comments,
+      " ",
+      docs.what,
+      " ",
       docs.ident,
       line,
       docs.set,
@@ -1988,6 +2024,7 @@ const printCreateReservationStatement: PrintFunc<
     as: p.child("as"),
     json: p.child("json", undefined, "all"),
     json_string: p.child("json_string", undefined, "all"),
+    options: p.child("options", undefined, "all"),
     semicolon: p.child("semicolon"),
   };
   return [
@@ -2001,10 +2038,11 @@ const printCreateReservationStatement: PrintFunc<
       docs.ident,
       line,
       docs.as,
-      " ",
+      p.has("json") ? " " : "",
       docs.json,
-      " ",
+      p.has("json_string") ? " " : "",
       docs.json_string,
+      docs.options,
       softline,
       docs.semicolon,
     ]),

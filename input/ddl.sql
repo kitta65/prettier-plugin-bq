@@ -198,54 +198,6 @@ options (dummy = 'dummy')
 alter bi_capacity `project.region-us.default`
 set options(preferred_tables = ['table1', 'table2']);
 
------ ALTER ORGANIZATION statement -----
-alter organization
-set options (`region-us.default_time_zone` = 'Asia/Tokyo');
-
------ ALTER PROJECT statement -----
-alter project
-set options (
-  `region-us.default_time_zone` = 'Asia/Tokyo',
-  `region-us.default_job_query_timeout_ms` = 1800000
-);
-alter project `project-id`
-set options (`region-us.default_time_zone` = 'Asia/Tokyo');
-
------ ALTER SCHEMA statement -----
-alter schema prettier_plugin_bq_test set options();
-
-alter schema if exists prettier_plugin_bq_test set options(dummy = 'dummy');
-
-alter schema dataset_name set default collate 'und:ci';
-
------ ALTER TABLE statement -----
--- SET
-alter table t set options (dummy='dummy');
-
-alter table example set default collate 'und:ci';
-
--- ADD COLUMN
-alter table t
-add column x int64;
-
-alter table t
-add column if not exists x int64 options (description = 'dummy'),
-add column y struct<z int64 not null>;
-
-alter table ident add column col1 string collate 'und:ci';
-
--- RENAME
-alter table if exists t1
--- break
-rename to t2
-;
-
--- DROP
-alter table t
-drop column if exists int,
--- break
-drop column float;
-
 ----- ALTER COLUMN statement -----
 alter table t
 alter column c drop default;
@@ -282,6 +234,57 @@ alter table t
 rename column u to v,
 rename column if exists w to x
 ;
+
+----- ALTER ORGANIZATION statement -----
+alter organization
+set options (`region-us.default_time_zone` = 'Asia/Tokyo');
+
+----- ALTER PROJECT statement -----
+alter project
+set options (
+  `region-us.default_time_zone` = 'Asia/Tokyo',
+  `region-us.default_job_query_timeout_ms` = 1800000
+);
+alter project `project-id`
+set options (`region-us.default_time_zone` = 'Asia/Tokyo');
+
+----- ALTER SCHEMA statement -----
+alter reservation ident set options(plan='FLEX');
+
+----- ALTER SCHEMA statement -----
+alter schema prettier_plugin_bq_test set options();
+
+alter schema if exists prettier_plugin_bq_test set options(dummy = 'dummy');
+
+alter schema dataset_name set default collate 'und:ci';
+
+----- ALTER TABLE statement -----
+-- SET
+alter table t set options (dummy='dummy');
+
+alter table example set default collate 'und:ci';
+
+-- ADD COLUMN
+alter table t
+add column x int64;
+
+alter table t
+add column if not exists x int64 options (description = 'dummy'),
+add column y struct<z int64 not null>;
+
+alter table ident add column col1 string collate 'und:ci';
+
+-- RENAME
+alter table if exists t1
+-- break
+rename to t2
+;
+
+-- DROP
+alter table t
+drop column if exists int,
+-- break
+drop column float;
 
 ----- ALTER VIEW statement -----
 alter view example set options (
