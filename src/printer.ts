@@ -524,6 +524,8 @@ export const printSQL = (
       return printAlterProjectStatement(path, options, print, node);
     case "AlterReservationStatement":
       return printAlterReservationStatement(path, options, print, node);
+    case "AlterTableDropClause":
+      return printDropColumnClause(path, options, print, node);
     case "AlterSchemaStatement":
       return printAlterSchemaStatement(path, options, print, node);
     case "AlterTableStatement":
@@ -584,8 +586,6 @@ export const printSQL = (
       return printDeleteStatement(path, options, print, node);
     case "DotOperator":
       return printDotOperator(path, options, print, node);
-    case "DropColumnClause":
-      return printDropColumnClause(path, options, print, node);
     case "DropRowAccessPolicyStatement":
       return printDropRowAccessPolicyStatement(path, options, print, node);
     case "DropStatement":
@@ -614,7 +614,7 @@ export const printSQL = (
       return printGroupedStatement(path, options, print, node);
     case "GroupedType":
       return printGroupedType(path, options, print, node);
-    case "GroupedTypeDeclarations":
+    case "GroupedTypeDeclarationOrConstraints":
       return printGroupedTypeDeclarations(path, options, print, node);
     case "Identifier":
       return printIdentifier(path, options, print, node);
@@ -782,7 +782,7 @@ const printAddColumnClause: PrintFunc<bq2cst.AddColumnClause> = (
     leading_comments: printLeadingComments(path, options, print, node),
     self: p.self("upper"),
     trailing_comments: printTrailingComments(path, options, print, node),
-    column: p.child("column", undefined, "all"),
+    what: p.child("what", undefined, "all"),
     if_not_exists: p.child("if_not_exists", (x) => group([line, x])),
     type_declaration: p.child("type_declaration"),
     comma: p.child("comma", undefined, "all"),
@@ -793,7 +793,7 @@ const printAddColumnClause: PrintFunc<bq2cst.AddColumnClause> = (
       docs.self,
       docs.trailing_comments,
       " ",
-      docs.column,
+      docs.what,
       docs.if_not_exists,
       " ",
       docs.type_declaration,
@@ -1625,6 +1625,7 @@ const printCallingFunctionGeneral: PrintFunc<
     ignore_nulls: p.child("ignore_nulls", undefined, "none", line),
     orderby: p.child("orderby"),
     limit: p.child("limit"),
+    having: p.child("having"),
     rparen: p.child("rparen"),
     over: p.child("over", (x) => [" ", x], "all"),
     as: "", // eslint-disable-line unicorn/no-unused-properties
@@ -1633,9 +1634,12 @@ const printCallingFunctionGeneral: PrintFunc<
     null_order: "", // eslint-disable-line unicorn/no-unused-properties
     comma: printComma(path, options, print, node),
   };
-  const trailings = [docs.ignore_nulls, docs.orderby, docs.limit].filter(
-    (x) => x !== ""
-  );
+  const trailings = [
+    docs.ignore_nulls,
+    docs.orderby,
+    docs.limit,
+    docs.having,
+  ].filter((x) => x !== "");
   let noNewLine =
     !p.has("distinct") &&
     p.len("args") <= 1 &&
@@ -2413,18 +2417,18 @@ const printDotOperator: PrintFunc<bq2cst.DotOperator> = (
   ];
 };
 
-const printDropColumnClause: PrintFunc<bq2cst.DropColumnClause> = (
+const printDropColumnClause: PrintFunc<bq2cst.AlterTableDropClause> = (
   path,
   options,
   print,
   node
 ) => {
   const p = new Printer(path, options, print, node);
-  const docs: { [Key in Docs<bq2cst.DropColumnClause>]: Doc } = {
+  const docs: { [Key in Docs<bq2cst.AlterTableDropClause>]: Doc } = {
     leading_comments: printLeadingComments(path, options, print, node),
     self: p.self("upper"),
     trailing_comments: printTrailingComments(path, options, print, node),
-    column: p.child("column", undefined, "all"),
+    what: p.child("what", undefined, "all"),
     if_exists: p.child("if_exists", (x) => group([line, x])),
     ident: p.child("ident", undefined, "all"),
     comma: p.child("comma", undefined, "all"),
@@ -2434,7 +2438,7 @@ const printDropColumnClause: PrintFunc<bq2cst.DropColumnClause> = (
     group([
       docs.self,
       " ",
-      docs.column,
+      docs.what,
       docs.trailing_comments,
       docs.if_exists,
       " ",
@@ -2932,10 +2936,12 @@ const printGroupedType: PrintFunc<bq2cst.GroupedType> = (
 };
 
 const printGroupedTypeDeclarations: PrintFunc<
-  bq2cst.GroupedTypeDeclarations
+  bq2cst.GroupedTypeDeclarationOrConstraints
 > = (path, options, print, node) => {
   const p = new Printer(path, options, print, node);
-  const docs: { [Key in Docs<bq2cst.GroupedTypeDeclarations>]: Doc } = {
+  const docs: {
+    [Key in Docs<bq2cst.GroupedTypeDeclarationOrConstraints>]: Doc;
+  } = {
     leading_comments: printLeadingComments(path, options, print, node),
     self: p.self(),
     trailing_comments: printTrailingComments(path, options, print, node),
@@ -4292,6 +4298,10 @@ const printType: PrintFunc<bq2cst.Type> = (path, options, print, node) => {
     type_declaration: p.child("type_declaration", undefined, "all"),
     parameter: p.child("parameter", undefined, "all"),
     collate: p.child("collate", undefined, "all"),
+    constraint: p.child("constraint", undefined, "all"),
+    primarykey: p.child("constraint", undefined, "all"),
+    references: p.child("references", undefined, "all"),
+    enforced: p.child("enforced", undefined, "all"),
     not_null: p.child("not_null", (x) => group([line, x])),
     default: p.child("default", undefined, "all"),
     options: p.child("options", undefined, "all"),
@@ -4306,6 +4316,14 @@ const printType: PrintFunc<bq2cst.Type> = (path, options, print, node) => {
     docs.parameter,
     p.has("collate") ? " " : "",
     docs.collate,
+    p.has("constraint") ? " " : "",
+    docs.constraint,
+    p.has("primarykey") ? " " : "",
+    docs.primarykey,
+    p.has("references") ? " " : "",
+    docs.references,
+    p.has("enforced") ? " " : "",
+    docs.enforced,
     docs.not_null,
     p.has("default") ? " " : "",
     docs.default,
