@@ -564,6 +564,8 @@ export const printSQL = (
       return printCastArgument(path, options, print, node);
     case "Comment":
       return printComment(path, options, print, node);
+    case "Constraint":
+      return printConstraint(path, options, print, node);
     case "CreateFunctionStatement":
       return printCreateFunctionStatement(path, options, print, node);
     case "CreateProcedureStatement":
@@ -1903,6 +1905,37 @@ const printComment: PrintFunc<bq2cst.Comment> = (
     self: p.self(),
   };
   return docs.self;
+};
+
+const printConstraint: PrintFunc<bq2cst.Constraint> = (
+  path,
+  options,
+  print,
+  node
+) => {
+  const p = new Printer(path, options, print, node);
+  const docs: { [Key in Docs<bq2cst.Constraint>]: Doc } = {
+    leading_comments: printLeadingComments(path, options, print, node),
+    self: p.self(),
+    trailing_comments: printTrailingComments(path, options, print, node),
+    constraint: p.child("constraint", undefined, "all"),
+    if_not_exists: p.child("if_not_exists", undefined),
+    key: p.child("key"),
+    columns: p.child("columns"),
+    references: p.child("references"),
+    enforced: p.child("enforced"),
+  };
+  return [
+    docs.leading_comments,
+    docs.self,
+    docs.trailing_comments,
+    docs.constraint,
+    docs.if_not_exists,
+    docs.key,
+    docs.columns,
+    docs.references,
+    docs.enforced,
+  ];
 };
 
 const printCreateFunctionStatement: PrintFunc<
@@ -4297,17 +4330,17 @@ const printType: PrintFunc<bq2cst.Type> = (path, options, print, node) => {
     leading_comments: printLeadingComments(path, options, print, node),
     self: p.self("upper"),
     trailing_comments: printTrailingComments(path, options, print, node),
-    type: p.child("type", undefined, "all"),
-    type_declaration: p.child("type_declaration", undefined, "all"),
-    parameter: p.child("parameter", undefined, "all"),
-    collate: p.child("collate", undefined, "all"),
-    constraint: p.child("constraint", undefined, "all"),
-    primarykey: p.child("constraint", undefined, "all"),
-    references: p.child("references", undefined, "all"),
-    enforced: p.child("enforced", undefined, "all"),
-    not_null: p.child("not_null", (x) => group([line, x])),
-    default: p.child("default", undefined, "all"),
-    options: p.child("options", undefined, "all"),
+    type: p.child("type", undefined, "all"), // INT64 | ARRAY
+    type_declaration: p.child("type_declaration", undefined, "all"), // <INT64>
+    parameter: p.child("parameter", undefined, "all"), // STRING(10)
+    collate: p.child("collate", undefined, "all"), // DEFAUT COLLATE 'und:ci'
+    constraint: p.child("constraint", undefined, "all"), // CONSTRAINT ident
+    primarykey: p.child("primarykey", undefined, "all"), // PRIMARY KEY
+    references: p.child("references", undefined, "all"), // REFERENCES tablename(col)
+    enforced: p.child("enforced", undefined, "all"), // NOT ENFORCED
+    not_null: p.child("not_null", (x) => group([line, x])), // NOT NULL
+    default: p.child("default", undefined, "all"), // DEFAULT CURRENT_TIMESTAMP
+    options: p.child("options", undefined, "all"), // OPTIONS()
   };
   return [
     docs.leading_comments,
@@ -4317,20 +4350,20 @@ const printType: PrintFunc<bq2cst.Type> = (path, options, print, node) => {
     docs.type,
     docs.type_declaration,
     docs.parameter,
-    p.has("collate") ? " " : "",
+    p.has("collate") ? line : "",
     docs.collate,
-    p.has("constraint") ? " " : "",
+    p.has("constraint") ? line : "",
     docs.constraint,
-    p.has("primarykey") ? " " : "",
+    p.has("primarykey") ? line : "",
     docs.primarykey,
     p.has("references") ? " " : "",
     docs.references,
     p.has("enforced") ? " " : "",
     docs.enforced,
     docs.not_null,
-    p.has("default") ? " " : "",
+    p.has("default") ? line : "",
     docs.default,
-    p.has("options") ? " " : "",
+    p.has("options") ? line : "",
     docs.options,
   ];
 };

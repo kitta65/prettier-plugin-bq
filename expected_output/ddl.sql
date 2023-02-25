@@ -47,6 +47,19 @@ CREATE TABLE example (x STRING) DEFAULT COLLATE 'und:ci';
 
 CREATE TABLE example (x STRING DEFAULT 'hello');
 
+-- create table example (
+--   x string,
+--   primary key (x),
+--   foreign key (x) references tablename(y) not enforced,
+--   constraint ident foreign key (x)
+-- );
+CREATE TABLE example (
+  x STRING PRIMARY KEY NOT ENFORCED,
+  y STRING REFERENCES tablename(col),
+  z STRING CONSTRAINT ident REFERENCES tablename(col)
+)
+;
+
 -- SNAPSHOT
 CREATE SNAPSHOT TABLE snap
 CLONE t FOR SYSTEM_TIME AS OF CURRENT_TIMESTAMP()
@@ -274,19 +287,32 @@ ADD COLUMN y STRUCT<z INT64 NOT NULL>
 
 ALTER TABLE ident ADD COLUMN col1 STRING COLLATE 'und:ci';
 
+-- ADD CONSTRAINT
+-- alter table example
+-- add primary key (a) not enforced,
+-- add primary key (b);
+-- alter table example
+-- add constraint if not exists foo foreign key (a) references tablename(x),
+-- add constraint bar foreign key (b, c) references tablename(y) not enforced,
+-- add foreign key (d) references tablename(z);
 -- RENAME
 ALTER TABLE IF EXISTS t1
 -- break
 RENAME TO t2
 ;
 
--- DROP
+-- DROP COLUMN
 ALTER TABLE t
 DROP COLUMN IF EXISTS int,
 -- break
 DROP COLUMN float
 ;
 
+-- DROP CONSTRAINT
+-- alter table example
+-- drop primary key,
+-- drop primary key if exists,
+-- drop constraint ident;
 ----- ALTER VIEW statement -----
 ALTER VIEW example SET OPTIONS (dummy = 'dummy', description = 'abc');
 
