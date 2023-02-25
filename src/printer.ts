@@ -1634,6 +1634,9 @@ const printCallingFunctionGeneral: PrintFunc<
     null_order: "", // eslint-disable-line unicorn/no-unused-properties
     comma: printComma(path, options, print, node),
   };
+  // TODO
+  // check if parse order is collect
+  // this block shold be placed before RESPECT/IGNORE?
   const trailings = [
     docs.ignore_nulls,
     docs.orderby,

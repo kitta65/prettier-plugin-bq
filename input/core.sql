@@ -148,6 +148,9 @@ select
 from t
 ;
 
+-- ANY_VALUE
+select any_value(x having max y);
+
 -- ARRAY_AGG
 select
   array_agg(
