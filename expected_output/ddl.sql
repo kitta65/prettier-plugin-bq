@@ -309,10 +309,12 @@ DROP COLUMN float
 ;
 
 -- DROP CONSTRAINT
--- alter table example
--- drop primary key,
--- drop primary key if exists,
--- drop constraint ident;
+ALTER TABLE example
+DROP PRIMARY KEY,
+DROP PRIMARY KEY IF EXISTS,
+DROP CONSTRAINT ident
+;
+
 ----- ALTER VIEW statement -----
 ALTER VIEW example SET OPTIONS (dummy = 'dummy', description = 'abc');
 

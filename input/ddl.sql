@@ -310,10 +310,10 @@ drop column if exists int,
 drop column float;
 
 -- DROP CONSTRAINT
--- alter table example
--- drop primary key,
--- drop primary key if exists,
--- drop constraint ident;
+alter table example
+drop primary key,
+drop primary key if exists,
+drop constraint ident;
 
 ----- ALTER VIEW statement -----
 alter view example set options (

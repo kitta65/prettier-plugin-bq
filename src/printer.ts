@@ -525,7 +525,7 @@ export const printSQL = (
     case "AlterReservationStatement":
       return printAlterReservationStatement(path, options, print, node);
     case "AlterTableDropClause":
-      return printDropColumnClause(path, options, print, node);
+      return printAlterTableDropClause(path, options, print, node);
     case "AlterSchemaStatement":
       return printAlterSchemaStatement(path, options, print, node);
     case "AlterTableStatement":
@@ -1026,6 +1026,37 @@ const printAlterSchemaStatement: PrintFunc<bq2cst.AlterSchemaStatement> = (
       docs.semicolon,
     ]),
     p.newLine(),
+  ];
+};
+
+const printAlterTableDropClause: PrintFunc<bq2cst.AlterTableDropClause> = (
+  path,
+  options,
+  print,
+  node
+) => {
+  const p = new Printer(path, options, print, node);
+  const docs: { [Key in Docs<bq2cst.AlterTableDropClause>]: Doc } = {
+    leading_comments: printLeadingComments(path, options, print, node),
+    self: p.self("upper"),
+    trailing_comments: printTrailingComments(path, options, print, node),
+    what: p.child("what", undefined, "all"),
+    if_exists: p.child("if_exists", (x) => group([line, x])),
+    ident: p.child("ident", undefined, "all"),
+    comma: p.child("comma", undefined, "all"),
+  };
+  return [
+    docs.leading_comments,
+    group([
+      docs.self,
+      " ",
+      docs.what,
+      docs.trailing_comments,
+      docs.if_exists,
+      p.has("ident") ? " " : "",
+      docs.ident,
+      docs.comma,
+    ]),
   ];
 };
 
@@ -2450,37 +2481,6 @@ const printDotOperator: PrintFunc<bq2cst.DotOperator> = (
     p.has("tablesample") ? [" ", docs.tablesample] : "",
     docs.order,
     docs.comma,
-  ];
-};
-
-const printDropColumnClause: PrintFunc<bq2cst.AlterTableDropClause> = (
-  path,
-  options,
-  print,
-  node
-) => {
-  const p = new Printer(path, options, print, node);
-  const docs: { [Key in Docs<bq2cst.AlterTableDropClause>]: Doc } = {
-    leading_comments: printLeadingComments(path, options, print, node),
-    self: p.self("upper"),
-    trailing_comments: printTrailingComments(path, options, print, node),
-    what: p.child("what", undefined, "all"),
-    if_exists: p.child("if_exists", (x) => group([line, x])),
-    ident: p.child("ident", undefined, "all"),
-    comma: p.child("comma", undefined, "all"),
-  };
-  return [
-    docs.leading_comments,
-    group([
-      docs.self,
-      " ",
-      docs.what,
-      docs.trailing_comments,
-      docs.if_exists,
-      " ",
-      docs.ident,
-      docs.comma,
-    ]),
   ];
 };
 
