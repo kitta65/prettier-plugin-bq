@@ -1981,6 +1981,7 @@ const printConstraint: PrintFunc<bq2cst.Constraint> = (
     columns: p.child("columns", undefined, "all"), // (col)
     references: p.child("references", undefined, "all"), // REFERENCES tablename(col)
     enforced: p.child("enforced", undefined, "all"), // NOT ENFORCED
+    comma: p.child("comma", undefined, "all"),
   };
   return [
     docs.constraint,
@@ -1997,6 +1998,7 @@ const printConstraint: PrintFunc<bq2cst.Constraint> = (
     docs.references,
     p.has("enforced") ? " " : "",
     docs.enforced,
+    docs.comma,
   ];
 };
 

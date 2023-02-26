@@ -47,12 +47,14 @@ CREATE TABLE example (x STRING) DEFAULT COLLATE 'und:ci';
 
 CREATE TABLE example (x STRING DEFAULT 'hello');
 
--- create table example (
---   x string,
---   primary key (x),
---   foreign key (x) references tablename(y) not enforced,
---   constraint ident foreign key (x)
--- );
+CREATE TABLE example (
+  x STRING,
+  PRIMARY KEY(x),
+  FOREIGN KEY(x) REFERENCES tablename(y) NOT ENFORCED,
+  CONSTRAINT ident FOREIGN KEY(x)
+)
+;
+
 CREATE TABLE example (
   x STRING PRIMARY KEY NOT ENFORCED,
   y STRING REFERENCES tablename(col),

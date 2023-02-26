@@ -43,12 +43,12 @@ default collate 'und:ci'
 
 create table example (x string default 'hello');
 
--- create table example (
---   x string,
---   primary key (x),
---   foreign key (x) references tablename(y) not enforced,
---   constraint ident foreign key (x)
--- );
+create table example (
+  x string,
+  primary key (x),
+  foreign key (x) references tablename(y) not enforced,
+  constraint ident foreign key (x)
+);
 
 create table example (
   x string primary key not enforced,
