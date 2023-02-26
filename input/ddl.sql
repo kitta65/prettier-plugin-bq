@@ -43,6 +43,19 @@ default collate 'und:ci'
 
 create table example (x string default 'hello');
 
+create table example (
+  x string,
+  primary key (x),
+  foreign key (x) references tablename(y) not enforced,
+  constraint ident foreign key (x)
+);
+
+create table example (
+  x string primary key not enforced,
+  y string references tablename(col),
+  z string constraint ident references tablename(col)
+);
+
 -- SNAPSHOT
 create snapshot table snap
 clone t for system_time as of current_timestamp()
@@ -274,17 +287,33 @@ add column y struct<z int64 not null>;
 
 alter table ident add column col1 string collate 'und:ci';
 
+-- ADD CONSTRAINT
+alter table example
+add primary key (a) not enforced,
+add primary key (b);
+
+alter table example
+add constraint if not exists foo foreign key (a) references tablename(x),
+add constraint bar foreign key (b, c) references tablename(y) not enforced,
+add foreign key (d) references tablename(z);
+
 -- RENAME
 alter table if exists t1
 -- break
 rename to t2
 ;
 
--- DROP
+-- DROP COLUMN
 alter table t
 drop column if exists int,
 -- break
 drop column float;
+
+-- DROP CONSTRAINT
+alter table example
+drop primary key,
+drop primary key if exists,
+drop constraint ident;
 
 ----- ALTER VIEW statement -----
 alter view example set options (
