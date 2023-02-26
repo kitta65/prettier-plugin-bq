@@ -5,7 +5,8 @@
   "main": "dist/index.js",
   "scripts": {
     "test": "eslint-config-prettier .eslintrc.json && eslint ./src && prettier --check ./src && tsc && jest",
-    "latest-bq2cst": "rm -rf ./node_modules/@dr666m1/bq2cst && gh run download -R dr666m1/bq2cst -n pkg -D ./node_modules/@dr666m1/bq2cst"
+    "latest-bq2cst": "rm -rf ./node_modules/@dr666m1/bq2cst && gh run download -R dr666m1/bq2cst -n pkg -D ./node_modules/@dr666m1/bq2cst",
+    "prepublishOnly": "test $(cat package.json | jq -r '.version') = ${GITHUB_REF#refs/tags/}"
   },
   "keywords": [],
   "author": "dr666m1 <skndr666m1@gmail.com>",
