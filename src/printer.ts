@@ -514,6 +514,8 @@ export const printSQL = (
       return printAccessOperator(path, options, print, node);
     case "AddColumnClause":
       return printAddColumnClause(path, options, print, node);
+    case "AddConstraintClause":
+      return printAddConstraintClause(path, options, print, node);
     case "AlterBICapacityStatement":
       return printAlterBICapacityStatement(path, options, print, node);
     case "AlterColumnStatement":
@@ -804,6 +806,26 @@ const printAddColumnClause: PrintFunc<bq2cst.AddColumnClause> = (
   ];
 };
 
+const printAddConstraintClause: PrintFunc<bq2cst.AddConstraintClause> = (
+  path,
+  options,
+  print,
+  node
+) => {
+  const p = new Printer(path, options, print, node);
+  const docs: { [Key in Docs<bq2cst.AddConstraintClause>]: Doc } = {
+    leading_comments: printLeadingComments(path, options, print, node),
+    self: p.self("upper"),
+    trailing_comments: printTrailingComments(path, options, print, node),
+    what: p.child("what", undefined, "all"),
+    comma: p.child("comma", undefined, "all"),
+  };
+  return [
+    docs.leading_comments,
+    group([docs.self, docs.trailing_comments, " ", docs.what, docs.comma]),
+  ];
+};
+
 const printAlterBICapacityStatement: PrintFunc<
   bq2cst.AlterBICapacityStatement
 > = (path, options, print, node) => {
@@ -1080,6 +1102,8 @@ const printAlterTableStatement: PrintFunc<bq2cst.AlterTableStatement> = (
     default_collate: p.child("default_collate", undefined, "all"),
     // ADD COLUMNS
     add_columns: p.child("add_columns", (x) => [line, x]),
+    // ADD CONSTRAINT
+    add_constraints: p.child("add_constraints", (x) => [line, x]),
     // RENAMTE TO
     rename: p.child("rename"),
     to: p.child("to", undefined, "all"),
@@ -1107,6 +1131,7 @@ const printAlterTableStatement: PrintFunc<bq2cst.AlterTableStatement> = (
       docs.options,
       docs.default_collate,
       docs.add_columns,
+      docs.add_constraints,
       p.has("rename") ? line : "",
       docs.rename,
       p.has("rename") ? " " : "",
@@ -1946,25 +1971,31 @@ const printConstraint: PrintFunc<bq2cst.Constraint> = (
 ) => {
   const p = new Printer(path, options, print, node);
   const docs: { [Key in Docs<bq2cst.Constraint>]: Doc } = {
-    leading_comments: printLeadingComments(path, options, print, node),
-    self: p.self(),
+    constraint: p.child("constraint", undefined, "all"), // CONSTRAINT
+    if_not_exists: p.child("if_not_exists", (x) => group([line, x]), "all"), // IF NOT EXISTS
+    ident: p.child("ident", undefined, "all"), // ident
+    leading_comments: "", // eslint-disable-line unicorn/no-unused-properties
+    self: p.self("upper", true), // PRIMARY | FOREIGN
     trailing_comments: printTrailingComments(path, options, print, node),
-    constraint: p.child("constraint", undefined, "all"),
-    if_not_exists: p.child("if_not_exists", undefined),
-    key: p.child("key"),
-    columns: p.child("columns"),
-    references: p.child("references"),
-    enforced: p.child("enforced"),
+    key: p.child("key", undefined, "all"), // KEY
+    columns: p.child("columns", undefined, "all"), // (col)
+    references: p.child("references", undefined, "all"), // REFERENCES tablename(col)
+    enforced: p.child("enforced", undefined, "all"), // NOT ENFORCED
   };
   return [
-    docs.leading_comments,
-    docs.self,
-    docs.trailing_comments,
     docs.constraint,
     docs.if_not_exists,
+    p.has("ident") ? " " : "",
+    docs.ident,
+    p.has("ident") ? " " : "",
+    docs.self,
+    docs.trailing_comments,
+    " ",
     docs.key,
     docs.columns,
+    p.has("references") ? " " : "",
     docs.references,
+    p.has("enforced") ? " " : "",
     docs.enforced,
   ];
 };

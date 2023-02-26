@@ -288,13 +288,14 @@ ADD COLUMN y STRUCT<z INT64 NOT NULL>
 ALTER TABLE ident ADD COLUMN col1 STRING COLLATE 'und:ci';
 
 -- ADD CONSTRAINT
--- alter table example
--- add primary key (a) not enforced,
--- add primary key (b);
--- alter table example
--- add constraint if not exists foo foreign key (a) references tablename(x),
--- add constraint bar foreign key (b, c) references tablename(y) not enforced,
--- add foreign key (d) references tablename(z);
+ALTER TABLE example ADD PRIMARY KEY(a) NOT ENFORCED, ADD PRIMARY KEY(b);
+
+ALTER TABLE example
+ADD CONSTRAINT IF NOT EXISTS foo FOREIGN KEY(a) REFERENCES tablename(x),
+ADD CONSTRAINT bar FOREIGN KEY(b, c) REFERENCES tablename(y) NOT ENFORCED,
+ADD FOREIGN KEY(d) REFERENCES tablename(z)
+;
+
 -- RENAME
 ALTER TABLE IF EXISTS t1
 -- break

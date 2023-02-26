@@ -288,14 +288,14 @@ add column y struct<z int64 not null>;
 alter table ident add column col1 string collate 'und:ci';
 
 -- ADD CONSTRAINT
--- alter table example
--- add primary key (a) not enforced,
--- add primary key (b);
+alter table example
+add primary key (a) not enforced,
+add primary key (b);
 
--- alter table example
--- add constraint if not exists foo foreign key (a) references tablename(x),
--- add constraint bar foreign key (b, c) references tablename(y) not enforced,
--- add foreign key (d) references tablename(z);
+alter table example
+add constraint if not exists foo foreign key (a) references tablename(x),
+add constraint bar foreign key (b, c) references tablename(y) not enforced,
+add foreign key (d) references tablename(z);
 
 -- RENAME
 alter table if exists t1
