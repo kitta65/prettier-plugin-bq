@@ -4797,7 +4797,9 @@ const printWithClause: PrintFunc<bq2cst.WithClause> = (
     queries:
       p.len("queries") === 1 && !p.hasLeadingComments("queries")
         ? [" ", p.child("queries", undefined)]
-        : indent([line, p.child("queries", undefined, "none", line)]),
+        : options.indentCte
+        ? indent([line, p.child("queries", undefined, "none", line)])
+        : [line, p.child("queries", undefined, "none", line)],
   };
   return [
     docs.leading_comments,
