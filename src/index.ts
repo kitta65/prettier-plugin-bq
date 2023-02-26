@@ -31,6 +31,18 @@ const options = {
     default: false,
     description: "Format multiline-comment.",
   },
+  indentCte: {
+    type: "boolean",
+    category: CATEGORY_BQ,
+    default: true,
+    description: "Indent CTE in with clause.",
+  },
+  printBlankLineAfterCte: {
+    type: "boolean",
+    category: CATEGORY_BQ,
+    default: false,
+    description: "Print blank line after CTE in with clause.",
+  },
   printKeywordsInUpperCase: {
     type: "boolean",
     category: CATEGORY_BQ,

@@ -4045,7 +4045,11 @@ const printSelectStatement: PrintFunc<bq2cst.SelectStatement> = (
     group([
       // WITH clause
       docs.with,
-      p.has("with") ? hardline : "",
+      p.has("with")
+        ? options.printBlankLineAfterCte
+          ? [hardline, hardline]
+          : hardline
+        : "",
     ]),
     docs.leading_comments,
     group([
@@ -4788,6 +4792,7 @@ const printWithClause: PrintFunc<bq2cst.WithClause> = (
   print,
   node
 ) => {
+  const sep = options.printBlankLineAfterCte ? [hardline, hardline] : line;
   const p = new Printer(path, options, print, node);
   const docs: { [Key in Docs<bq2cst.WithClause>]: Doc } = {
     leading_comments: printLeadingComments(path, options, print, node),
@@ -4797,7 +4802,9 @@ const printWithClause: PrintFunc<bq2cst.WithClause> = (
     queries:
       p.len("queries") === 1 && !p.hasLeadingComments("queries")
         ? [" ", p.child("queries", undefined)]
-        : indent([line, p.child("queries", undefined, "none", line)]),
+        : options.indentCte
+        ? indent([line, p.child("queries", undefined, "none", sep)])
+        : [line, p.child("queries", undefined, "none", sep)],
   };
   return [
     docs.leading_comments,
