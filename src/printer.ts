@@ -2954,7 +2954,14 @@ const printGroupedStatement: PrintFunc<bq2cst.GroupedStatement> = (
     semicolon: p.child("semicolon", undefined, "all"),
   };
   return [
-    group([docs.with, p.has("with") ? hardline : ""]),
+    group([
+      docs.with,
+      p.has("with")
+        ? options.printBlankLineAfterCte
+          ? [hardline, hardline]
+          : hardline
+        : "",
+    ]),
     docs.leading_comments,
     group([
       p.has("with") ? breakParent : "",
