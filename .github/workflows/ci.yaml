@@ -13,6 +13,13 @@ jobs:
       - run: npm ci
       - run: npm test
 
+      # always pass when ref_type == 'branch'
+      - uses: dr666m1/tag-version-match@main
+        with:
+          file: ./package.json
+          query: .version
+          pattern: '^([0-9]+\.[0-9]+\.[0-9]+)$'
+
       - run: npm publish --access public
         if: ${{ github.ref_type == 'tag' }}
         env:
