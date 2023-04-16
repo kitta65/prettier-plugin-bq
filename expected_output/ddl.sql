@@ -28,6 +28,13 @@ PARTITION BY _PARTITIONDATE
 OPTIONS (partition_expiration_days = 1)
 ;
 
+CREATE TABLE tablename (
+  outer_col STRUCT<
+    inner_col NUMERIC(5, 2) OPTIONS (rounding_mode = 'round_half_even')
+  >
+)
+;
+
 CREATE TABLE IF NOT EXISTS table_name (
   x INT64 NOT NULL
 )

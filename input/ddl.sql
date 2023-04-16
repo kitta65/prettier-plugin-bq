@@ -25,6 +25,10 @@ create or replace table table_name (x int64 options(description = 'dummy'))
 partition by _partitiondate
 options(partition_expiration_days = 1);
 
+create table tablename (
+  outer_col struct<inner_col numeric(5, 2) options(rounding_mode = 'round_half_even')>
+);
+
 create table if not exists table_name (x int64 not null)
 cluster by x
 as select 1 union all select 2;
