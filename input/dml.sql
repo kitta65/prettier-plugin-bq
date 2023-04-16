@@ -56,6 +56,13 @@ when not matched then insert row
 when not matched by target then
   insert (id, value) values (1,2);
 
+merge t1 as t using t2 as s on t.id = s.id
+when not matched by target then
+  -- break
+  insert (id, value)
+  -- break
+  values (1,2);
+
 -- UPDATE
 merge dataset.t t using dataset.s as s on t.id = s.id
 when not matched by source then
