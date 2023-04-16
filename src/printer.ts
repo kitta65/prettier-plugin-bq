@@ -4392,7 +4392,7 @@ const printType: PrintFunc<bq2cst.Type> = (path, options, print, node) => {
     docs.trailing_comments,
     p.has("type") ? " " : "",
     docs.type,
-    docs.type_declaration,
+    group(docs.type_declaration),
     docs.parameter,
     p.has("collate") ? line : "",
     docs.collate,
