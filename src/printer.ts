@@ -614,6 +614,8 @@ export const printSQL = (
       return printGroupedExpr(path, options, print, node);
     case "GroupedExprs":
       return printGroupedExprs(path, options, print, node);
+    case "GroupedIdentWithOptions":
+      return printGroupedIdentWithOptions(path, options, print, node);
     case "GroupedStatement":
       return printGroupedStatement(path, options, print, node);
     case "GroupedType":
@@ -622,6 +624,8 @@ export const printSQL = (
       return printGroupedTypeDeclarations(path, options, print, node);
     case "Identifier":
       return printIdentifier(path, options, print, node);
+    case "IdentWithOptions":
+      return printIdentWithOptions(path, options, print, node);
     case "IfStatement":
       return printIfStatement(path, options, print, node);
     case "InOperator":
@@ -1164,6 +1168,7 @@ const printAlterViewStatement: PrintFunc<bq2cst.AlterViewStatement> = (
     ident: p.child("ident", undefined, "all"),
     set: p.child("set"),
     options: p.child("options", undefined, "all"),
+    alter_column_stmt: p.child("alter_column_stmt"),
     semicolon: p.child("semicolon"),
   };
   return [
@@ -1180,8 +1185,9 @@ const printAlterViewStatement: PrintFunc<bq2cst.AlterViewStatement> = (
       docs.ident,
       line,
       docs.set,
-      " ",
+      p.has("set") ? " " : "",
       docs.options,
+      docs.alter_column_stmt,
       softline,
       docs.semicolon,
     ]),
@@ -2927,6 +2933,29 @@ const printGroupedExprs: PrintFunc<bq2cst.GroupedExprs> = (
   ];
 };
 
+const printGroupedIdentWithOptions: PrintFunc<
+  bq2cst.GroupedIdentWithOptions
+> = (path, options, print, node) => {
+  const p = new Printer(path, options, print, node);
+  const docs: { [Key in Docs<bq2cst.GroupedIdentWithOptions>]: Doc } = {
+    leading_comments: printLeadingComments(path, options, print, node),
+    self: p.self(),
+    trailing_comments: printTrailingComments(path, options, print, node),
+    idents: p.child("idents", undefined, "none", line),
+    rparen: p.child("rparen"),
+  };
+  return [
+    docs.leading_comments,
+    group([
+      docs.self,
+      docs.trailing_comments,
+      indent([softline, docs.idents]),
+      softline,
+      docs.rparen,
+    ]),
+  ];
+};
+
 const printGroupedStatement: PrintFunc<bq2cst.GroupedStatement> = (
   path,
   options,
@@ -3062,6 +3091,30 @@ const printIdentifier: PrintFunc<
     docs.pivot,
     p.has("tablesample") ? [" ", docs.tablesample] : "",
     docs.order,
+    docs.comma,
+  ];
+};
+
+const printIdentWithOptions: PrintFunc<bq2cst.IdentWithOptions> = (
+  path,
+  options,
+  print,
+  node
+) => {
+  const p = new Printer(path, options, print, node);
+  const docs: { [Key in Docs<bq2cst.IdentWithOptions>]: Doc } = {
+    leading_comments: printLeadingComments(path, options, print, node),
+    self: p.self(),
+    trailing_comments: printTrailingComments(path, options, print, node),
+    options: p.child("options", undefined, "all"),
+    comma: printComma(path, options, print, node),
+  };
+  return [
+    docs.leading_comments,
+    docs.self,
+    docs.trailing_comments,
+    p.has("options") ? " " : "",
+    docs.options,
     docs.comma,
   ];
 };
