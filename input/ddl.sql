@@ -112,6 +112,14 @@ create view view_name(uno, dos)
 as select 1 one, 2 two
 ;
 
+create view viewname(uno options(description='single'))
+as select 1 one
+;
+
+create view viewname(uno options(description='single'), dos)
+as select 1 one, 2 two
+;
+
 -- MATERIALIZED
 create materialized view view_name
 options(dummy = 'dummy')
@@ -324,6 +332,10 @@ alter view example set options (
   dummy = 'dummy',
   description = 'abc'
 );
+
+alter view viewname
+alter column colname set options(dummy='dummy')
+;
 
 -- MATERIALIZED
 alter materialized view if exists example set options (dummy = 'dummy');

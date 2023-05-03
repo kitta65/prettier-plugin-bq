@@ -108,6 +108,12 @@ CREATE VIEW view_name AS SELECT * FROM t;
 
 CREATE VIEW view_name (uno, dos) AS SELECT 1 AS one, 2 AS two;
 
+CREATE VIEW viewname (uno OPTIONS (description = 'single')) AS SELECT 1 AS one;
+
+CREATE VIEW viewname (uno OPTIONS (description = 'single'), dos)
+AS SELECT 1 AS one, 2 AS two
+;
+
 -- MATERIALIZED
 CREATE MATERIALIZED VIEW view_name
 OPTIONS (dummy = 'dummy')
@@ -327,6 +333,8 @@ DROP CONSTRAINT ident
 
 ----- ALTER VIEW statement -----
 ALTER VIEW example SET OPTIONS (dummy = 'dummy', description = 'abc');
+
+ALTER VIEW viewname ALTER COLUMN colname SET OPTIONS (dummy = 'dummy');
 
 -- MATERIALIZED
 ALTER MATERIALIZED VIEW IF EXISTS example SET OPTIONS (dummy = 'dummy');
