@@ -1,11 +1,11 @@
 # prettier-plugin-bq
-`@dr666m1/prettier-plugin-bq` is a [prettier](https://prettier.io/) plugin for **standardSQL**, which is a dialect of BigQuery.
+`prettier-plugin-bq` is a [prettier](https://prettier.io/) plugin for **standardSQL**, which is a dialect of BigQuery.
 
 ⚠️ This plugin is still a work in progress, so the behavior would change frequently.
 
 ## Install
 ```
-npm install --save-dev --save-exact prettier @dr666m1/prettier-plugin-bq
+npm install --save-dev --save-exact prettier prettier-plugin-bq
 ```
 
 ## Usage
@@ -20,7 +20,7 @@ npx prettier --write ./xxx.sql
 For more information, please read the prettier document.
 
 ## Configuration
-Below are the options that `@dr666m1/prettier-plugin-bq` currently supports.
+Below are the options that `prettier-plugin-bq` currently supports.
 
 |API Option|CLI Option|Default|Description|
 |---|---|---|---|

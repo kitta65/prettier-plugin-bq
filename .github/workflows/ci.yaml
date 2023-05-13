@@ -20,7 +20,7 @@ jobs:
           query: .version
           pattern: '^([0-9]+\.[0-9]+\.[0-9]+)$'
 
-      - run: npm publish --access public
+      - run: npm publish
         if: ${{ github.ref_type == 'tag' }}
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

@@ -1,6 +1,6 @@
 {
-  "name": "@dr666m1/prettier-plugin-bq",
-  "version": "0.2.38",
+  "name": "prettier-plugin-bq",
+  "version": "0.2.39",
   "description": "",
   "main": "dist/index.js",
   "scripts": {
@@ -8,7 +8,7 @@
     "latest-bq2cst": "rm -rf ./node_modules/@dr666m1/bq2cst && gh run download -R dr666m1/bq2cst -n pkg -D ./node_modules/@dr666m1/bq2cst"
   },
   "keywords": [],
-  "author": "dr666m1 <skndr666m1@gmail.com>",
+  "author": "kitta65 <skndr666m1@gmail.com>",
   "license": "MIT",
   "devDependencies": {
     "@types/jest": "^26.0.23",
