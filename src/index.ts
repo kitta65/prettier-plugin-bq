@@ -1,4 +1,4 @@
-import { parse } from "@dr666m1/bq2cst";
+import { parse } from "bq2cst";
 import { printSQL } from "./printer";
 
 const languages = [

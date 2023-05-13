@@ -1,4 +1,4 @@
-import * as bq2cst from "@dr666m1/bq2cst";
+import * as bq2cst from "bq2cst";
 import {
   reservedKeywords,
   globalFunctions,
@@ -25,7 +25,7 @@ const {
 } = doc;
 
 // module augmentation
-declare module "@dr666m1/bq2cst" {
+declare module "bq2cst" {
   interface BaseNode {
     /**
      * # breakRecommended
@@ -588,6 +588,8 @@ export const printSQL = (
       return printDeclareStatement(path, options, print, node);
     case "DeleteStatement":
       return printDeleteStatement(path, options, print, node);
+    case "DifferentialPrivacyClause":
+      return printDifferentialPrivacyClause(path, options, print, node);
     case "DotOperator":
       return printDotOperator(path, options, print, node);
     case "DropRowAccessPolicyStatement":
@@ -2485,6 +2487,30 @@ const printDeleteStatement: PrintFunc<bq2cst.DeleteStatement> = (
   ];
 };
 
+const printDifferentialPrivacyClause: PrintFunc<
+  bq2cst.DifferentialPrivacyClause
+> = (path, options, print, node) => {
+  const p = new Printer(path, options, print, node);
+  const docs: { [Key in Docs<bq2cst.DifferentialPrivacyClause>]: Doc } = {
+    leading_comments: printLeadingComments(path, options, print, node),
+    self: p.self("upper"),
+    trailing_comments: printTrailingComments(path, options, print, node),
+    differential_privacy: p.child("differential_privacy"),
+    options: p.child("options"),
+  };
+  return [
+    docs.leading_comments,
+    group([
+      docs.self,
+      docs.trailing_comments,
+      " ",
+      docs.differential_privacy,
+      p.has("options") ? " " : "",
+      docs.options,
+    ]),
+  ];
+};
+
 const printDotOperator: PrintFunc<bq2cst.DotOperator> = (
   path,
   options,
@@ -4071,6 +4097,7 @@ const printSelectStatement: PrintFunc<bq2cst.SelectStatement> = (
     leading_comments: printLeadingComments(path, options, print, node),
     // SELECT clause
     self: p.self("upper"),
+    differential_privacy: p.child("differential_privacy", undefined, "first"),
     as_struct_or_value: p.child("as_struct_or_value", undefined, "all", " "),
     distinct_or_all: p.child("distinct_or_all"),
     trailing_comments: printTrailingComments(path, options, print, node),
@@ -4095,6 +4122,8 @@ const printSelectStatement: PrintFunc<bq2cst.SelectStatement> = (
   };
   const select = [
     docs.self,
+    p.has("differential_privacy") ? " " : "",
+    docs.differential_privacy,
     p.has("as_struct_or_value") ? " " : "",
     docs.as_struct_or_value,
     p.has("distinct_or_all") ? " " : "",

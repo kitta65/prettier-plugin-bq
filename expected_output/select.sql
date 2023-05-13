@@ -96,6 +96,17 @@ FROM temp
 ;
 
 ----- SELECT clause -----
+-- differential privacy
+SELECT WITH DIFFERENTIAL_PRIVACY OPTIONS ( -- comment
+  -- comment
+  dummy = "dummy",
+  -- comment
+  dummy = "dummy",
+  dummy = "dummy"
+)
+  col1,
+;
+
 -- distinct
 SELECT DISTINCT str FROM t;
 SELECT ALL str FROM t;
