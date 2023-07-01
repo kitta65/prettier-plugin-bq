@@ -4,6 +4,12 @@ export data options(
   format = 'CSV'
 ) as select 1;
 
+export data with connection conn
+options(
+  uri = 'gs://bucket/folder/*.csv',
+  format = 'CSV'
+) as select 1;
+
 ----- LOAD statement -----
 load data into `mydataset.tablename`
 from files (

@@ -4,6 +4,12 @@ OPTIONS (uri = 'gs://bucket/folder/*.csv', format = 'CSV')
 AS SELECT 1
 ;
 
+EXPORT DATA
+WITH CONNECTION conn
+OPTIONS (uri = 'gs://bucket/folder/*.csv', format = 'CSV')
+AS SELECT 1
+;
+
 ----- LOAD statement -----
 LOAD DATA INTO `mydataset.tablename`
 FROM FILES (uris = ['azure://sample.com/sample.parquet'], format = 'PARQUET')
