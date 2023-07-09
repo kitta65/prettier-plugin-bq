@@ -24,7 +24,7 @@
     "typescript": "^4.3.2"
   },
   "dependencies": {
-    "bq2cst": "0.4.26"
+    "bq2cst": "0.4.27"
   },
   "peerDependencies": {
     "prettier": "^2.3.0"

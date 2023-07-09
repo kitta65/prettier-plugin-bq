@@ -28,3 +28,14 @@ with connection `dummy.connection`;
 load data overwrite ident
 from files (dummy = 'dummy')
 with partition columns (x string);
+
+load data overwrite ident
+-- comment
+overwrite partitions(_partitiontime = ts)
+from files (dummy = 'dummy');
+
+load data overwrite ident
+-- comment
+partitions(_partitiontime = ts)
+(dt date)
+from files (dummy = 'dummy');

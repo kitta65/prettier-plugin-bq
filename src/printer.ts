@@ -672,6 +672,8 @@ export const printSQL = (
       return printNumericLiteral(path, options, print, node);
     case "OverClause":
       return printOverClause(path, options, print, node);
+    case "OverwritePartitionsClause":
+      return printOverwritePartitionsClause(path, options, print, node);
     case "Parameter":
       return printIdentifier(path, options, print, node);
     case "PivotConfig":
@@ -3618,6 +3620,7 @@ const printLoadStatement: PrintFunc<bq2cst.LoadStatement> = (
     data: p.child("data", undefined, "all"),
     into: p.child("into", undefined, "all"),
     ident: p.child("ident", undefined, "all"),
+    overwrite_partitions: p.child("overwrite_partitions"),
     column_group: p.child("column_group", undefined, "all"),
     partitionby: p.child("partitionby"),
     clusterby: p.child("clusterby"),
@@ -3642,7 +3645,9 @@ const printLoadStatement: PrintFunc<bq2cst.LoadStatement> = (
       docs.into,
       " ",
       docs.ident,
-      p.has("column_group") ? " " : "",
+      p.has("overwrite_partitions") ? line : "",
+      docs.overwrite_partitions,
+      p.has("column_group") ? (p.has("overwrite_partitions") ? line : " ") : "",
       docs.column_group,
       p.has("partitionby") ? line : "",
       docs.partitionby,
@@ -3870,6 +3875,27 @@ const printOverClause: PrintFunc<bq2cst.OverClause> = (
     window: p.child("window", (x) => [" ", x], "all"),
   };
   return group([docs.self, docs.trailing_comments, docs.window]);
+};
+
+const printOverwritePartitionsClause: PrintFunc<
+  bq2cst.OverwritePartitionsClause
+> = (path, options, print, node) => {
+  const p = new Printer(path, options, print, node);
+  const docs: { [Key in Docs<bq2cst.OverwritePartitionsClause>]: Doc } = {
+    leading_comments: "", // eslint-disable-line unicorn/no-unused-properties
+    overwrite: p.child("overwrite"),
+    self: p.self("upper", true),
+    trailing_comments: printTrailingComments(path, options, print, node),
+    grouped_expr: p.child("grouped_expr", undefined, "all"),
+  };
+  return group([
+    docs.overwrite,
+    p.has("overwrite") ? " " : "",
+    docs.self,
+    docs.trailing_comments,
+    " ",
+    docs.grouped_expr,
+  ]);
 };
 
 const printPivotConfig: PrintFunc<bq2cst.PivotConfig> = (

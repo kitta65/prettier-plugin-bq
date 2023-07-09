@@ -31,3 +31,17 @@ LOAD DATA OVERWRITE ident
 FROM FILES (dummy = 'dummy')
 WITH PARTITION COLUMNS (x STRING)
 ;
+
+LOAD DATA OVERWRITE ident
+-- comment
+OVERWRITE PARTITIONS (_PARTITIONTIME = ts)
+FROM FILES (dummy = 'dummy')
+;
+
+LOAD DATA OVERWRITE ident
+PARTITIONS (_PARTITIONTIME = ts) -- comment
+(
+  dt DATE
+)
+FROM FILES (dummy = 'dummy')
+;
