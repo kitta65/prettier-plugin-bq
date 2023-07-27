@@ -294,6 +294,13 @@ FROM
   ) ON t2.str = t4.str
 ;
 
+SELECT *
+FROM (
+  (SELECT 1 AS one) AS a
+  CROSS JOIN (SELECT 2 AS two) AS b
+)
+;
+
 -- built-in table functions
 SELECT uri
 FROM EXTERNAL_OBJECT_TRANSFORM(TABLE mydataset.myobjecttable, ['SIGNED_URL'])

@@ -3445,8 +3445,8 @@ const printKeywordWithExpr: PrintFunc<bq2cst.KeywordWithExpr> = (
     const token = node.children.expr.Node.token;
     if (!token) throw new Error("Something went wrong.");
     const node_type = node.children.expr.Node.node_type;
-    if (node_type === "GroupedStatement") {
-      // FROM (SELECT ...)
+    if (node_type === "GroupedStatement" || node_type === "GroupedExpr") {
+      // FROM (SELECT ...) | FROM ((SELECT ...) JOIN (SELECT ...))
       indentExpr = false;
     } else if (
       node_type === "StringLiteral" &&
