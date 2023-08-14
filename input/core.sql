@@ -41,6 +41,11 @@ select
   'a' not like 'abc'
 ;
 
+select
+  'a' like any 'abc',
+  'a' not like some 'abc'
+;
+
 -- IS
 select
   true is null,

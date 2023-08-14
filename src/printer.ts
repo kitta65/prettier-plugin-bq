@@ -1457,6 +1457,7 @@ const printBinaryOperator: PrintFunc<bq2cst.BinaryOperator> = (
     not: p.child("not", undefined, "all"),
     self: logical ? p.self("upper") : p.self("upper", true),
     trailing_comments: printTrailingComments(path, options, print, node),
+    quantifier: p.child("quantifier", undefined, "all"),
     right: p.child("right", undefined, "all"),
     as: "", // eslint-disable-line unicorn/no-unused-properties
     alias: printAlias(path, options, print, node),
@@ -1499,6 +1500,8 @@ const printBinaryOperator: PrintFunc<bq2cst.BinaryOperator> = (
     printLeadingComments(path, options, print, node),
     docs.self,
     p.has("not") && p.includedIn(["IS"]) ? [" ", docs.not] : "",
+    p.has("quantifier") ? " " : "",
+    docs.quantifier,
     " ",
     docs.trailing_comments,
     right,
