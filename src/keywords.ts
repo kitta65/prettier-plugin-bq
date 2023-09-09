@@ -114,7 +114,9 @@ export const globalFunctions = [
   "LOGICAL_AND",
   "LOGICAL_OR",
   "MAX",
+  "MAX_BY",
   "MIN",
+  "MIN_BY",
   "STRING_AGG",
   "SUM",
   // statistical aggregate functions
