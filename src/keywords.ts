@@ -134,6 +134,10 @@ export const globalFunctions = [
   "APPROX_QUANTILES",
   "APPROX_TOP_COUNT",
   "APPROX_TOP_SUM",
+  // DLP encryption functions
+  "DLP_DETERMINISTIC_ENCRYPT",
+  "DLP_DETERMINISTIC_DECRYPT",
+  "DLP_KEY_CHAIN",
   // numbering functions
   "RANK",
   "DENSE_RANK",
