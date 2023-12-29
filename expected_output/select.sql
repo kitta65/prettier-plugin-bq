@@ -328,6 +328,8 @@ WHERE
 ;
 
 ----- GROUP BY clause -----
+SELECT COUNT(*) FROM t GROUP BY ();
+
 SELECT
   str,
   int,
@@ -346,7 +348,9 @@ GROUP BY
   int
 ;
 
-SELECT x, SUM(y) FROM t GROUP BY ROLLUP(x);
+SELECT x, SUM(y) FROM t GROUP BY ROLLUP (x);
+
+SELECT x, SUM(y) FROM t GROUP BY GROUPING SETS (a, CUBE(b), ());
 
 ----- HAVING clause -----
 SELECT str, COUNT(*) AS cnt FROM t GROUP BY 1 HAVING cnt < 10;

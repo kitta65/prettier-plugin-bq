@@ -288,6 +288,8 @@ where
 ;
 
 ----- GROUP BY clause -----
+select count(*) from t group by ();
+
 select str, int
 -- break
 from t group by 1, 2
@@ -299,6 +301,8 @@ from t group by str, int
 ;
 
 select x, sum(y) from t group by rollup(x);
+
+select x, sum(y) from t group by grouping sets (a, cube(b), ());
 
 ----- HAVING clause -----
 select str, count(*) cnt from t group by 1 having cnt < 10;

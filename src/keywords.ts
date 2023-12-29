@@ -111,6 +111,7 @@ export const globalFunctions = [
   "BIT_XOR",
   "COUNT",
   "COUNTIF",
+  "GROUPING",
   "LOGICAL_AND",
   "LOGICAL_OR",
   "MAX",
