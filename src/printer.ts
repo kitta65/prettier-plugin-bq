@@ -6,6 +6,7 @@ import {
   aeadFunctions,
   hllCountFunctions,
   netFunctions,
+  mlFunctions,
 } from "./keywords";
 import { doc } from "prettier";
 import type { Doc, AstPath } from "prettier";
@@ -1655,6 +1656,12 @@ const printCallingFunctionGeneral: PrintFunc<
           break;
         case "HLL_COUNT":
           if (hllCountFunctions.includes(func.token.literal.toUpperCase())) {
+            func.isPreDefinedFunction = true;
+            toUpper(parent.token);
+          }
+          break;
+        case "ML":
+          if (mlFunctions.includes(func.token.literal.toUpperCase())) {
             func.isPreDefinedFunction = true;
             toUpper(parent.token);
           }
