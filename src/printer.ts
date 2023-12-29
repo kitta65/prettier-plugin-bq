@@ -4294,7 +4294,11 @@ const printSetOperator: PrintFunc<bq2cst.SetOperator> = (
   };
   const res = [
     docs.with,
-    p.has("with") ? line : "",
+    p.has("with")
+      ? options.printBlankLineAfterCte
+        ? [hardline, hardline]
+        : line
+      : "",
     docs.left,
     line,
     docs.leading_comments,
