@@ -19,6 +19,9 @@ as (
 )
 ;
 
+----- evaluation -----
+select * from ml.evaluate(model `modelname`, table `tablename`);
+
 ----- ALTER MODEL statement -----
 alter model if exists ident
 set options (description = "");

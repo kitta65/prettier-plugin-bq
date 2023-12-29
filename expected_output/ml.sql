@@ -15,6 +15,9 @@ AS (
 )
 ;
 
+----- evaluation -----
+SELECT * FROM ML.EVALUATE(MODEL `modelname`, TABLE `tablename`);
+
 ----- ALTER MODEL statement -----
 ALTER MODEL IF EXISTS ident SET OPTIONS (description = "");
 
