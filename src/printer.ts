@@ -520,6 +520,8 @@ export const printSQL = (
       return printAlterBICapacityStatement(path, options, print, node);
     case "AlterColumnStatement":
       return printAlterColumnStatement(path, options, print, node);
+    case "AlterModelStatement":
+      return printAlterModelStatement(path, options, print, node);
     case "AlterOrganizationStatement":
       return printAlterOrganizationStatement(path, options, print, node);
     case "AlterProjectStatement":
@@ -570,6 +572,8 @@ export const printSQL = (
       return printConstraint(path, options, print, node);
     case "CreateFunctionStatement":
       return printCreateFunctionStatement(path, options, print, node);
+    case "CreateModelStatement":
+      return printCreateModelStatement(path, options, print, node);
     case "CreateProcedureStatement":
       return printCreateProcedureStatement(path, options, print, node);
     case "CreateReservationStatement":
@@ -604,8 +608,10 @@ export const printSQL = (
       return printEOF(path, options, print, node);
     case "ExecuteStatement":
       return printExecuteStatement(path, options, print, node);
-    case "ExportStatement":
-      return printExportStatement(path, options, print, node);
+    case "ExportDataStatement":
+      return printExportDataStatement(path, options, print, node);
+    case "ExportModelStatement":
+      return printExportModelStatement(path, options, print, node);
     case "ExtractArgument":
       return printExtractArgument(path, options, print, node);
     case "ForStatement":
@@ -714,6 +720,8 @@ export const printSQL = (
       return printIdentifier(path, options, print, node);
     case "TransactionStatement":
       return printTransactionStatement(path, options, print, node);
+    case "TrainingDataCustomHolidayClause":
+      return printTrainingDataCustomHolidayClause(path, options, print, node);
     case "TruncateStatement":
       return printTruncateStatement(path, options, print, node);
     case "Type":
@@ -917,6 +925,45 @@ const printAlterColumnStatement: PrintFunc<bq2cst.AlterColumnStatement> = (
       docs.drop_not_null,
       docs.drop_default,
     ]),
+  ];
+};
+
+const printAlterModelStatement: PrintFunc<bq2cst.AlterModelStatement> = (
+  path,
+  options,
+  print,
+  node
+) => {
+  const p = new Printer(path, options, print, node);
+  const docs: { [Key in Docs<bq2cst.AlterModelStatement>]: Doc } = {
+    leading_comments: printLeadingComments(path, options, print, node),
+    self: p.self("upper"),
+    trailing_comments: printTrailingComments(path, options, print, node),
+    what: p.child("what", undefined, "all"),
+    if_exists: p.child("if_exists", (x) => group([line, x])),
+    ident: p.child("ident", undefined, "all"),
+    set: p.child("set"),
+    options: p.child("options", undefined, "all"),
+    semicolon: p.child("semicolon"),
+  };
+  return [
+    docs.leading_comments,
+    group([
+      docs.self,
+      docs.trailing_comments,
+      " ",
+      docs.what,
+      docs.if_exists,
+      p.has("ident") ? " " : "",
+      docs.ident,
+      line,
+      docs.set,
+      " ",
+      docs.options,
+      softline,
+      docs.semicolon,
+    ]),
+    p.newLine(),
   ];
 };
 
@@ -2080,6 +2127,62 @@ const printCreateFunctionStatement: PrintFunc<
   ];
 };
 
+const printCreateModelStatement: PrintFunc<bq2cst.CreateModelStatement> = (
+  path,
+  options,
+  print,
+  node
+) => {
+  const p = new Printer(path, options, print, node);
+  const docs: { [Key in Docs<bq2cst.CreateModelStatement>]: Doc } = {
+    leading_comments: printLeadingComments(path, options, print, node),
+    self: p.self("upper"),
+    trailing_comments: printTrailingComments(path, options, print, node),
+    or_replace: p.child("or_replace", (x) => group([line, x])),
+    what: p.child("what", undefined, "all"),
+    if_not_exists: p.child("if_not_exists", (x) => group([line, x])),
+    ident: p.child("ident", undefined, "all"),
+    transform: p.child("transform"),
+    input: p.child("input"),
+    output: p.child("output"),
+    remote: p.child("remote"),
+    options: p.child("options"),
+    query: p.child("query"),
+    training_data_custom_holiday: p.child("training_data_custom_holiday"),
+    semicolon: p.child("semicolon"),
+  };
+  return [
+    docs.leading_comments,
+    group([
+      docs.self,
+      docs.trailing_comments,
+      docs.or_replace,
+      " ",
+      docs.what,
+      docs.if_not_exists,
+      " ",
+      docs.ident,
+      p.has("transform") ? line : "",
+      docs.transform,
+      p.has("input") ? line : "",
+      docs.input,
+      p.has("output") ? line : "",
+      docs.output,
+      p.has("remote") ? line : "",
+      docs.remote,
+      p.has("options") ? line : "",
+      docs.options,
+      p.has("query") ? line : "",
+      docs.query,
+      p.has("training_data_custom_holiday") ? line : "",
+      docs.training_data_custom_holiday,
+      softline,
+      docs.semicolon,
+    ]),
+    p.newLine(),
+  ];
+};
+
 const printCreateProcedureStatement: PrintFunc<
   bq2cst.CreateProcedureStatement
 > = (path, options, print, node) => {
@@ -2738,14 +2841,14 @@ const printExecuteStatement: PrintFunc<bq2cst.ExecuteStatement> = (
   ];
 };
 
-const printExportStatement: PrintFunc<bq2cst.ExportStatement> = (
+const printExportDataStatement: PrintFunc<bq2cst.ExportDataStatement> = (
   path,
   options,
   print,
   node
 ) => {
   const p = new Printer(path, options, print, node);
-  const docs: { [Key in Docs<bq2cst.ExportStatement>]: Doc } = {
+  const docs: { [Key in Docs<bq2cst.ExportDataStatement>]: Doc } = {
     leading_comments: printLeadingComments(path, options, print, node),
     self: p.self("upper"),
     trailing_comments: printTrailingComments(path, options, print, node),
@@ -2768,6 +2871,40 @@ const printExportStatement: PrintFunc<bq2cst.ExportStatement> = (
       docs.options,
       line,
       docs.as,
+      softline,
+      docs.semicolon,
+    ]),
+    p.newLine(),
+  ];
+};
+
+const printExportModelStatement: PrintFunc<bq2cst.ExportModelStatement> = (
+  path,
+  options,
+  print,
+  node
+) => {
+  const p = new Printer(path, options, print, node);
+  const docs: { [Key in Docs<bq2cst.ExportModelStatement>]: Doc } = {
+    leading_comments: printLeadingComments(path, options, print, node),
+    self: p.self("upper"),
+    trailing_comments: printTrailingComments(path, options, print, node),
+    what: p.child("what", undefined, "all"),
+    ident: p.child("ident", undefined, "all"),
+    options: p.child("options"),
+    semicolon: p.child("semicolon"),
+  };
+  return [
+    docs.leading_comments,
+    group([
+      docs.self,
+      docs.trailing_comments,
+      " ",
+      docs.what,
+      " ",
+      docs.ident,
+      line,
+      docs.options,
       softline,
       docs.semicolon,
     ]),
@@ -4520,6 +4657,28 @@ const printTransactionStatement: PrintFunc<bq2cst.TransactionStatement> = (
     docs.transaction,
     docs.semicolon,
     p.newLine(),
+  ];
+};
+
+const printTrainingDataCustomHolidayClause: PrintFunc<
+  bq2cst.TrainingDataCustomHolidayClause
+> = (path, options, print, node) => {
+  const p = new Printer(path, options, print, node);
+  const docs: { [Key in Docs<bq2cst.TrainingDataCustomHolidayClause>]: Doc } = {
+    leading_comments: printLeadingComments(path, options, print, node),
+    self: p.self("upper"),
+    trailing_comments: printTrailingComments(path, options, print, node),
+    training_data: p.child("training_data"),
+    custom_holiday: p.child("custom_holiday"),
+    rparen: p.child("rparen"),
+  };
+  return [
+    docs.leading_comments,
+    docs.self,
+    docs.trailing_comments,
+    indent([softline, docs.training_data, hardline, docs.custom_holiday]),
+    softline,
+    docs.rparen,
   ];
 };
 

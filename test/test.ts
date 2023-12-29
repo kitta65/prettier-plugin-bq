@@ -18,6 +18,7 @@ const targets = [
   "script.sql",
   "debug.sql",
   "other.sql",
+  "ml.sql",
 ];
 
 for (const t of targets) {
