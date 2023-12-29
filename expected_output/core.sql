@@ -73,6 +73,8 @@ FROM t
 SELECT
   (1, 2),
   STRUCT(1, 2),
+  (1, 2)[0],
+  STRUCT(1, 2)[0],
   STRUCT<INT64>(1),
   STRUCT<ARRAY<INT64>, x FLOAT64>([1], .1),
 ;

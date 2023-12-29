@@ -89,6 +89,8 @@ from t
 select
   (1,2),
   struct(1,2),
+  (1,2)[0],
+  struct(1,2)[0],
   struct<int64>(1),
   struct<array<int64>, x float64>([1], .1)
 ;
