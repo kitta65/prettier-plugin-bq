@@ -598,6 +598,8 @@ export const printSQL = (
       return printDropStatement(path, options, print, node);
     case "ElseIfClause":
       return printElseIfClause(path, options, print, node);
+    case "EmptyStruct":
+      return printEmptyStruct(path, options, print, node);
     case "EOF":
       return printEOF(path, options, print, node);
     case "ExecuteStatement":
@@ -612,6 +614,8 @@ export const printSQL = (
       return printForSystemTimeAsOfclause(path, options, print, node);
     case "GrantStatement":
       return printGrantStatement(path, options, print, node);
+    case "GroupByExprs":
+      return printGroupByExprs(path, options, print, node);
     case "GroupedExpr":
       return printGroupedExpr(path, options, print, node);
     case "GroupedExprs":
@@ -2660,6 +2664,35 @@ const printElseIfClause: PrintFunc<bq2cst.ElseIfClause> = (
   ];
 };
 
+const printEmptyStruct: PrintFunc<bq2cst.EmptyStruct> = (
+  path,
+  options,
+  print,
+  node
+) => {
+  const p = new Printer(path, options, print, node);
+  const docs: { [Key in Docs<bq2cst.EmptyStruct>]: Doc } = {
+    leading_comments: printLeadingComments(path, options, print, node),
+    self: p.self(),
+    trailing_comments: printTrailingComments(path, options, print, node),
+    rparen: p.child("rparen"),
+    as: "", // eslint-disable-line unicorn/no-unused-properties
+    alias: printAlias(path, options, print, node),
+    order: printOrder(path, options, print, node),
+    null_order: "", // eslint-disable-line unicorn/no-unused-properties
+    comma: printComma(path, options, print, node),
+  };
+  return [
+    group([
+      docs.leading_comments,
+      group([docs.self, docs.trailing_comments, docs.rparen]),
+    ]),
+    docs.alias,
+    docs.order,
+    docs.comma,
+  ];
+};
+
 const printEOF: PrintFunc<bq2cst.EOF> = (path, options, print, node) => {
   const docs: { [Key in Docs<bq2cst.EOF>]: Doc } = {
     leading_comments: printLeadingComments(path, options, print, node),
@@ -2889,6 +2922,38 @@ const printGrantStatement: PrintFunc<bq2cst.GrantStatement> = (
       docs.semicolon,
     ]),
     p.newLine(),
+  ];
+};
+
+const printGroupByExprs: PrintFunc<bq2cst.GroupByExprs> = (
+  path,
+  options,
+  print,
+  node
+) => {
+  const p = new Printer(path, options, print, node);
+  p.setGroupRecommended("exprs");
+  const docs: { [Key in Docs<bq2cst.GroupByExprs>]: Doc } = {
+    leading_comments: printLeadingComments(path, options, print, node),
+    self: p.self("upper"),
+    trailing_comments: printTrailingComments(path, options, print, node),
+    by: p.child("by", undefined, "all"),
+    how: p.child("how", undefined, "all", " "),
+    exprs: indent(p.child("exprs", (x) => [line, x])),
+  };
+  return [
+    docs.leading_comments,
+    docs.self,
+    docs.trailing_comments,
+    " ",
+    docs.by,
+    p.has("how") ? " " : "",
+    docs.how,
+    node.children.exprs.NodeVec.every((x) =>
+      x.token.literal.match(/^[0-9]+$/)
+    ) || p.len("exprs") === 1
+      ? group(docs.exprs)
+      : docs.exprs,
   ];
 };
 
