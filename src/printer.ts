@@ -608,6 +608,8 @@ export const printSQL = (
       return printExecuteStatement(path, options, print, node);
     case "ExportDataStatement":
       return printExportDataStatement(path, options, print, node);
+    case "ExportModelStatement":
+      return printExportModelStatement(path, options, print, node);
     case "ExtractArgument":
       return printExtractArgument(path, options, print, node);
     case "ForStatement":
@@ -2809,6 +2811,40 @@ const printExportDataStatement: PrintFunc<bq2cst.ExportDataStatement> = (
       docs.options,
       line,
       docs.as,
+      softline,
+      docs.semicolon,
+    ]),
+    p.newLine(),
+  ];
+};
+
+const printExportModelStatement: PrintFunc<bq2cst.ExportModelStatement> = (
+  path,
+  options,
+  print,
+  node
+) => {
+  const p = new Printer(path, options, print, node);
+  const docs: { [Key in Docs<bq2cst.ExportModelStatement>]: Doc } = {
+    leading_comments: printLeadingComments(path, options, print, node),
+    self: p.self("upper"),
+    trailing_comments: printTrailingComments(path, options, print, node),
+    what: p.child("what", undefined, "all"),
+    ident: p.child("ident", undefined, "all"),
+    options: p.child("options"),
+    semicolon: p.child("semicolon"),
+  };
+  return [
+    docs.leading_comments,
+    group([
+      docs.self,
+      docs.trailing_comments,
+      " ",
+      docs.what,
+      " ",
+      docs.ident,
+      line,
+      docs.options,
       softline,
       docs.semicolon,
     ]),

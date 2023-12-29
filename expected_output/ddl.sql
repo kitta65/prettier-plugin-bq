@@ -262,9 +262,6 @@ RENAME COLUMN u TO v,
 RENAME COLUMN IF EXISTS w TO x
 ;
 
------ ALTER MODEL statement -----
-ALTER MODEL IF EXISTS ident SET OPTIONS (description = "");
-
 ----- ALTER ORGANIZATION statement -----
 ALTER ORGANIZATION SET OPTIONS (`region-us.default_time_zone` = 'Asia/Tokyo');
 
