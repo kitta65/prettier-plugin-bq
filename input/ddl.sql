@@ -260,6 +260,10 @@ rename column u to v,
 rename column if exists w to x
 ;
 
+----- ALTER MODEL statement -----
+alter model if exists ident
+set options (description = "");
+
 ----- ALTER ORGANIZATION statement -----
 alter organization
 set options (`region-us.default_time_zone` = 'Asia/Tokyo');
