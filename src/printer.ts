@@ -604,8 +604,8 @@ export const printSQL = (
       return printEOF(path, options, print, node);
     case "ExecuteStatement":
       return printExecuteStatement(path, options, print, node);
-    case "ExportStatement":
-      return printExportStatement(path, options, print, node);
+    case "ExportDataStatement":
+      return printExportDataStatement(path, options, print, node);
     case "ExtractArgument":
       return printExtractArgument(path, options, print, node);
     case "ForStatement":
@@ -2738,14 +2738,14 @@ const printExecuteStatement: PrintFunc<bq2cst.ExecuteStatement> = (
   ];
 };
 
-const printExportStatement: PrintFunc<bq2cst.ExportStatement> = (
+const printExportDataStatement: PrintFunc<bq2cst.ExportDataStatement> = (
   path,
   options,
   print,
   node
 ) => {
   const p = new Printer(path, options, print, node);
-  const docs: { [Key in Docs<bq2cst.ExportStatement>]: Doc } = {
+  const docs: { [Key in Docs<bq2cst.ExportDataStatement>]: Doc } = {
     leading_comments: printLeadingComments(path, options, print, node),
     self: p.self("upper"),
     trailing_comments: printTrailingComments(path, options, print, node),
