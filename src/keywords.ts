@@ -148,6 +148,7 @@ export const globalFunctions = [
   "ROW_NUMBER",
   // search functions
   "SEARCH",
+  "VECTOR_SEARCH",
   // bit functions
   "BIT_COUNT",
   // built-in table functions
