@@ -218,6 +218,11 @@ ON tablename (a, b)
 OPTIONS (dummy = 'dummy')
 ;
 
+CREATE OR REPLACE VECTOR INDEX new_index
+ON tablename (col)
+OPTIONS (dummy = 'dummy')
+;
+
 ----- ALTER BI_CAPACITY statement -----
 ALTER BI_CAPACITY `project.region-us.default`
 SET OPTIONS (preferred_tables = ['table1', 'table2'])

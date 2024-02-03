@@ -573,6 +573,8 @@ export const printSQL = (
       return printConstraint(path, options, print, node);
     case "CreateFunctionStatement":
       return printCreateFunctionStatement(path, options, print, node);
+    case "CreateIndexStatement":
+      return printCreateIndexStatement(path, options, print, node);
     case "CreateModelStatement":
       return printCreateModelStatement(path, options, print, node);
     case "CreateProcedureStatement":
@@ -583,8 +585,6 @@ export const printSQL = (
       return printCreateRowAccessPolicyStatement(path, options, print, node);
     case "CreateSchemaStatement":
       return printCreateSchemaStatement(path, options, print, node);
-    case "CreateSearchIndexStatement":
-      return printCreateSearchIndexStatement(path, options, print, node);
     case "CreateTableStatement":
       return printCreateTableStatement(path, options, print, node);
     case "CreateViewStatement":
@@ -2367,14 +2367,18 @@ const printCreateSchemaStatement: PrintFunc<bq2cst.CreateSchemaStatement> = (
   ];
 };
 
-const printCreateSearchIndexStatement: PrintFunc<
-  bq2cst.CreateSearchIndexStatement
-> = (path, options, print, node) => {
+const printCreateIndexStatement: PrintFunc<bq2cst.CreateIndexStatement> = (
+  path,
+  options,
+  print,
+  node
+) => {
   const p = new Printer(path, options, print, node);
-  const docs: { [Key in Docs<bq2cst.CreateSearchIndexStatement>]: Doc } = {
+  const docs: { [Key in Docs<bq2cst.CreateIndexStatement>]: Doc } = {
     leading_comments: printLeadingComments(path, options, print, node),
     self: p.self("upper"),
     trailing_comments: printTrailingComments(path, options, print, node),
+    or_replace: p.child("or_replace", (x) => group([line, x])),
     what: p.child("what", undefined, "all"),
     if_not_exists: p.child("if_not_exists", (x) => group([line, x])),
     ident: p.child("ident", undefined, "all"),
@@ -2389,6 +2393,7 @@ const printCreateSearchIndexStatement: PrintFunc<
     group([
       docs.self,
       docs.trailing_comments,
+      docs.or_replace,
       " ",
       docs.what,
       docs.if_not_exists,
