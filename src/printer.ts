@@ -1916,7 +1916,7 @@ const printCaseExpr: PrintFunc<bq2cst.CaseExpr> = (
     trailing_comments: printTrailingComments(path, options, print, node),
     expr: p.child("expr", undefined, "all"),
     arms: p.child("arms", (x) => [line, group(x)], "none"),
-    end: p.child("end", undefined, "all"),
+    end: p.child("end"),
     as: "", // eslint-disable-line unicorn/no-unused-properties
     alias: printAlias(path, options, print, node),
     order: printOrder(path, options, print, node),
@@ -1929,7 +1929,7 @@ const printCaseExpr: PrintFunc<bq2cst.CaseExpr> = (
     p.has("expr") ? " " : "",
     docs.expr,
     indent(docs.arms),
-    " ",
+    line,
     docs.end,
   ];
   if (p.len("arms") <= 2) {

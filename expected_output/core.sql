@@ -103,7 +103,8 @@ SELECT
     WHEN 3
       -- comment
       THEN 'three'
-    ELSE NULL END,
+    ELSE NULL
+  END,
   CASE WHEN int = 1 THEN 'one' ELSE 'other' END AS caseExpression,
   CASE
     -- break
@@ -116,7 +117,8 @@ SELECT
         3
       )
       THEN 'two or three'
-    ELSE 'other' END,
+    ELSE 'other'
+  END,
 FROM t
 ;
 
