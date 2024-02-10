@@ -4,7 +4,7 @@
   "description": "",
   "main": "dist/index.js",
   "scripts": {
-    "test": "eslint-config-prettier .eslintrc.json && eslint ./src && prettier --check ./src && tsc && jest",
+    "test": "eslint-config-prettier .eslintrc.json && eslint ./src && prettier --check ./src && tsc && NODE_OPTIONS='--experimental-vm-modules' jest",
     "latest-bq2cst": "rm -rf ./node_modules/bq2cst && gh run download -R dr666m1/bq2cst -n pkg -D ./node_modules/bq2cst"
   },
   "keywords": [],
@@ -13,7 +13,6 @@
   "devDependencies": {
     "@types/jest": "^26.0.23",
     "@types/node": "^20.11.7",
-    "@types/prettier": "^2.3.0",
     "@typescript-eslint/eslint-plugin": "^6.19.1",
     "@typescript-eslint/parser": "^6.19.1",
     "eslint": "^8.56.0",
@@ -27,6 +26,6 @@
     "bq2cst": "0.5.0"
   },
   "peerDependencies": {
-    "prettier": "^2.3.0"
+    "prettier": "^3.2.4"
   }
 }
