@@ -1,3 +1,5 @@
+// NOTE NODE_OPTIONS='--experimental-vm-modules' is needed before jest v30
+// https://github.com/prettier/prettier/issues/15769
 import prettier from "prettier";
 import * as fs from "fs";
 
@@ -21,15 +23,19 @@ const targets = [
   "ml.sql",
 ];
 
+beforeAll(async () => {
+  for (const t of targets) {
+    const input = fs.readFileSync("./input/" + t, "utf8");
+    const actualOutput = await format(input);
+    fs.writeFileSync("./actual_output/" + t, actualOutput);
+  }
+});
+
 for (const t of targets) {
   describe(t, () => {
-    const input = fs.readFileSync("./input/" + t, "utf8");
-    const actualOutput = format(input);
-    fs.writeFileSync("./actual_output/" + t, actualOutput);
-
-    test("Additional formatting does not make any changes", () => {
+    test("Additional formatting does not make any changes", async () => {
       const actualOutput = fs.readFileSync("./actual_output/" + t, "utf8");
-      expect(actualOutput).toBe(format(actualOutput));
+      expect(actualOutput).toBe(await format(actualOutput));
     });
 
     test("Compare actual_output with expected_output", () => {

@@ -159,7 +159,11 @@ class Printer<T extends bq2cst.UnknownNode> {
       return [
         comments,
         this.path.call(
-          (p) => p.call((p) => f(p.call(this.print, "Node")), key),
+          (p) =>
+            p.call(
+              (p: AstPath<bq2cst.NodeChild>) => f(p.call(this.print, "Node")),
+              key,
+            ),
           "children",
         ),
       ];
@@ -180,7 +184,8 @@ class Printer<T extends bq2cst.UnknownNode> {
         this.path.call(
           (p) =>
             p.call(
-              (p) => join(sep || "", p.map(this.print, "NodeVec").map(f)),
+              (p: AstPath<bq2cst.NodeVecChild>) =>
+                join(sep || "", p.map(this.print, "NodeVec").map(f)),
               key,
             ),
           "children",
