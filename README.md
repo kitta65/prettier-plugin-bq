@@ -1,7 +1,5 @@
 # prettier-plugin-bq
-`prettier-plugin-bq` is a [prettier](https://prettier.io/) plugin for **standardSQL**, which is a dialect of BigQuery.
-
-⚠️ This plugin is still a work in progress, so the behavior would change frequently.
+`prettier-plugin-bq` is a [prettier](https://prettier.io/) plugin for **GoogleSQL**, which is a dialect of BigQuery.
 
 ## Install
 ```
