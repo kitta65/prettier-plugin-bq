@@ -352,6 +352,8 @@ SELECT x, SUM(y) FROM t GROUP BY ROLLUP (x);
 
 SELECT x, SUM(y) FROM t GROUP BY GROUPING SETS (a, CUBE(b), ());
 
+SELECT colname FROM tablename GROUP BY ALL;
+
 ----- HAVING clause -----
 SELECT str, COUNT(*) AS cnt FROM t GROUP BY 1 HAVING cnt < 10;
 

@@ -304,6 +304,8 @@ select x, sum(y) from t group by rollup(x);
 
 select x, sum(y) from t group by grouping sets (a, cube(b), ());
 
+select colname from tablename group by all;
+
 ----- HAVING clause -----
 select str, count(*) cnt from t group by 1 having cnt < 10;
 

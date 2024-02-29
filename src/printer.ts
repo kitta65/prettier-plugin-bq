@@ -478,7 +478,7 @@ export const printSQL = (
   options: Options,
   print: (path: AstPath) => Doc,
 ): Doc => {
-  const node: bq2cst.UnknownNode | bq2cst.UnknownNode[] = path.getValue();
+  const node: bq2cst.UnknownNode | bq2cst.UnknownNode[] = path.node;
 
   if (Array.isArray(node)) {
     for (let i = 0; i < node.length - 1; i++) {
@@ -3103,9 +3103,11 @@ const printGroupByExprs: PrintFunc<bq2cst.GroupByExprs> = (
     docs.by,
     p.has("how") ? " " : "",
     docs.how,
-    node.children.exprs.NodeVec.every((x) =>
+    !p.has("exprs") ||
+    node.children.exprs!.NodeVec.every((x) =>
       x.token.literal.match(/^[0-9]+$/),
-    ) || p.len("exprs") === 1
+    ) ||
+    p.len("exprs") === 1
       ? group(docs.exprs)
       : docs.exprs,
   ];
