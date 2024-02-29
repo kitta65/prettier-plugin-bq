@@ -146,6 +146,14 @@ export const globalFunctions = [
   "CUME_DIST",
   "NTILE",
   "ROW_NUMBER",
+  // range functions
+  "GENERATE_RANGE_ARRAY",
+  "RANGE",
+  "RANGE_CONTAINS",
+  "RANGE_END",
+  "RANGE_INTERSECT",
+  "RANGE_OVERLAPS",
+  "RANGE_START",
   // search functions
   "SEARCH",
   "VECTOR_SEARCH",
