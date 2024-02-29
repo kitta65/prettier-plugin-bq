@@ -700,6 +700,8 @@ export const printSQL = (
       return printRevokeStatement(path, options, print, node);
     case "RaiseStatement":
       return printRaiseStatement(path, options, print, node);
+    case "RangeLiteral":
+      return printRangeLiteral(path, options, print, node);
     case "RenameColumnClause":
       return printRenameColumnClause(path, options, print, node);
     case "RepeatStatement":
@@ -4238,6 +4240,35 @@ const printRaiseStatement: PrintFunc<bq2cst.RaiseStatement> = (
       docs.semicolon,
     ]),
     p.newLine(),
+  ];
+};
+
+const printRangeLiteral: PrintFunc<bq2cst.RangeLiteral> = (
+  path,
+  options,
+  print,
+  node,
+) => {
+  const p = new Printer(path, options, print, node);
+  const docs: { [Key in Docs<bq2cst.RangeLiteral>]: Doc } = {
+    type: p.child("type"),
+    leading_comments: "", // eslint-disable-line unicorn/no-unused-properties
+    self: p.self("asItIs", true),
+    trailing_comments: printTrailingComments(path, options, print, node),
+    as: "", // eslint-disable-line unicorn/no-unused-properties
+    alias: printAlias(path, options, print, node),
+    order: printOrder(path, options, print, node),
+    null_order: "", // eslint-disable-line unicorn/no-unused-properties
+    comma: printComma(path, options, print, node),
+  };
+  return [
+    docs.type,
+    " ",
+    docs.self,
+    docs.trailing_comments,
+    docs.alias,
+    docs.order,
+    docs.comma,
   ];
 };
 

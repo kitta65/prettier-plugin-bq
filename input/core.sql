@@ -95,6 +95,9 @@ select
   struct<array<int64>, x float64>([1], .1)
 ;
 
+----- range literal -----
+select range<date> "[2023-01-01, 2024-01-01)";
+
 ----- interval literal -----
 select
   interval 1 year,

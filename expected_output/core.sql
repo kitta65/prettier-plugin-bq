@@ -79,6 +79,9 @@ SELECT
   STRUCT<ARRAY<INT64>, x FLOAT64>([1], .1),
 ;
 
+----- range literal -----
+SELECT RANGE<DATE> "[2023-01-01, 2024-01-01)";
+
 ----- interval literal -----
 SELECT
   INTERVAL 1 YEAR,
