@@ -352,6 +352,11 @@ export const globalFunctions = [
   "TIME_TRUNC",
   "FORMAT_TIME",
   "PARSE_TIME",
+  // time series functions
+  "DATE_BUCKET",
+  "DATETIME_BUCKET",
+  "GAP_FILL",
+  "TIMESTAMP_BUCKET",
   // text analyze functions
   "BAG_OF_WORDS",
   "TEXT_ANALYZE",
