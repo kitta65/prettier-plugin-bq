@@ -120,6 +120,9 @@ OPTIONS (dummy = 'dummy')
 AS SELECT COUNT(*) FROM t
 ;
 
+-- REPLICA
+CREATE MATERIALIZED VIEW ident1 AS REPLICA OF ident2;
+
 ----- CREATE FUNCTION statement -----
 -- sql function definition
 CREATE OR REPLACE FUNCTION abc() AS ('abc');

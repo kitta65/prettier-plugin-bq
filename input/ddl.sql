@@ -128,6 +128,11 @@ as
   from t
 ;
 
+-- REPLICA
+create materialized view ident1
+as replica of ident2
+;
+
 ----- CREATE FUNCTION statement -----
 -- sql function definition
 create or replace function abc() as ('abc');
