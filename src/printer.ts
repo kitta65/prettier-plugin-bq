@@ -412,6 +412,35 @@ class Printer<T extends bq2cst.UnknownNode> {
       child.Node.notGlobal = true;
     }
   }
+  shouldIndentExpr(key: keyof Children<T>) {
+    if (this.hasLeadingComments(key)) return true;
+
+    const child = this.children[key];
+    if (!isNodeChild(child)) return false; // unnexpected pattern
+
+    const token = child.Node.token;
+    if (!token) return false; // unexpected pattern
+
+    const node_type = child.Node.node_type;
+    if (node_type === "GroupedStatement" || node_type === "GroupedExpr") {
+      // FROM (SELECT ...) | FROM ((SELECT ...) JOIN (SELECT ...))
+      return false;
+    } else if (
+      node_type === "StringLiteral" &&
+      token.literal.match(/^['"]{3}\n/)
+    ) {
+      // AS '''const x = "aaa"; return x'''
+      return false;
+    } else if (
+      node_type === "UnaryOperator" &&
+      token.literal.match(/^[brBR]{1,2}$/)
+    ) {
+      // AS r'''const x = "aaa"; return x'''
+      return false;
+    }
+
+    return true;
+  }
   toUpper(key: keyof Children<T>) {
     const child = this.children[key];
     if (!this.options.printKeywordsInUpperCase) {
@@ -1965,16 +1994,33 @@ const printCaseExprArm: PrintFunc<bq2cst.CaseExprArm> = (
     return [
       docs.leading_comments,
       group([
-        group([docs.self, docs.trailing_comments, indent([line, docs.expr])]),
+        group([
+          docs.self,
+          docs.trailing_comments,
+          p.shouldIndentExpr("expr")
+            ? indent([line, docs.expr])
+            : [" ", docs.expr],
+        ]),
         line,
-        group([docs.then, indent([line, docs.result])]),
+        group([
+          docs.then,
+          p.shouldIndentExpr("result")
+            ? indent([line, docs.result])
+            : [" ", docs.result],
+        ]),
       ]),
     ];
   } else {
     // ELSE ...
     return [
       docs.leading_comments,
-      group([docs.self, docs.trailing_comments, indent([line, docs.result])]),
+      group([
+        docs.self,
+        docs.trailing_comments,
+        p.shouldIndentExpr("result")
+          ? indent([line, docs.result])
+          : [" ", docs.result],
+      ]),
     ];
   }
 };
@@ -3676,34 +3722,11 @@ const printKeywordWithExpr: PrintFunc<bq2cst.KeywordWithExpr> = (
   p.setBreakRecommended("expr"); // AND or OR
   p.setGroupRecommended("expr"); // other binary operator
 
-  let indentExpr = true;
-  if (!p.hasLeadingComments("expr")) {
-    const token = node.children.expr.Node.token;
-    if (!token) throw new Error("Something went wrong.");
-    const node_type = node.children.expr.Node.node_type;
-    if (node_type === "GroupedStatement" || node_type === "GroupedExpr") {
-      // FROM (SELECT ...) | FROM ((SELECT ...) JOIN (SELECT ...))
-      indentExpr = false;
-    } else if (
-      node_type === "StringLiteral" &&
-      token.literal.match(/^['"]{3}\n/)
-    ) {
-      // AS '''const x = "aaa"; return x'''
-      indentExpr = false;
-    } else if (
-      node_type === "UnaryOperator" &&
-      token.literal.match(/^[brBR]{1,2}$/)
-    ) {
-      // AS r'''const x = "aaa"; return x'''
-      indentExpr = false;
-    }
-  }
-
   const docs: { [Key in Docs<bq2cst.KeywordWithExpr>]: Doc } = {
     leading_comments: printLeadingComments(path, options, print, node),
     self: p.self("upper"),
     trailing_comments: printTrailingComments(path, options, print, node),
-    expr: indentExpr
+    expr: p.shouldIndentExpr("expr")
       ? indent([line, p.child("expr")])
       : [" ", p.child("expr", undefined, "all")],
   };

@@ -134,6 +134,8 @@ select
         3
       )
       then 'two or three'
+    when (longlonglonglonglonglongcolumnname = 4 or longlonglonglonglonglongcolumnname = 5 )
+    then "four or five"
     else 'other' end
 from t
 ;

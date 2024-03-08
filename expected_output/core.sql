@@ -117,6 +117,11 @@ SELECT
         3
       )
     THEN 'two or three'
+    WHEN (
+      longlonglonglonglonglongcolumnname = 4
+      OR longlonglonglonglonglongcolumnname = 5
+    )
+    THEN "four or five"
     ELSE 'other'
   END,
 FROM t
