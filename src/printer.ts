@@ -1956,17 +1956,27 @@ const printCaseExprArm: PrintFunc<bq2cst.CaseExprArm> = (
     leading_comments: printLeadingComments(path, options, print, node),
     self: p.self(),
     trailing_comments: printTrailingComments(path, options, print, node),
-    expr: p.child("expr", undefined, "all"),
-    then: p.child("then", undefined),
+    expr: p.child("expr"),
+    then: p.child("then", undefined, "all"),
     result: p.child("result"),
   };
-  return [
-    docs.leading_comments,
-    docs.self,
-    docs.trailing_comments,
-    group([indent([p.has("expr") ? line : "", docs.expr])]),
-    indent([p.has("then") ? line : "", group([docs.then, " ", docs.result])]),
-  ];
+  if (p.has("then")) {
+    // WHEN ... THEN ...
+    return [
+      docs.leading_comments,
+      group([
+        group([docs.self, docs.trailing_comments, indent([line, docs.expr])]),
+        line,
+        group([docs.then, indent([line, docs.result])]),
+      ]),
+    ];
+  } else {
+    // ELSE ...
+    return [
+      docs.leading_comments,
+      group([docs.self, docs.trailing_comments, indent([line, docs.result])]),
+    ];
+  }
 };
 
 const printCastArgument: PrintFunc<bq2cst.CastArgument> = (

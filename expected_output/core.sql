@@ -103,23 +103,20 @@ SELECT
   CASE int
     WHEN 1 THEN 'one'
     WHEN 2 THEN 'two'
-    WHEN 3
-      -- comment
-      THEN 'three'
+    WHEN 3 THEN 'three' -- comment
     ELSE NULL
   END,
   CASE WHEN int = 1 THEN 'one' ELSE 'other' END AS caseExpression,
   CASE
     -- break
-    WHEN int = 1
-      THEN 'one'
+    WHEN int = 1 THEN 'one'
     WHEN
       int IN (
         -- break
         2,
         3
       )
-      THEN 'two or three'
+    THEN 'two or three'
     ELSE 'other'
   END,
 FROM t
