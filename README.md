@@ -12,7 +12,7 @@ As the prettier [document](https://prettier.io/docs/en/plugins.html) says, the p
 
 You can format `.sql` and `.bq` file by the following command.
 ```
-npx prettier --write ./xxx.sql
+npx prettier --write ./xxx.sql --plugin=prettier-plugin-bq
 ```
 
 For more information, please read the prettier document.
