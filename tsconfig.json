@@ -8,6 +8,7 @@
     "target": "es2015",
     "allowJs": true,
     "checkJs": true,
+    "declaration": true,
     "esModuleInterop": true
   },
   "include": [
