@@ -180,6 +180,8 @@ returns int64
 remote with connection `project.us.connection`
 options (endpoint = 'https://region-project.cloudfunctions.net/function');
 
+create aggregate function plus_one(n int64 not aggregate)
+as (n + 1);
 
 ----- CREATE PROCEDURE statement -----
 create procedure abc() begin select 'abc'; end;
@@ -203,6 +205,11 @@ language python as r'''
 # python code
 from pyspark.sql import SparkSession
 ''';
+
+create procedure procedure_ident()
+external security invoker
+with connection connection_ident
+language python as 'code';
 
 ----- CREATE ROW ACCESS POLICY statement -----
 create row access policy filter_name

@@ -176,6 +176,8 @@ REMOTE WITH CONNECTION `project.us.connection`
 OPTIONS (endpoint = 'https://region-project.cloudfunctions.net/function')
 ;
 
+CREATE AGGREGATE FUNCTION plus_one(n INT64 NOT AGGREGATE) AS (n + 1);
+
 ----- CREATE PROCEDURE statement -----
 CREATE PROCEDURE abc() BEGIN SELECT 'abc'; END;
 
@@ -202,6 +204,13 @@ AS r'''
 # python code
 from pyspark.sql import SparkSession
 '''
+;
+
+CREATE PROCEDURE procedure_ident()
+EXTERNAL SECURITY INVOKER
+WITH CONNECTION connection_ident
+LANGUAGE python
+AS 'code'
 ;
 
 ----- CREATE ROW ACCESS POLICY statement -----

@@ -2148,6 +2148,7 @@ const printCreateFunctionStatement: PrintFunc<
     or_replace: p.child("or_replace", (x) => group([line, x])),
     temp: p.child("temp", undefined, "all"),
     table: p.child("table", undefined, "all"),
+    aggregate: p.child("aggregate", undefined, "all"),
     what: p.child("what", undefined, "all"),
     if_not_exists: p.child("if_not_exists", (x) => group([line, x])),
     ident: p.child("ident", undefined, "all"),
@@ -2171,6 +2172,8 @@ const printCreateFunctionStatement: PrintFunc<
         docs.temp,
         p.has("table") ? " " : "",
         docs.table,
+        p.has("aggregate") ? " " : "",
+        docs.aggregate,
         " ",
         docs.what,
         docs.if_not_exists,
@@ -2267,6 +2270,7 @@ const printCreateProcedureStatement: PrintFunc<
     if_not_exists: p.child("if_not_exists", (x) => group([line, x])),
     ident: p.child("ident", undefined, "all"),
     group: p.child("group", undefined, "all"),
+    external: p.child("external"),
     with_connection: p.child("with_connection"),
     options: p.child("options"),
     language: p.child("language"),
@@ -2288,6 +2292,8 @@ const printCreateProcedureStatement: PrintFunc<
         docs.ident,
         docs.group,
       ]),
+      p.has("external") ? line : "",
+      docs.external,
       p.has("with_connection") ? line : "",
       docs.with_connection,
       p.has("options") ? line : "",
@@ -4810,6 +4816,7 @@ const printType: PrintFunc<bq2cst.Type> = (path, options, print, node) => {
     not_null: p.child("not_null", (x) => group([line, x])), // NOT NULL
     default: p.child("default", undefined, "all"), // DEFAULT CURRENT_TIMESTAMP
     options: p.child("options", undefined, "all"), // OPTIONS()
+    aggregate: p.child("aggregate", (x) => group([line, x])), // NOT AGGREGATEj:w
   };
   return [
     docs.leading_comments,
@@ -4834,6 +4841,7 @@ const printType: PrintFunc<bq2cst.Type> = (path, options, print, node) => {
     docs.default,
     p.has("options") ? line : "",
     docs.options,
+    docs.aggregate,
   ];
 };
 
