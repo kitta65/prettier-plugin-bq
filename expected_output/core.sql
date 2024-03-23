@@ -4,6 +4,7 @@ SELECT 1; /* */ -- end of statement
 
 ----- unary operator -----
 SELECT -1, +1, r'xxx', DATE '2020-01-01', TIMESTAMP r'2020-01-01', NOT TRUE;
+
 ----- binary operator -----
 SELECT 1 + 2;
 SELECT (1 + (-2)) * 3 IN (9);
@@ -41,6 +42,8 @@ SELECT TRUE IS NULL, TRUE IS NOT NULL, TRUE IS NOT FALSE;
 
 -- '.'
 SELECT nested.int + 1, 1 + nested.int FROM t;
+
+SELECT foo.select, foo.select.from;
 
 -- IS DISTINCT FROM
 SELECT 1 IS DISTINCT FROM 2;

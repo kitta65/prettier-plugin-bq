@@ -11,6 +11,7 @@ select
   timestamp R'2020-01-01',
   not true,
 ;
+
 ----- binary operator -----
 select 1+2;
 select (1+(-2)) * 3 in (9);
@@ -58,6 +59,11 @@ select
   nested.int + 1,
   1 + nested.int,
 from t
+;
+
+select
+  foo.select,
+  foo.select.from,
 ;
 
 -- IS DISTINCT FROM
