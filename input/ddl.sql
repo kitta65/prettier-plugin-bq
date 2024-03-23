@@ -377,3 +377,8 @@ drop row access policy ident on t;
 drop row access policy if exists ident on t;
 
 drop all row access policies on t;
+
+----- UNDROP statement -----
+undrop schema datasetname;
+
+undrop schema if not exists projectname.datasetname;

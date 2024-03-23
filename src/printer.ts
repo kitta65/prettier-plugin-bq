@@ -767,6 +767,8 @@ export const printSQL = (
       return printTypeDeclaration(path, options, print, node);
     case "UnaryOperator":
       return printUnaryOperator(path, options, print, node);
+    case "UndropStatement":
+      return printUndropStatement(path, options, print, node);
     case "UnpivotConfig":
       return printUnpivotConfig(path, options, print, node);
     case "UnpivotOperator":
@@ -4910,6 +4912,39 @@ const printUnaryOperator: PrintFunc<bq2cst.UnaryOperator> = (
     docs.alias,
     docs.order,
     docs.comma,
+  ];
+};
+
+const printUndropStatement: PrintFunc<bq2cst.UndropStatement> = (
+  path,
+  options,
+  print,
+  node,
+) => {
+  const p = new Printer(path, options, print, node);
+  const docs: { [Key in Docs<bq2cst.UndropStatement>]: Doc } = {
+    leading_comments: printLeadingComments(path, options, print, node),
+    self: p.self("upper"),
+    trailing_comments: printTrailingComments(path, options, print, node),
+    what: p.child("what", undefined, "all"),
+    if_not_exists: p.child("if_not_exists", (x) => group([line, x])),
+    ident: p.child("ident", undefined, "all"),
+    semicolon: p.child("semicolon"),
+  };
+  return [
+    docs.leading_comments,
+    group([
+      docs.self,
+      docs.trailing_comments,
+      " ",
+      docs.what,
+      docs.if_not_exists,
+      " ",
+      docs.ident,
+      softline,
+      docs.semicolon,
+    ]),
+    p.newLine(),
   ];
 };
 

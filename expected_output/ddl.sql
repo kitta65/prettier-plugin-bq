@@ -376,3 +376,8 @@ DROP ROW ACCESS POLICY ident ON t;
 DROP ROW ACCESS POLICY IF EXISTS ident ON t;
 
 DROP ALL ROW ACCESS POLICIES ON t;
+
+----- UNDROP statement -----
+UNDROP SCHEMA datasetname;
+
+UNDROP SCHEMA IF NOT EXISTS projectname.datasetname;
