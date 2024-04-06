@@ -587,6 +587,12 @@ export const mlFunctions = [
   "PRINCIPAL_COMPONENTS",
   "PRINCIPAL_COMPONENT_INFO",
   "ARIMA_COEFFICIENTS",
+  // model monitoring functions
+  "DESCRIBE_DATA",
+  "VALIDATE_DATA_DRIFT",
+  "VALIDATE_DATA_SKEW",
+  "TFDV_DESCRIBE",
+  "TFDV_VALIDATE",
   // math utility functions
   "DISTANCE",
   "LP_NORM",
