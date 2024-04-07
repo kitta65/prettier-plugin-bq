@@ -1,14 +1,14 @@
 # prettier-plugin-bq
+
 `prettier-plugin-bq` is a [prettier](https://prettier.io/) plugin for **GoogleSQL**, which is a dialect of BigQuery.
 
 ## Install
+
 ```
-npm install --save-dev --save-exact prettier prettier-plugin-bq
+npm install --save-dev prettier prettier-plugin-bq
 ```
 
 ## Usage
-As the prettier [document](https://prettier.io/docs/en/plugins.html) says, the plugin is automatically loaded.
-> Plugins are automatically loaded if you have them installed in the same `node_modules` directory where prettier is located.
 
 You can format `.sql` and `.bq` file by the following command.
 ```
@@ -18,6 +18,7 @@ npx prettier --write ./xxx.sql --plugin=prettier-plugin-bq
 For more information, please read the prettier document.
 
 ## Configuration
+
 Below are the options that `prettier-plugin-bq` currently supports.
 
 |API Option|CLI Option|Default|Description|
@@ -29,9 +30,11 @@ Below are the options that `prettier-plugin-bq` currently supports.
 |printPseudoColumnsInUpperCase|print-pseudo-columns-in-upper-case|true|Print pseudo columns (e.g. `_PARTITIONDATE`, `_PARTITIONTIME`) in upper case. When `printKeywordsInUpperCase` is `false`, this option is ignored.|
 
 ## Coding style
+
 This plugin doesn't follow any famous style guides,
 because none of them satisfies me.
 
 ## Feedback
+
 I'm not ready to accept pull requests, but your feedback is always welcome.
 If you find any bugs, please feel free to create an issue.
