@@ -233,6 +233,7 @@ options (dummy = 'dummy')
 
 create or replace vector index new_index
 on tablename(col)
+storing (a, b, c)
 options (dummy = 'dummy')
 ;
 

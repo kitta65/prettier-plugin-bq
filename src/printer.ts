@@ -2456,6 +2456,7 @@ const printCreateIndexStatement: PrintFunc<bq2cst.CreateIndexStatement> = (
     on: p.child("on"),
     tablename: p.child("tablename", undefined, "all"),
     column_group: p.child("column_group", undefined, "all"),
+    storing: p.child("storing"),
     options: p.child("options"),
     semicolon: p.child("semicolon"),
   };
@@ -2476,6 +2477,8 @@ const printCreateIndexStatement: PrintFunc<bq2cst.CreateIndexStatement> = (
       docs.tablename,
       " ",
       docs.column_group,
+      p.has("storing") ? line : "",
+      docs.storing,
       p.has("options") ? line : "",
       docs.options,
       softline,

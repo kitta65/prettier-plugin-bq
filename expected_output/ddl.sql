@@ -232,6 +232,7 @@ OPTIONS (dummy = 'dummy')
 
 CREATE OR REPLACE VECTOR INDEX new_index
 ON tablename (col)
+STORING (a, b, c)
 OPTIONS (dummy = 'dummy')
 ;
 
