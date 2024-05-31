@@ -436,7 +436,10 @@ export const globalFunctions = [
   "UNICODE",
   "UPPER",
   // table functions (built-in)
+  "APPENDS",
   "EXTERNAL_OBJECT_TRANSFORM",
+  "GAP_FILL",
+  "RANGE_SESSIONIZE",
   // text analyze functions
   "BAG_OF_WORDS",
   "TEXT_ANALYZE",
