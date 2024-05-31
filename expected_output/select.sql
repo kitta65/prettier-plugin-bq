@@ -186,8 +186,7 @@ SELECT
   * EXCEPT (_CHANGE_TYPE, _CHANGE_TIMESTAMP),
   _CHANGE_TYPE AS ct,
   _CHANGE_TIMESTAMP AS cts,
--- since `appends` may be user defind tvf, it remains lowercase.
-FROM appends(TABLE ident)
+FROM APPENDS(TABLE ident)
 ;
 
 -- FOR SYSTEM_TIME AS OF
