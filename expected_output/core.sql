@@ -31,6 +31,7 @@ SELECT
   ),
 ;
 SELECT 1 IN UNNEST([1, 2]);
+SELECT 1 IN UNNEST([1]) AND TRUE;
 
 -- LIKE
 SELECT 'a' LIKE 'abc', 'a' NOT LIKE 'abc';

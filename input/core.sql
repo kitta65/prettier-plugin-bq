@@ -34,6 +34,7 @@ select 1 in (
 )
 ;
 select 1 in unnest([1, 2]);
+select 1 in unnest([1]) and true;
 
 
 -- LIKE
