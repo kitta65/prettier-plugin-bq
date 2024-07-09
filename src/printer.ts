@@ -1860,6 +1860,7 @@ const printCallingTableFunction: PrintFunc<bq2cst.CallingTableFunction> = (
     self: printCallingFunctionGeneral(path, options, print, node),
     pivot: printPivotOrUnpivotOperator(path, options, print, node),
     unpivot: "", // eslint-disable-line unicorn/no-unused-properties
+    with_offset: "", // eslint-disable-line unicorn/no-unused-properties
 
     /* eslint-disable unicorn/no-unused-properties */
     leading_comments: "",
@@ -2728,6 +2729,8 @@ const printDotOperator: PrintFunc<bq2cst.DotOperator> = (
     for_system_time_as_of: p.child("for_system_time_as_of", undefined, "all"),
     pivot: printPivotOrUnpivotOperator(path, options, print, node),
     unpivot: "", // eslint-disable-line unicorn/no-unused-properties
+    // TODO fix here
+    with_offset: "", // eslint-disable-line unicorn/no-unused-properties
     tablesample: p.child("tablesample", undefined, "all"),
     order: printOrder(path, options, print, node),
     null_order: "", // eslint-disable-line unicorn/no-unused-properties
@@ -3200,6 +3203,8 @@ const printGroupedExpr: PrintFunc<bq2cst.GroupedExpr> = (
     alias: printAlias(path, options, print, node),
     pivot: printPivotOrUnpivotOperator(path, options, print, node),
     unpivot: "", // eslint-disable-line unicorn/no-unused-properties
+    // TODO check if this pattern exists
+    with_offset: "", // eslint-disable-line unicorn/no-unused-properties
     order: printOrder(path, options, print, node),
     null_order: "", // eslint-disable-line unicorn/no-unused-properties
     comma: printComma(path, options, print, node),
@@ -3299,6 +3304,8 @@ const printGroupedStatement: PrintFunc<bq2cst.GroupedStatement> = (
     alias: printAlias(path, options, print, node),
     pivot: printPivotOrUnpivotOperator(path, options, print, node),
     unpivot: "", // eslint-disable-line unicorn/no-unused-properties
+    // TODO check if this pattern exists
+    with_offset: "", // eslint-disable-line unicorn/no-unused-properties
     orderby: p.child("orderby"),
     limit: p.child("limit"),
     order: printOrder(path, options, print, node),
@@ -3401,6 +3408,8 @@ const printIdentifier: PrintFunc<
     for_system_time_as_of: p.child("for_system_time_as_of", undefined, "all"),
     pivot: printPivotOrUnpivotOperator(path, options, print, node),
     unpivot: "", // eslint-disable-line unicorn/no-unused-properties
+    // TODO fix here
+    with_offset: "", // eslint-disable-line unicorn/no-unused-properties
     tablesample: p.child("tablesample", undefined, "all"),
     order: printOrder(path, options, print, node),
     null_order: "", // eslint-disable-line unicorn/no-unused-properties
@@ -3661,6 +3670,7 @@ const printJoinOperator: PrintFunc<bq2cst.JoinOperator> = (
     alias: printAlias(path, options, print, node),
     pivot: printPivotOrUnpivotOperator(path, options, print, node),
     unpivot: "", // eslint-disable-line unicorn/no-unused-properties
+    with_offset: "", // eslint-disable-line unicorn/no-unused-properties
   };
   return [
     docs.left,
@@ -4057,6 +4067,8 @@ const printMultiTokenIdentifier: PrintFunc<bq2cst.MultiTokenIdentifier> = (
     for_system_time_as_of: p.child("for_system_time_as_of", undefined, "all"),
     pivot: printPivotOrUnpivotOperator(path, options, print, node),
     unpivot: "", // eslint-disable-line unicorn/no-unused-properties
+    // TODO fix here
+    with_offset: "", // eslint-disable-line unicorn/no-unused-properties
     tablesample: p.child("tablesample", undefined, "all"),
     // NOTE order, null_order, comma may be unnecessary for the time being.
     order: printOrder(path, options, print, node),
