@@ -789,6 +789,8 @@ export const printSQL = (
       return printWindowSpecification(path, options, print, node);
     case "WithClause":
       return printWithClause(path, options, print, node);
+    case "WithOffsetClause":
+      return printWithOffsetClause(path, options, print, node);
     case "WithPartitionColumnsClause":
       return printWithPartitionColumnsClause(path, options, print, node);
     case "WithQuery":
@@ -1860,6 +1862,7 @@ const printCallingTableFunction: PrintFunc<bq2cst.CallingTableFunction> = (
     self: printCallingFunctionGeneral(path, options, print, node),
     pivot: printPivotOrUnpivotOperator(path, options, print, node),
     unpivot: "", // eslint-disable-line unicorn/no-unused-properties
+    with_offset: "", // eslint-disable-line unicorn/no-unused-properties
 
     /* eslint-disable unicorn/no-unused-properties */
     leading_comments: "",
@@ -1883,9 +1886,7 @@ const printCallingUnnest: PrintFunc<bq2cst.CallingUnnest> = (
   const p = new Printer(path, options, print, node);
   const docs: { [Key in Docs<bq2cst.CallingUnnest>]: Doc } = {
     self: printCallingFunctionGeneral(path, options, print, node),
-    with_offset: p.child("with_offset", (x) => group([line, x])),
-    offset_as: p.child("offset_as", undefined, "all"),
-    offset_alias: p.child("offset_alias", undefined, "all"),
+    with_offset: p.child("with_offset", undefined, "all"),
     pivot: printPivotOrUnpivotOperator(path, options, print, node),
     unpivot: "", // eslint-disable-line unicorn/no-unused-properties
 
@@ -1901,14 +1902,8 @@ const printCallingUnnest: PrintFunc<bq2cst.CallingUnnest> = (
   };
   return [
     docs.self,
+    p.has("with_offset") ? " " : "",
     docs.with_offset,
-    p.has("offset_alias")
-      ? [
-          " ",
-          docs.offset_as || (options.printKeywordsInUpperCase ? "AS" : "as"),
-        ]
-      : "",
-    p.has("offset_alias") ? [" ", docs.offset_alias] : "",
     docs.pivot,
   ];
 };
@@ -2728,6 +2723,7 @@ const printDotOperator: PrintFunc<bq2cst.DotOperator> = (
     for_system_time_as_of: p.child("for_system_time_as_of", undefined, "all"),
     pivot: printPivotOrUnpivotOperator(path, options, print, node),
     unpivot: "", // eslint-disable-line unicorn/no-unused-properties
+    with_offset: p.child("with_offset", undefined, "all"),
     tablesample: p.child("tablesample", undefined, "all"),
     order: printOrder(path, options, print, node),
     null_order: "", // eslint-disable-line unicorn/no-unused-properties
@@ -2741,6 +2737,8 @@ const printDotOperator: PrintFunc<bq2cst.DotOperator> = (
     docs.alias,
     p.has("for_system_time_as_of") ? [" ", docs.for_system_time_as_of] : "",
     docs.pivot,
+    p.has("with_offset") ? " " : "",
+    docs.with_offset,
     p.has("tablesample") ? [" ", docs.tablesample] : "",
     docs.order,
     docs.comma,
@@ -3200,6 +3198,7 @@ const printGroupedExpr: PrintFunc<bq2cst.GroupedExpr> = (
     alias: printAlias(path, options, print, node),
     pivot: printPivotOrUnpivotOperator(path, options, print, node),
     unpivot: "", // eslint-disable-line unicorn/no-unused-properties
+    with_offset: "", // eslint-disable-line unicorn/no-unused-properties
     order: printOrder(path, options, print, node),
     null_order: "", // eslint-disable-line unicorn/no-unused-properties
     comma: printComma(path, options, print, node),
@@ -3299,6 +3298,7 @@ const printGroupedStatement: PrintFunc<bq2cst.GroupedStatement> = (
     alias: printAlias(path, options, print, node),
     pivot: printPivotOrUnpivotOperator(path, options, print, node),
     unpivot: "", // eslint-disable-line unicorn/no-unused-properties
+    with_offset: "", // eslint-disable-line unicorn/no-unused-properties
     orderby: p.child("orderby"),
     limit: p.child("limit"),
     order: printOrder(path, options, print, node),
@@ -3401,6 +3401,7 @@ const printIdentifier: PrintFunc<
     for_system_time_as_of: p.child("for_system_time_as_of", undefined, "all"),
     pivot: printPivotOrUnpivotOperator(path, options, print, node),
     unpivot: "", // eslint-disable-line unicorn/no-unused-properties
+    with_offset: p.child("with_offset", undefined, "all"),
     tablesample: p.child("tablesample", undefined, "all"),
     order: printOrder(path, options, print, node),
     null_order: "", // eslint-disable-line unicorn/no-unused-properties
@@ -3413,6 +3414,8 @@ const printIdentifier: PrintFunc<
     docs.alias,
     p.has("for_system_time_as_of") ? [" ", docs.for_system_time_as_of] : "",
     docs.pivot,
+    p.has("with_offset") ? " " : "",
+    docs.with_offset,
     p.has("tablesample") ? [" ", docs.tablesample] : "",
     docs.order,
     docs.comma,
@@ -3661,6 +3664,7 @@ const printJoinOperator: PrintFunc<bq2cst.JoinOperator> = (
     alias: printAlias(path, options, print, node),
     pivot: printPivotOrUnpivotOperator(path, options, print, node),
     unpivot: "", // eslint-disable-line unicorn/no-unused-properties
+    with_offset: "", // eslint-disable-line unicorn/no-unused-properties
   };
   return [
     docs.left,
@@ -4057,6 +4061,7 @@ const printMultiTokenIdentifier: PrintFunc<bq2cst.MultiTokenIdentifier> = (
     for_system_time_as_of: p.child("for_system_time_as_of", undefined, "all"),
     pivot: printPivotOrUnpivotOperator(path, options, print, node),
     unpivot: "", // eslint-disable-line unicorn/no-unused-properties
+    with_offset: p.child("with_offset", undefined, "all"),
     tablesample: p.child("tablesample", undefined, "all"),
     // NOTE order, null_order, comma may be unnecessary for the time being.
     order: printOrder(path, options, print, node),
@@ -4071,6 +4076,8 @@ const printMultiTokenIdentifier: PrintFunc<bq2cst.MultiTokenIdentifier> = (
     docs.alias,
     p.has("for_system_time_as_of") ? [" ", docs.for_system_time_as_of] : "",
     docs.pivot,
+    p.has("with_offset") ? " " : "",
+    docs.with_offset,
     p.has("tablesample") ? [" ", docs.tablesample] : "",
     docs.order,
     docs.comma,
@@ -5293,6 +5300,42 @@ const printWithClause: PrintFunc<bq2cst.WithClause> = (
     docs.recursive,
     docs.trailing_comments,
     docs.queries,
+  ];
+};
+
+const printWithOffsetClause: PrintFunc<bq2cst.WithOffsetClause> = (
+  path,
+  options,
+  print,
+  node,
+) => {
+  const p = new Printer(path, options, print, node);
+  const docs: { [Key in Docs<bq2cst.WithOffsetClause>]: Doc } = {
+    leading_comments: printLeadingComments(path, options, print, node),
+    self: p.self("upper"),
+    trailing_comments: printTrailingComments(path, options, print, node),
+    offset: p.child("offset", undefined, "all"),
+    as: p.child("as", undefined, "all"),
+    alias: p.child("alias", undefined, "all"),
+  };
+  return [
+    docs.leading_comments,
+    docs.self,
+    docs.trailing_comments,
+    " ",
+    docs.offset,
+    p.has("alias")
+      ? [
+          " ",
+          p.has("as")
+            ? docs.as
+            : options.printKeywordsInUpperCase
+              ? "AS"
+              : "as",
+        ]
+      : "",
+    p.has("alias") ? " " : "",
+    docs.alias,
   ];
 };
 
