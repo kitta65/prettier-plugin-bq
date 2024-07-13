@@ -5330,8 +5330,8 @@ const printWithOffsetClause: PrintFunc<bq2cst.WithOffsetClause> = (
           p.has("as")
             ? docs.as
             : options.printKeywordsInUpperCase
-              ? "as"
-              : "AS",
+              ? "AS"
+              : "as",
         ]
       : "",
     p.has("alias") ? " " : "",

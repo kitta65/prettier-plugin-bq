@@ -240,6 +240,10 @@ select * from unnest([1]) with offset;
 
 select * from unnest([1]) a with offset as b;
 
+select * from a.arr with offset as b;
+
+select * from a, a.arr with offset b;
+
 -- JOIN
 select * from (select str from t) as tmp inner join u on tmp.str = u.str;
 
