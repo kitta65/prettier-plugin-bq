@@ -789,6 +789,8 @@ export const printSQL = (
       return printWindowSpecification(path, options, print, node);
     case "WithClause":
       return printWithClause(path, options, print, node);
+    case "WithOffsetClause":
+      return printWithOffsetClause(path, options, print, node);
     case "WithPartitionColumnsClause":
       return printWithPartitionColumnsClause(path, options, print, node);
     case "WithQuery":
@@ -1885,8 +1887,6 @@ const printCallingUnnest: PrintFunc<bq2cst.CallingUnnest> = (
   const docs: { [Key in Docs<bq2cst.CallingUnnest>]: Doc } = {
     self: printCallingFunctionGeneral(path, options, print, node),
     with_offset: p.child("with_offset", (x) => group([line, x])),
-    offset_as: p.child("offset_as", undefined, "all"),
-    offset_alias: p.child("offset_alias", undefined, "all"),
     pivot: printPivotOrUnpivotOperator(path, options, print, node),
     unpivot: "", // eslint-disable-line unicorn/no-unused-properties
 
@@ -1900,18 +1900,7 @@ const printCallingUnnest: PrintFunc<bq2cst.CallingUnnest> = (
     alias: "",
     /* eslint-enable unicorn/no-unused-properties */
   };
-  return [
-    docs.self,
-    docs.with_offset,
-    p.has("offset_alias")
-      ? [
-          " ",
-          docs.offset_as || (options.printKeywordsInUpperCase ? "AS" : "as"),
-        ]
-      : "",
-    p.has("offset_alias") ? [" ", docs.offset_alias] : "",
-    docs.pivot,
-  ];
+  return [docs.self, docs.with_offset, docs.pivot];
 };
 
 const printCallStatement: PrintFunc<bq2cst.CallStatement> = (
@@ -5303,6 +5292,42 @@ const printWithClause: PrintFunc<bq2cst.WithClause> = (
     docs.recursive,
     docs.trailing_comments,
     docs.queries,
+  ];
+};
+
+const printWithOffsetClause: PrintFunc<bq2cst.WithOffsetClause> = (
+  path,
+  options,
+  print,
+  node,
+) => {
+  const p = new Printer(path, options, print, node);
+  const docs: { [Key in Docs<bq2cst.WithOffsetClause>]: Doc } = {
+    leading_comments: printLeadingComments(path, options, print, node),
+    self: p.self("upper"),
+    trailing_comments: printTrailingComments(path, options, print, node),
+    offset: p.child("offset", undefined, "all"),
+    as: p.child("as", undefined, "all"),
+    alias: p.child("alias", undefined, "all"),
+  };
+  return [
+    docs.leading_comments,
+    docs.self,
+    docs.trailing_comments,
+    " ",
+    docs.offset,
+    p.has("alias")
+      ? [
+          " ",
+          p.has("as")
+            ? docs.as
+            : options.printKeywordsInUpperCase
+              ? "as"
+              : "AS",
+        ]
+      : "",
+    p.has("alias") ? " " : "",
+    docs.alias,
   ];
 };
 
