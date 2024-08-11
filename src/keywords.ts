@@ -438,6 +438,7 @@ export const globalFunctions = [
   "UPPER",
   // table functions (built-in)
   "APPENDS",
+  "CHANGES",
   "EXTERNAL_OBJECT_TRANSFORM",
   "GAP_FILL",
   "RANGE_SESSIONIZE",
