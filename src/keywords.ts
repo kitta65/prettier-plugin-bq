@@ -275,6 +275,7 @@ export const globalFunctions = [
   "JSON_EXTRACT_ARRAY",
   "JSON_EXTRACT_SCALAR",
   "JSON_EXTRACT_STRING_ARRAY",
+  "JSON_KEYS",
   "JSON_OBJECT",
   "JSON_QUERY",
   "JSON_QUERY_ARRAY",
