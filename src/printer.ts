@@ -266,7 +266,7 @@ class Printer<T extends bq2cst.UnknownNode> {
             if (asLineSuffix) {
               res.push(lineSuffix([" ", x.token.literal]));
             } else {
-              [x.token.literal, hardline];
+              res.push([x.token.literal, hardline]);
             }
           });
           delete x.children.leading_comments;
@@ -294,7 +294,7 @@ class Printer<T extends bq2cst.UnknownNode> {
     if (child) {
       return true;
     }
-    false;
+    return false;
   }
   hasLeadingComments(key: keyof Children<T>) {
     const firstNode = this.getFirstNode(key);
@@ -5219,7 +5219,6 @@ const printWindowFrameClause: PrintFunc<bq2cst.WindowFrameClause> = (
     and: p.child("and"),
     end: p.child("end", undefined, "all", line),
   };
-  docs.leading_comments;
   return [
     docs.leading_comments,
     docs.self,
