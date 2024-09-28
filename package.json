@@ -4,7 +4,7 @@
   "description": "",
   "main": "dist/index.js",
   "scripts": {
-    "test": "eslint-config-prettier .eslintrc.json && eslint ./src && prettier --check ./src && tsc && NODE_OPTIONS='--experimental-vm-modules' jest",
+    "test": "eslint-config-prettier src/index.ts && eslint ./src && prettier --check ./src && tsc && NODE_OPTIONS='--experimental-vm-modules' jest",
     "latest-bq2cst": "rm -rf ./node_modules/bq2cst && gh run download -R dr666m1/bq2cst -n pkg -D ./node_modules/bq2cst"
   },
   "keywords": [],
