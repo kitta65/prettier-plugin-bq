@@ -2084,7 +2084,7 @@ const printComment: PrintFunc<bq2cst.Comment> = (
       }
       formattedRows.push(" " + lastRow.slice(-2));
     } else {
-      formattedRows.push(" " + lastRow!.slice(-2)); // eslint-disable-line @typescript-eslint/no-non-null-assertion
+      formattedRows.push(" " + lastRow!.slice(-2));
     }
     token.literal = formattedRows.join("\n");
   }
