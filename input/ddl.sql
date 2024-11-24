@@ -14,6 +14,8 @@ default
 -- before collate
 collate 'und:ci';
 
+create external schema dataset_name with connection connection_name;
+
 ----- CREATE TABLE statement -----
 create table table_name (x int64);
 
