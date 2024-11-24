@@ -14,6 +14,8 @@ CREATE SCHEMA dataset_name
 DEFAULT COLLATE 'und:ci' -- before collate
 ;
 
+CREATE EXTERNAL SCHEMA dataset_name WITH CONNECTION connection_name;
+
 ----- CREATE TABLE statement -----
 CREATE TABLE table_name (x INT64);
 
