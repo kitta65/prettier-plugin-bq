@@ -604,3 +604,5 @@ export const mlFunctions = [
   "DISTANCE",
   "LP_NORM",
 ];
+
+export const aiFunctions = ["FORECAST"];
