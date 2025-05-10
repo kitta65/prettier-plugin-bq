@@ -481,6 +481,7 @@ export const globalFunctions = [
   "UNIX_MICROS",
   // utility functions
   "GENERATE_UUID",
+  "TYPEOF",
 ];
 
 export const keysFunctions = [
