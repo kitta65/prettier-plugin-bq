@@ -558,6 +558,8 @@ export const mlFunctions = [
   // point-in-time lookup functions
   "FEATURES_AT_TIME",
   "ENTITY_FEATURES_AT_TIME",
+  // augmented analytics
+  "GET_INSIGHTS",
   // hyperparameter tuning functions
   "TRIAL_INFO",
   // evaluation functions
@@ -610,5 +612,6 @@ export const aiFunctions = [
   "GENERATE_BOOL",
   "GENERATE_DOUBLE",
   "GENERATE_INT",
+  "GENERATE_TABLE",
   "FORECAST",
 ];
