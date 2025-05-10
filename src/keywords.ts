@@ -243,6 +243,7 @@ export const globalFunctions = [
   "ST_NUMPOINTS",
   "ST_PERIMETER",
   "ST_POINTN",
+  "ST_REGIONSTATS",
   "ST_SIMPLIFY",
   "ST_SNAPTOGRID",
   "ST_STARTPOINT",
