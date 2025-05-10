@@ -1758,6 +1758,29 @@ const printCallingFunctionGeneral: PrintFunc<
               toUpper(grandParent.token);
             }
             break;
+          case "KLL_QUANTILES":
+            if (
+              kllQuantilesFunctions.includes(func.token.literal.toUpperCase())
+            ) {
+              func.isPreDefinedFunction = true;
+              toUpper(parent.token);
+              toUpper(grandParent.token);
+            }
+            break;
+          case "ML":
+            if (mlFunctions.includes(func.token.literal.toUpperCase())) {
+              func.isPreDefinedFunction = true;
+              toUpper(parent.token);
+              toUpper(grandParent.token);
+            }
+            break;
+          case "AI":
+            if (aiFunctions.includes(func.token.literal.toUpperCase())) {
+              func.isPreDefinedFunction = true;
+              toUpper(parent.token);
+              toUpper(grandParent.token);
+            }
+            break;
         }
       }
     }
