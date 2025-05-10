@@ -27,4 +27,3 @@ const ast = parser.parse(sql);
 
 // check prittier
 console.log(format(sql));
-
