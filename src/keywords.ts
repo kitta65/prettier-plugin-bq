@@ -512,6 +512,21 @@ export const hllCountFunctions = [
   "EXTRACT",
 ];
 
+export const kllQuantilesFunctions = [
+  // KLL functions
+  "EXTRACT_INT64",
+  "EXTRACT_FLOAT64",
+  "EXTRACT_POINT_INT64",
+  "EXTRACT_POINT_FLOAT64",
+  "INIT_INT64",
+  "INIT_FLOAT64",
+  "MERGE_INT64",
+  "MERGE_FLOAT64",
+  "MERGE_PARTIAL",
+  "MERGE_POINT_INT64",
+  "MERGE_POINT_FLOAT64",
+];
+
 export const netFunctions = [
   // net functions
   "IP_FROM_STRING",

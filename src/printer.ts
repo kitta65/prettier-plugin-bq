@@ -5,6 +5,7 @@ import {
   keysFunctions,
   aeadFunctions,
   hllCountFunctions,
+  kllQuantilesFunctions,
   netFunctions,
   mlFunctions,
   aiFunctions,
@@ -1698,6 +1699,14 @@ const printCallingFunctionGeneral: PrintFunc<
           break;
         case "HLL_COUNT":
           if (hllCountFunctions.includes(func.token.literal.toUpperCase())) {
+            func.isPreDefinedFunction = true;
+            toUpper(parent.token);
+          }
+          break;
+        case "KLL_QUANTILES":
+          if (
+            kllQuantilesFunctions.includes(func.token.literal.toUpperCase())
+          ) {
             func.isPreDefinedFunction = true;
             toUpper(parent.token);
           }
