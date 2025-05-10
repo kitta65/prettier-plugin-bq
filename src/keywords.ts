@@ -243,6 +243,7 @@ export const globalFunctions = [
   "ST_NUMPOINTS",
   "ST_PERIMETER",
   "ST_POINTN",
+  "ST_REGIONSTATS",
   "ST_SIMPLIFY",
   "ST_SNAPTOGRID",
   "ST_STARTPOINT",
@@ -480,6 +481,7 @@ export const globalFunctions = [
   "UNIX_MICROS",
   // utility functions
   "GENERATE_UUID",
+  "TYPEOF",
 ];
 
 export const keysFunctions = [
@@ -509,6 +511,21 @@ export const hllCountFunctions = [
   "MERGE",
   "MERGE_PARTIAL",
   "EXTRACT",
+];
+
+export const kllQuantilesFunctions = [
+  // KLL functions
+  "EXTRACT_INT64",
+  "EXTRACT_FLOAT64",
+  "EXTRACT_POINT_INT64",
+  "EXTRACT_POINT_FLOAT64",
+  "INIT_INT64",
+  "INIT_FLOAT64",
+  "MERGE_INT64",
+  "MERGE_FLOAT64",
+  "MERGE_PARTIAL",
+  "MERGE_POINT_INT64",
+  "MERGE_POINT_FLOAT64",
 ];
 
 export const netFunctions = [
@@ -557,6 +574,8 @@ export const mlFunctions = [
   // point-in-time lookup functions
   "FEATURES_AT_TIME",
   "ENTITY_FEATURES_AT_TIME",
+  // augmented analytics
+  "GET_INSIGHTS",
   // hyperparameter tuning functions
   "TRIAL_INFO",
   // evaluation functions
@@ -602,4 +621,13 @@ export const mlFunctions = [
   // math utility functions
   "DISTANCE",
   "LP_NORM",
+];
+
+export const aiFunctions = [
+  "GENERATE",
+  "GENERATE_BOOL",
+  "GENERATE_DOUBLE",
+  "GENERATE_INT",
+  "GENERATE_TABLE",
+  "FORECAST",
 ];

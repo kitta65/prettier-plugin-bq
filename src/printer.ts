@@ -5,8 +5,10 @@ import {
   keysFunctions,
   aeadFunctions,
   hllCountFunctions,
+  kllQuantilesFunctions,
   netFunctions,
   mlFunctions,
+  aiFunctions,
 } from "./keywords";
 import { doc } from "prettier";
 import type { Doc, AstPath } from "prettier";
@@ -1658,6 +1660,7 @@ const printCallingFunctionGeneral: PrintFunc<
     }
     return x;
   };
+
   if (func.node_type === "Identifier") {
     // SUBSTR("foo", 0, 2)
     if (globalFunctions.includes(func.token.literal.toUpperCase())) {
@@ -1700,8 +1703,22 @@ const printCallingFunctionGeneral: PrintFunc<
             toUpper(parent.token);
           }
           break;
+        case "KLL_QUANTILES":
+          if (
+            kllQuantilesFunctions.includes(func.token.literal.toUpperCase())
+          ) {
+            func.isPreDefinedFunction = true;
+            toUpper(parent.token);
+          }
+          break;
         case "ML":
           if (mlFunctions.includes(func.token.literal.toUpperCase())) {
+            func.isPreDefinedFunction = true;
+            toUpper(parent.token);
+          }
+          break;
+        case "AI":
+          if (aiFunctions.includes(func.token.literal.toUpperCase())) {
             func.isPreDefinedFunction = true;
             toUpper(parent.token);
           }
@@ -1736,6 +1753,29 @@ const printCallingFunctionGeneral: PrintFunc<
             break;
           case "HLL_COUNT":
             if (hllCountFunctions.includes(func.token.literal.toUpperCase())) {
+              func.isPreDefinedFunction = true;
+              toUpper(parent.token);
+              toUpper(grandParent.token);
+            }
+            break;
+          case "KLL_QUANTILES":
+            if (
+              kllQuantilesFunctions.includes(func.token.literal.toUpperCase())
+            ) {
+              func.isPreDefinedFunction = true;
+              toUpper(parent.token);
+              toUpper(grandParent.token);
+            }
+            break;
+          case "ML":
+            if (mlFunctions.includes(func.token.literal.toUpperCase())) {
+              func.isPreDefinedFunction = true;
+              toUpper(parent.token);
+              toUpper(grandParent.token);
+            }
+            break;
+          case "AI":
+            if (aiFunctions.includes(func.token.literal.toUpperCase())) {
               func.isPreDefinedFunction = true;
               toUpper(parent.token);
               toUpper(grandParent.token);
