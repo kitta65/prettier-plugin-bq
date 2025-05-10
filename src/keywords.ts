@@ -605,4 +605,10 @@ export const mlFunctions = [
   "LP_NORM",
 ];
 
-export const aiFunctions = ["FORECAST"];
+export const aiFunctions = [
+  "GENERATE",
+  "GENERATE_BOOL",
+  "GENERATE_DOUBLE",
+  "GENERATE_INT",
+  "FORECAST",
+];
