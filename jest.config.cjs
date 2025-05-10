@@ -1,3 +1,5 @@
+/* eslint-disable */
+
 /*
  * if you'd like to use TypeScript in this file, `ts-node` is needed
  */

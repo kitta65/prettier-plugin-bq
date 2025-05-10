@@ -1,3 +1,5 @@
+/* eslint-disable */
+
 // you have to run node...
 // with `--experimental-repl-await` option
 // in root directory of this project
