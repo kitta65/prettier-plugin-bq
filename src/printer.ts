@@ -739,6 +739,8 @@ export const printSQL = (
       return printPivotConfig(path, options, print, node);
     case "PivotOperator":
       return printPivotOperator(path, options, print, node);
+    case "PivotPipeOperator":
+      return printPivotPipeOperator(path, options, print, node);
     case "RevokeStatement":
       return printRevokeStatement(path, options, print, node);
     case "RaiseStatement":
@@ -4510,6 +4512,37 @@ const printPivotOperator: PrintFunc<bq2cst.PivotOperator> = (
     docs.leading_comments,
     docs.self,
     docs.trailing_comments,
+    " ",
+    docs.config,
+    p.has("alias")
+      ? [" ", docs.as || (options.printKeywordsInUpperCase ? "AS" : "as")]
+      : "",
+    p.has("alias") ? [" ", docs.alias] : "",
+  ];
+};
+
+const printPivotPipeOperator: PrintFunc<bq2cst.PivotPipeOperator> = (
+  path,
+  options,
+  print,
+  node,
+) => {
+  const p = new Printer(path, options, print, node);
+  const docs: { [Key in Docs<bq2cst.PivotPipeOperator>]: Doc } = {
+    leading_comments: printLeadingComments(path, options, print, node),
+    self: p.self(),
+    trailing_comments: printTrailingComments(path, options, print, node),
+    keywords: p.child("keywords", undefined, "all"),
+    config: p.child("config", undefined, "first"),
+    as: p.child("as", undefined, "all"),
+    alias: p.child("alias", undefined, "all"),
+  };
+  return [
+    docs.leading_comments,
+    docs.self,
+    docs.trailing_comments,
+    p.has("keywords") ? " " : "",
+    docs.keywords,
     " ",
     docs.config,
     p.has("alias")

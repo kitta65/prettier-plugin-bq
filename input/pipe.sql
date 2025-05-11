@@ -96,3 +96,10 @@ join u as u2
 
 ----- tablesample pipe operator -----
 from t |> tablesample system (1 percent);
+
+----- pivot pipe operator -----
+from t |> pivot
+-- comment before (
+(
+-- comment before sum
+sum(sales) for quarter in ('Q1', 'Q2')) as q;

@@ -152,3 +152,13 @@ FROM t
 FROM t
 |> TABLESAMPLE SYSTEM (1 PERCENT)
 ;
+
+----- pivot pipe operator -----
+FROM t
+|>
+  pivot ( -- comment before (
+    -- comment before sum
+    SUM(sales)
+    FOR quarter IN ('Q1', 'Q2')
+  ) AS q
+;
