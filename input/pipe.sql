@@ -93,3 +93,6 @@ outer
 -- comment before join
 join u as u2
 ;
+
+----- tablesample pipe operator -----
+from t |> tablesample system (1 percent);

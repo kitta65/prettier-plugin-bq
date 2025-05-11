@@ -146,3 +146,9 @@ FROM t
 |>
   -- comment before left
   LEFT OUTER JOIN u AS u2 -- comment before outer -- comment before join
+;
+
+----- tablesample pipe operator -----
+FROM t
+|> TABLESAMPLE SYSTEM (1 PERCENT)
+;

@@ -765,6 +765,8 @@ export const printSQL = (
       return printSymbol(path, options, print, node);
     case "TableSampleClause":
       return printTableSampleClause(path, options, print, node);
+    case "TableSamplePipeOperator":
+      return printTableSamplePipeOperator(path, options, print, node);
     case "TableSampleRatio":
       return printTableSampleRatio(path, options, print, node);
     case "Template":
@@ -4996,6 +4998,29 @@ const printTableSampleClause: PrintFunc<bq2cst.TableSampleClause> = (
     docs.trailing_comments,
     " ",
     docs.system,
+    " ",
+    docs.group,
+  ];
+};
+
+// table sample
+const printTableSamplePipeOperator: PrintFunc<
+  bq2cst.TableSamplePipeOperator
+> = (path, options, print, node) => {
+  const p = new Printer(path, options, print, node);
+  const docs: { [Key in Docs<bq2cst.TableSamplePipeOperator>]: Doc } = {
+    leading_comments: printLeadingComments(path, options, print, node),
+    self: p.self(),
+    trailing_comments: printTrailingComments(path, options, print, node),
+    keywords: p.child("keywords", undefined, "all"),
+    group: p.child("group", undefined, "all"),
+  };
+  return [
+    docs.leading_comments,
+    docs.self,
+    docs.trailing_comments,
+    p.has("keywords") ? " " : "",
+    docs.keywords,
     " ",
     docs.group,
   ];
