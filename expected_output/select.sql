@@ -61,8 +61,10 @@ SELECT 2
 ;
 
 SELECT 1
-FULL OUTER UNION ALL BY NAME ON
-  (foooooooooooooooooooooooo, barrrrrrrrrrrrrrrrrrrrrrr)
+FULL OUTER UNION ALL BY NAME ON (
+  foooooooooooooooooooooooo,
+  barrrrrrrrrrrrrrrrrrrrrrr
+)
 SELECT 2
 ;
 

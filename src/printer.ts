@@ -2193,6 +2193,11 @@ const printCreateFunctionStatement: PrintFunc<
     group: p.child("group", undefined, "all"),
     returns: p.child("returns"),
     remote: p.child("remote"),
+    connection: p.child(
+      "connection",
+      undefined,
+      p.has("remote") ? "all" : "none",
+    ),
     determinism: group(p.child("determinism", undefined, "none", line)),
     language: p.child("language"),
     options: p.child("options"),
@@ -2221,8 +2226,9 @@ const printCreateFunctionStatement: PrintFunc<
       ]),
       p.has("returns") ? line : "",
       docs.returns,
-      p.has("remote") ? line : "",
-      docs.remote,
+      p.has("remote") || p.has("connection")
+        ? [line, docs.remote, p.has("remote") ? " " : "", docs.connection]
+        : "",
       p.has("determinism") ? line : "",
       docs.determinism,
       p.has("language") ? line : "",
