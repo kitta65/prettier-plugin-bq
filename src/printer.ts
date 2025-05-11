@@ -553,6 +553,8 @@ export const printSQL = (
       return printAddColumnClause(path, options, print, node);
     case "AddConstraintClause":
       return printAddConstraintClause(path, options, print, node);
+    case "AggregatePipeOperator":
+      return printAggregatePipeOperator(path, options, print, node);
     case "AlterBICapacityStatement":
       return printAlterBICapacityStatement(path, options, print, node);
     case "AlterColumnStatement":
@@ -579,6 +581,8 @@ export const printSQL = (
       return printAssertStatement(path, options, print, node);
     case "Asterisk":
       return printAsterisk(path, options, print, node);
+    case "BasePipeOperator":
+      return printBasePipeOperator(path, options, print, node);
     case "BeginStatement":
       return printBeginStatement(path, options, print, node);
     case "BetweenOperator":
@@ -655,6 +659,8 @@ export const printSQL = (
       return printForStatement(path, options, print, node);
     case "ForSystemTimeAsOfClause":
       return printForSystemTimeAsOfclause(path, options, print, node);
+    case "FromStatement":
+      return printFromStatement(path, options, print, node);
     case "GrantStatement":
       return printGrantStatement(path, options, print, node);
     case "GroupByExprs":
@@ -687,6 +693,8 @@ export const printSQL = (
       return printIsDistinctFromOperator(path, options, print, node);
     case "JoinOperator":
       return printJoinOperator(path, options, print, node);
+    case "JoinPipeOperator":
+      return printJoinPipeOperator(path, options, print, node);
     case "Keyword":
       return printKeyword(path, options, print, node);
     case "KeywordSequence":
@@ -705,6 +713,8 @@ export const printSQL = (
       return printKeywordWithType(path, options, print, node);
     case "LimitClause":
       return printLimitClause(path, options, print, node);
+    case "LimitPipeOperator":
+      return printLimitPipeOperator(path, options, print, node);
     case "LoadStatement":
       return printLoadStatement(path, options, print, node);
     case "LoopStatement":
@@ -723,10 +733,14 @@ export const printSQL = (
       return printOverwritePartitionsClause(path, options, print, node);
     case "Parameter":
       return printIdentifier(path, options, print, node);
+    case "PipeStatement":
+      return printPipeStatement(path, options, print, node);
     case "PivotConfig":
       return printPivotConfig(path, options, print, node);
     case "PivotOperator":
       return printPivotOperator(path, options, print, node);
+    case "PivotPipeOperator":
+      return printPivotPipeOperator(path, options, print, node);
     case "RevokeStatement":
       return printRevokeStatement(path, options, print, node);
     case "RaiseStatement":
@@ -753,6 +767,8 @@ export const printSQL = (
       return printSymbol(path, options, print, node);
     case "TableSampleClause":
       return printTableSampleClause(path, options, print, node);
+    case "TableSamplePipeOperator":
+      return printTableSamplePipeOperator(path, options, print, node);
     case "TableSampleRatio":
       return printTableSampleRatio(path, options, print, node);
     case "Template":
@@ -771,10 +787,14 @@ export const printSQL = (
       return printUnaryOperator(path, options, print, node);
     case "UndropStatement":
       return printUndropStatement(path, options, print, node);
+    case "UnionPipeOperator":
+      return printUnionPipeOperator(path, options, print, node);
     case "UnpivotConfig":
       return printUnpivotConfig(path, options, print, node);
     case "UnpivotOperator":
       return printUnpivotOperator(path, options, print, node);
+    case "UnpivotPipeOperator":
+      return printUnpivotPipeOperator(path, options, print, node);
     case "UpdateStatement":
       return printUpdateStatement(path, options, print, node);
     case "WhenClause":
@@ -866,6 +886,38 @@ const printAddColumnClause: PrintFunc<bq2cst.AddColumnClause> = (
       docs.type_declaration,
       docs.comma,
     ]),
+  ];
+};
+
+const printAggregatePipeOperator: PrintFunc<bq2cst.AggregatePipeOperator> = (
+  path,
+  options,
+  print,
+  node,
+) => {
+  const p = new Printer(path, options, print, node);
+  p.setNotRoot("exprs");
+  p.setGroupRecommended("exprs");
+  if (node.children.exprs) {
+    node.children.exprs.NodeVec[p.len("exprs") - 1].isFinalColumn = true;
+  }
+  const docs: { [Key in Docs<bq2cst.AggregatePipeOperator>]: Doc } = {
+    leading_comments: printLeadingComments(path, options, print, node),
+    self: p.self(),
+    trailing_comments: printTrailingComments(path, options, print, node),
+    keywords: p.child("keywords", undefined, "all"),
+    exprs: p.child("exprs", (x) => group([line, x])),
+    groupby: p.child("groupby"),
+  };
+  return [
+    docs.leading_comments,
+    docs.self,
+    docs.trailing_comments,
+    p.has("keywords") ? " " : "",
+    docs.keywords,
+    indent(docs.exprs),
+    p.has("groupby") ? hardline : "",
+    docs.groupby,
   ];
 };
 
@@ -1319,6 +1371,73 @@ const printAsterisk: PrintFunc<bq2cst.Asterisk> = (
     docs.replace,
     docs.alias,
     docs.comma,
+  ];
+};
+
+const printBasePipeOperator: PrintFunc<bq2cst.BasePipeOperator> = (
+  path,
+  options,
+  print,
+  node,
+) => {
+  const p = new Printer(path, options, print, node);
+  p.setNotRoot("exprs");
+  p.setGroupRecommended("exprs");
+  // trailing comma is...
+  // allowed!
+  // * select
+  // * extend
+  // * set
+  // * drop
+  // * rename
+  // * aggregate
+  // * order by
+  // * union / intersect / except
+
+  // NOT allowed!
+  // * as
+  // * where
+  // * limit
+  // * call
+  // * join
+
+  // other
+  // * table sample
+  // * pivot
+  // * unpivot
+  const commaTolerantOperators = [
+    "SELECT",
+    "EXTEND",
+    "SET",
+    "DROP",
+    "RENAME",
+    "AGGREGATE",
+    "ORDER",
+    "UNION",
+    "INTERSECT",
+    "EXCEPT",
+  ];
+  if (
+    node.children.exprs &&
+    node.token &&
+    commaTolerantOperators.includes(node.token.literal.toUpperCase())
+  ) {
+    node.children.exprs.NodeVec[p.len("exprs") - 1].isFinalColumn = true;
+  }
+  const docs: { [Key in Docs<bq2cst.BasePipeOperator>]: Doc } = {
+    leading_comments: printLeadingComments(path, options, print, node),
+    self: p.self(),
+    trailing_comments: printTrailingComments(path, options, print, node),
+    keywords: p.child("keywords", undefined, "all"),
+    exprs: p.child("exprs", (x) => group([line, x])),
+  };
+  return [
+    docs.leading_comments,
+    docs.self,
+    docs.trailing_comments,
+    p.has("keywords") ? " " : "",
+    docs.keywords,
+    indent(docs.exprs),
   ];
 };
 
@@ -3162,6 +3281,34 @@ const printForSystemTimeAsOfclause: PrintFunc<
   ];
 };
 
+const printFromStatement: PrintFunc<bq2cst.FromStatement> = (
+  path,
+  options,
+  print,
+  node,
+) => {
+  const p = new Printer(path, options, print, node);
+  const docs: { [Key in Docs<bq2cst.FromStatement>]: Doc } = {
+    leading_comments: printLeadingComments(path, options, print, node),
+    self: p.self("upper"),
+    trailing_comments: printTrailingComments(path, options, print, node),
+    expr: p.child("expr", undefined, "first"),
+    semicolon: p.child("semicolon"),
+  };
+  return [
+    docs.leading_comments,
+    group([
+      docs.self,
+      docs.trailing_comments,
+      " ",
+      docs.expr,
+      softline,
+      docs.semicolon,
+    ]),
+    p.newLine(),
+  ];
+};
+
 const printGrantStatement: PrintFunc<bq2cst.GrantStatement> = (
   path,
   options,
@@ -3742,6 +3889,43 @@ const printJoinOperator: PrintFunc<bq2cst.JoinOperator> = (
   ];
 };
 
+const printJoinPipeOperator: PrintFunc<bq2cst.JoinPipeOperator> = (
+  path,
+  options,
+  print,
+  node,
+) => {
+  const p = new Printer(path, options, print, node);
+  p.setNotRoot("exprs");
+  p.setGroupRecommended("exprs");
+  const docs: { [Key in Docs<bq2cst.JoinPipeOperator>]: Doc } = {
+    method: p.child("method"),
+    leading_comments: p.has("method")
+      ? ""
+      : printLeadingComments(path, options, print, node),
+    self: p.self("asItIs", p.has("method")),
+    trailing_comments: printTrailingComments(path, options, print, node),
+    keywords: p.child("keywords", undefined, "all"),
+    exprs: p.child("exprs", (x) => group([line, x])),
+    on: p.child("on"),
+    using: p.child("using"),
+  };
+  return [
+    docs.method,
+    p.has("method") ? " " : "",
+    docs.leading_comments,
+    docs.self,
+    docs.trailing_comments,
+    p.has("keywords") ? " " : "",
+    docs.keywords,
+    indent(docs.exprs),
+    p.has("on") ? line : "",
+    docs.on,
+    p.has("using") ? line : "",
+    docs.using,
+  ];
+};
+
 const printKeyword: PrintFunc<bq2cst.Keyword> = (
   path,
   options,
@@ -3929,6 +4113,35 @@ const printLimitClause: PrintFunc<bq2cst.LimitClause> = (
     docs.leading_comments,
     group([docs.self, docs.trailing_comments, " ", docs.expr]),
     p.has("offset") ? " " : "",
+    docs.offset,
+  ];
+};
+
+const printLimitPipeOperator: PrintFunc<bq2cst.LimitPipeOperator> = (
+  path,
+  options,
+  print,
+  node,
+) => {
+  const p = new Printer(path, options, print, node);
+  p.setNotRoot("exprs");
+  p.setGroupRecommended("exprs");
+  const docs: { [Key in Docs<bq2cst.LimitPipeOperator>]: Doc } = {
+    leading_comments: printLeadingComments(path, options, print, node),
+    self: p.self(),
+    trailing_comments: printTrailingComments(path, options, print, node),
+    keywords: p.child("keywords", undefined, "all"),
+    exprs: p.child("exprs", (x) => group([line, x])),
+    offset: p.child("offset"),
+  };
+  return [
+    docs.leading_comments,
+    docs.self,
+    docs.trailing_comments,
+    p.has("keywords") ? " " : "",
+    docs.keywords,
+    indent(docs.exprs),
+    p.has("offset") ? line : "",
     docs.offset,
   ];
 };
@@ -4228,6 +4441,34 @@ const printOverwritePartitionsClause: PrintFunc<
   ]);
 };
 
+const printPipeStatement: PrintFunc<bq2cst.PipeStatement> = (
+  path,
+  options,
+  print,
+  node,
+) => {
+  const p = new Printer(path, options, print, node);
+  p.setNotRoot("left");
+  p.setNotRoot("right");
+  const docs: { [Key in Docs<bq2cst.PipeStatement>]: Doc } = {
+    left: p.child("left"),
+    leading_comments: printLeadingComments(path, options, print, node),
+    self: p.self("upper"),
+    trailing_comments: printTrailingComments(path, options, print, node),
+    right: p.child("right"),
+    semicolon: p.child("semicolon"),
+  };
+  return [
+    docs.left,
+    hardline,
+    docs.leading_comments,
+    group([docs.self, docs.trailing_comments, indent([line, docs.right])]),
+    p.has("semicolon") ? softline : "",
+    docs.semicolon,
+    p.newLine(),
+  ];
+};
+
 const printPivotConfig: PrintFunc<bq2cst.PivotConfig> = (
   path,
   options,
@@ -4273,6 +4514,37 @@ const printPivotOperator: PrintFunc<bq2cst.PivotOperator> = (
     docs.leading_comments,
     docs.self,
     docs.trailing_comments,
+    " ",
+    docs.config,
+    p.has("alias")
+      ? [" ", docs.as || (options.printKeywordsInUpperCase ? "AS" : "as")]
+      : "",
+    p.has("alias") ? [" ", docs.alias] : "",
+  ];
+};
+
+const printPivotPipeOperator: PrintFunc<bq2cst.PivotPipeOperator> = (
+  path,
+  options,
+  print,
+  node,
+) => {
+  const p = new Printer(path, options, print, node);
+  const docs: { [Key in Docs<bq2cst.PivotPipeOperator>]: Doc } = {
+    leading_comments: printLeadingComments(path, options, print, node),
+    self: p.self(),
+    trailing_comments: printTrailingComments(path, options, print, node),
+    keywords: p.child("keywords", undefined, "all"),
+    config: p.child("config", undefined, "first"),
+    as: p.child("as", undefined, "all"),
+    alias: p.child("alias", undefined, "all"),
+  };
+  return [
+    docs.leading_comments,
+    docs.self,
+    docs.trailing_comments,
+    p.has("keywords") ? " " : "",
+    docs.keywords,
     " ",
     docs.config,
     p.has("alias")
@@ -4588,7 +4860,7 @@ const printSetOperator: PrintFunc<bq2cst.SetOperator> = (
     right: p.child("right"),
     semicolon: p.child("semicolon", undefined, "all"),
   };
-  const res = [
+  return [
     docs.with,
     p.has("with")
       ? options.printBlankLineAfterCte
@@ -4611,11 +4883,6 @@ const printSetOperator: PrintFunc<bq2cst.SetOperator> = (
     docs.semicolon,
     p.newLine(),
   ];
-  if (node.notRoot) {
-    return res;
-  } else {
-    return group(res);
-  }
 };
 
 const printSetStatement: PrintFunc<bq2cst.SetStatement> = (
@@ -4766,6 +5033,29 @@ const printTableSampleClause: PrintFunc<bq2cst.TableSampleClause> = (
     docs.trailing_comments,
     " ",
     docs.system,
+    " ",
+    docs.group,
+  ];
+};
+
+// table sample
+const printTableSamplePipeOperator: PrintFunc<
+  bq2cst.TableSamplePipeOperator
+> = (path, options, print, node) => {
+  const p = new Printer(path, options, print, node);
+  const docs: { [Key in Docs<bq2cst.TableSamplePipeOperator>]: Doc } = {
+    leading_comments: printLeadingComments(path, options, print, node),
+    self: p.self(),
+    trailing_comments: printTrailingComments(path, options, print, node),
+    keywords: p.child("keywords", undefined, "all"),
+    group: p.child("group", undefined, "all"),
+  };
+  return [
+    docs.leading_comments,
+    docs.self,
+    docs.trailing_comments,
+    p.has("keywords") ? " " : "",
+    docs.keywords,
     " ",
     docs.group,
   ];
@@ -5019,6 +5309,45 @@ const printUndropStatement: PrintFunc<bq2cst.UndropStatement> = (
   ];
 };
 
+const printUnionPipeOperator: PrintFunc<bq2cst.UnionPipeOperator> = (
+  path,
+  options,
+  print,
+  node,
+) => {
+  const p = new Printer(path, options, print, node);
+  p.setNotRoot("exprs");
+  p.setGroupRecommended("exprs");
+  if (node.children.exprs) {
+    // trailing comma is allowed
+    node.children.exprs.NodeVec[p.len("exprs") - 1].isFinalColumn = true;
+  }
+  const docs: { [Key in Docs<bq2cst.UnionPipeOperator>]: Doc } = {
+    method: p.child("method"),
+    leading_comments: p.has("method")
+      ? ""
+      : printLeadingComments(path, options, print, node),
+    self: p.self("asItIs", p.has("method")),
+    trailing_comments: printTrailingComments(path, options, print, node),
+    keywords: p.child("keywords", undefined, "all"),
+    by: p.child("by", undefined, "all"),
+    corresponding: p.child("corresponding", undefined, "all"),
+    exprs: p.child("exprs", (x) => group([line, x])),
+  };
+  return [
+    docs.method,
+    p.has("method") ? " " : "",
+    docs.leading_comments,
+    docs.self,
+    docs.trailing_comments,
+    p.has("keywords") ? " " : "",
+    docs.keywords,
+    p.has("by") ? [" ", docs.by] : "",
+    p.has("corresponding") ? [" ", docs.corresponding] : "",
+    indent(docs.exprs),
+  ];
+};
+
 const printUnpivotConfig: PrintFunc<bq2cst.UnpivotConfig> = (
   path,
   options,
@@ -5068,6 +5397,37 @@ const printUnpivotOperator: PrintFunc<bq2cst.UnpivotOperator> = (
     docs.self,
     docs.include_or_exclude_nulls,
     docs.trailing_comments,
+    " ",
+    docs.config,
+    p.has("alias")
+      ? [" ", docs.as || (options.printKeywordsInUpperCase ? "AS" : "as")]
+      : "",
+    p.has("alias") ? [" ", docs.alias] : "",
+  ];
+};
+
+const printUnpivotPipeOperator: PrintFunc<bq2cst.UnpivotPipeOperator> = (
+  path,
+  options,
+  print,
+  node,
+) => {
+  const p = new Printer(path, options, print, node);
+  const docs: { [Key in Docs<bq2cst.UnpivotPipeOperator>]: Doc } = {
+    leading_comments: printLeadingComments(path, options, print, node),
+    self: p.self(),
+    trailing_comments: printTrailingComments(path, options, print, node),
+    keywords: p.child("keywords", undefined, "all"),
+    config: p.child("config", undefined, "first"),
+    as: p.child("as", undefined, "all"),
+    alias: p.child("alias", undefined, "all"),
+  };
+  return [
+    docs.leading_comments,
+    docs.self,
+    docs.trailing_comments,
+    p.has("keywords") ? " " : "",
+    docs.keywords,
     " ",
     docs.config,
     p.has("alias")

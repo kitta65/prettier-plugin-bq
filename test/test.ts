@@ -21,6 +21,7 @@ const targets = [
   "debug.sql",
   "other.sql",
   "ml.sql",
+  "pipe.sql",
 ];
 
 beforeAll(async () => {
