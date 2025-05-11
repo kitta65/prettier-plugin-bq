@@ -709,6 +709,8 @@ export const printSQL = (
       return printKeywordWithType(path, options, print, node);
     case "LimitClause":
       return printLimitClause(path, options, print, node);
+    case "LimitPipeOperator":
+      return printLimitPipeOperator(path, options, print, node);
     case "LoadStatement":
       return printLoadStatement(path, options, print, node);
     case "LoopStatement":
@@ -3992,6 +3994,38 @@ const printLimitClause: PrintFunc<bq2cst.LimitClause> = (
     docs.leading_comments,
     group([docs.self, docs.trailing_comments, " ", docs.expr]),
     p.has("offset") ? " " : "",
+    docs.offset,
+  ];
+};
+
+const printLimitPipeOperator: PrintFunc<bq2cst.LimitPipeOperator> = (
+  path,
+  options,
+  print,
+  node,
+) => {
+  const p = new Printer(path, options, print, node);
+  p.setNotRoot("exprs");
+  p.setGroupRecommended("exprs");
+  if (node.children.exprs) {
+    node.children.exprs.NodeVec[p.len("exprs") - 1].isFinalColumn = true;
+  }
+  const docs: { [Key in Docs<bq2cst.LimitPipeOperator>]: Doc } = {
+    leading_comments: printLeadingComments(path, options, print, node),
+    self: p.self(),
+    trailing_comments: printTrailingComments(path, options, print, node),
+    keywords: p.child("keywords", undefined, "all"),
+    exprs: p.child("exprs", (x) => group([line, x])),
+    offset: p.child("offset"),
+  };
+  return [
+    docs.leading_comments,
+    docs.self,
+    docs.trailing_comments,
+    p.has("keywords") ? " " : "",
+    docs.keywords,
+    indent(docs.exprs),
+    line,
     docs.offset,
   ];
 };

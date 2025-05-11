@@ -44,4 +44,13 @@ from t |> select col1, col2,;
 
 from t |> select distinct col;
 
-from t |> select all as struct col
+from t |> select all as struct col;
+
+----- limit pipe operator -----
+from t |> limit 1;
+
+from t |> limit 1 offset 2;
+from t |>
+limit 1
+-- break
+offset 2;
