@@ -10,6 +10,7 @@ SELECT 2;
 
 ----- set operator -----
 SELECT 1
+-- comment before union
 UNION ALL
 SELECT 2
 ;
@@ -51,6 +52,33 @@ SELECT 2
 SELECT 1 FROM (SELECT 2)
 UNION ALL
 SELECT 3
+;
+
+SELECT 1
+-- comment before inner
+INNER UNION ALL BY NAME -- comment before union
+SELECT 2
+;
+
+SELECT 1
+FULL OUTER UNION ALL BY NAME ON
+  (foooooooooooooooooooooooo, barrrrrrrrrrrrrrrrrrrrrrr)
+SELECT 2
+;
+
+SELECT 1
+UNION ALL CORRESPONDING
+SELECT 2
+;
+
+SELECT 1
+UNION ALL STRICT CORRESPONDING
+SELECT 2
+;
+
+SELECT 1
+UNION ALL STRICT CORRESPONDING BY (foo, bar)
+SELECT 2
 ;
 
 ----- WITH clause -----

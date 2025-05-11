@@ -4570,10 +4570,15 @@ const printSetOperator: PrintFunc<bq2cst.SetOperator> = (
   const docs: { [Key in Docs<bq2cst.SetOperator>]: Doc } = {
     with: p.child("with"),
     left: p.child("left"),
-    leading_comments: printLeadingComments(path, options, print, node),
-    self: p.self("upper"),
+    method: p.child("method"),
+    leading_comments: p.has("method")
+      ? ""
+      : printLeadingComments(path, options, print, node),
+    self: p.self("upper", p.has("method")),
     trailing_comments: printTrailingComments(path, options, print, node),
     distinct_or_all: p.child("distinct_or_all", undefined, "all"),
+    by: p.child("by", undefined, "all"),
+    corresponding: p.child("corresponding", undefined, "all"),
     right: p.child("right"),
     semicolon: p.child("semicolon", undefined, "all"),
   };
@@ -4586,11 +4591,14 @@ const printSetOperator: PrintFunc<bq2cst.SetOperator> = (
       : "",
     docs.left,
     line,
+    p.has("method") ? [docs.method, " "] : "",
     docs.leading_comments,
     docs.self,
     docs.trailing_comments,
     " ",
     docs.distinct_or_all,
+    p.has("by") ? [" ", docs.by] : "",
+    p.has("corresponding") ? [" ", docs.corresponding] : "",
     line,
     docs.right,
     p.has("semicolon") ? softline : "",

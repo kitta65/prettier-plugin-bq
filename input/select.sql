@@ -11,7 +11,9 @@ from t;
 select 1; select 2;
 
 ----- set operator -----
-select 1 union all select 2;
+select 1
+-- comment before union
+union all select 2;
 
 select 1 intersect distinct (select 2);
 
@@ -33,6 +35,20 @@ from
 union all
 select 3
 ;
+
+select 1
+-- comment before inner
+inner
+-- comment before union
+union all by name select 2;
+
+select 1 full outer union all by name on (foooooooooooooooooooooooo, barrrrrrrrrrrrrrrrrrrrrrr) select 2;
+
+select 1 union all corresponding select 2;
+
+select 1 union all strict corresponding select 2;
+
+select 1 union all strict corresponding by (foo, bar) select 2;
 
 ----- WITH clause -----
 with a as (select 1) select 2; -- do not insert blank line
