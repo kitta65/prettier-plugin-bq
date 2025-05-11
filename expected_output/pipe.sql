@@ -162,3 +162,12 @@ FROM t
     FOR quarter IN ('Q1', 'Q2')
   ) AS q
 ;
+
+----- unpivot pipe operator -----
+FROM t
+|> unpivot (sales FOR quarter IN (q1, q2)) AS q
+;
+
+FROM t
+|> unpivot INCLUDE NULLS (sales FOR quarter IN (q1, q2)) AS q
+;

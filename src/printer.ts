@@ -793,6 +793,8 @@ export const printSQL = (
       return printUnpivotConfig(path, options, print, node);
     case "UnpivotOperator":
       return printUnpivotOperator(path, options, print, node);
+    case "UnpivotPipeOperator":
+      return printUnpivotPipeOperator(path, options, print, node);
     case "UpdateStatement":
       return printUpdateStatement(path, options, print, node);
     case "WhenClause":
@@ -5395,6 +5397,37 @@ const printUnpivotOperator: PrintFunc<bq2cst.UnpivotOperator> = (
     docs.self,
     docs.include_or_exclude_nulls,
     docs.trailing_comments,
+    " ",
+    docs.config,
+    p.has("alias")
+      ? [" ", docs.as || (options.printKeywordsInUpperCase ? "AS" : "as")]
+      : "",
+    p.has("alias") ? [" ", docs.alias] : "",
+  ];
+};
+
+const printUnpivotPipeOperator: PrintFunc<bq2cst.UnpivotPipeOperator> = (
+  path,
+  options,
+  print,
+  node,
+) => {
+  const p = new Printer(path, options, print, node);
+  const docs: { [Key in Docs<bq2cst.UnpivotPipeOperator>]: Doc } = {
+    leading_comments: printLeadingComments(path, options, print, node),
+    self: p.self(),
+    trailing_comments: printTrailingComments(path, options, print, node),
+    keywords: p.child("keywords", undefined, "all"),
+    config: p.child("config", undefined, "first"),
+    as: p.child("as", undefined, "all"),
+    alias: p.child("alias", undefined, "all"),
+  };
+  return [
+    docs.leading_comments,
+    docs.self,
+    docs.trailing_comments,
+    p.has("keywords") ? " " : "",
+    docs.keywords,
     " ",
     docs.config,
     p.has("alias")
