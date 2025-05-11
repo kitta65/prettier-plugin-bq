@@ -4674,7 +4674,7 @@ const printSetOperator: PrintFunc<bq2cst.SetOperator> = (
     right: p.child("right"),
     semicolon: p.child("semicolon", undefined, "all"),
   };
-  const res = [
+  return [
     docs.with,
     p.has("with")
       ? options.printBlankLineAfterCte
@@ -4697,11 +4697,6 @@ const printSetOperator: PrintFunc<bq2cst.SetOperator> = (
     docs.semicolon,
     p.newLine(),
   ];
-  if (node.notRoot) {
-    return res;
-  } else {
-    return group(res);
-  }
 };
 
 const printSetStatement: PrintFunc<bq2cst.SetStatement> = (
