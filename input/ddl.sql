@@ -165,7 +165,7 @@ as r'''
 
 -- python function
 create function abc() returns int64 laguage python
-with connection `project.us.connection`
+with connection default
 options()
 as '''return 1''';
 

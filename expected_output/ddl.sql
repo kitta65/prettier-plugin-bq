@@ -164,7 +164,7 @@ AS r'''
 CREATE FUNCTION abc()
 RETURNS INT64
 LAGUAGE python
-WITH CONNECTION `project.us.connection`
+WITH CONNECTION DEFAULT
 OPTIONS ()
 AS '''return 1'''
 ;
