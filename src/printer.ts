@@ -607,6 +607,10 @@ export const printSQL = (
       return printCaseExprArm(path, options, print, node);
     case "CastArgument":
       return printCastArgument(path, options, print, node);
+    case "CaseStatement":
+      return printCaseStatement(path, options, print, node);
+    case "CaseStatementArm":
+      return printCaseStatementArm(path, options, print, node);
     case "Comment":
       return printComment(path, options, print, node);
     case "Constraint":
@@ -2180,6 +2184,69 @@ const printCaseExprArm: PrintFunc<bq2cst.CaseExprArm> = (
       ]),
     ];
   }
+};
+
+const printCaseStatement: PrintFunc<bq2cst.CaseStatement> = (
+  path,
+  options,
+  print,
+  node,
+) => {
+  const p = new Printer(path, options, print, node);
+  const docs: { [Key in Docs<bq2cst.CaseStatement>]: Doc } = {
+    leading_comments: printLeadingComments(path, options, print, node),
+    self: p.self(),
+    trailing_comments: printTrailingComments(path, options, print, node),
+    expr: p.child("expr", undefined, "all"),
+    arms: p.child("arms", (x) => [line, group(x)]),
+    end_case: group(p.child("end_case", undefined, "none", line)),
+    semicolon: p.child("semicolon"),
+  };
+  return [
+    docs.leading_comments,
+    group([
+      docs.self,
+      docs.trailing_comments,
+      p.has("expr") ? " " : "",
+      docs.expr,
+      indent(docs.arms),
+      line,
+      docs.end_case,
+      softline,
+      docs.semicolon,
+    ]),
+    p.newLine(),
+  ];
+};
+
+const printCaseStatementArm: PrintFunc<bq2cst.CaseStatementArm> = (
+  path,
+  options,
+  print,
+  node,
+) => {
+  const p = new Printer(path, options, print, node);
+  p.setNotRoot("stmts");
+  const docs: { [Key in Docs<bq2cst.CaseStatementArm>]: Doc } = {
+    leading_comments: printLeadingComments(path, options, print, node),
+    self: p.self(),
+    trailing_comments: printTrailingComments(path, options, print, node),
+    expr: p.child("expr", undefined, "all"),
+    then: p.child("then", undefined, "all"),
+    stmts: p.child("stmts", (x) => [hardline, group(x)]),
+  };
+  return [
+    docs.leading_comments,
+    group([
+      docs.self,
+      docs.trailing_comments,
+      p.has("expr") ? " " : "",
+      docs.expr,
+      p.has("then") ? " " : "",
+      docs.then,
+      indent([docs.stmts]),
+    ]),
+  ];
 };
 
 const printCastArgument: PrintFunc<bq2cst.CastArgument> = (

@@ -62,6 +62,32 @@ EXCEPTION WHEN ERROR THEN
 END
 ;
 
+----- case statement -----
+CASE
+  WHEN TRUE THEN
+    SELECT 1;
+END CASE
+;
+
+CASE
+  WHEN TRUE THEN
+    SELECT 1;
+    SELECT 2;
+  WHEN TRUE THEN
+    SELECT 3;
+END CASE
+;
+
+CASE expr
+  WHEN 'x' THEN
+    SELECT 1;
+  ELSE
+    SELECT 2;
+END CASE
+;
+
+CASE WHEN TRUE THEN ELSE END CASE;
+
 ----- IF statement -----
 IF TRUE THEN SELECT 1; END IF;
 
