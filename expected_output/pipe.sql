@@ -2,15 +2,12 @@
 FROM tablename;
 
 FROM table
-|>
-  SELECT col
+|> SELECT col
 ;
 
 FROM table
-|>
-  SELECT col
-|>
-  SELECT col
+|> SELECT col
+|> SELECT col
 ;
 
 FROM table
