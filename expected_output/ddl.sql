@@ -160,6 +160,15 @@ AS r'''
 '''
 ;
 
+-- python function
+CREATE FUNCTION abc()
+RETURNS INT64
+LAGUAGE python
+WITH CONNECTION `project.us.connection`
+OPTIONS ()
+AS '''return 1'''
+;
+
 -- TVF
 CREATE TABLE FUNCTION one() AS SELECT 1 AS one;
 

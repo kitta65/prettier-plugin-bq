@@ -163,6 +163,12 @@ as r'''
   return 1
 ''';
 
+-- python function
+create function abc() returns int64 laguage python
+with connection `project.us.connection`
+options()
+as '''return 1''';
+
 -- TVF
 create table function one()
 as select 1 as one

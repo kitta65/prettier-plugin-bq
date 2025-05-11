@@ -2192,14 +2192,14 @@ const printCreateFunctionStatement: PrintFunc<
     ident: p.child("ident", undefined, "all"),
     group: p.child("group", undefined, "all"),
     returns: p.child("returns"),
+    determinism: group(p.child("determinism", undefined, "none", line)),
+    language: p.child("language"),
     remote: p.child("remote"),
     connection: p.child(
       "connection",
       undefined,
       p.has("remote") ? "all" : "none",
     ),
-    determinism: group(p.child("determinism", undefined, "none", line)),
-    language: p.child("language"),
     options: p.child("options"),
     as: p.child("as"),
     semicolon: p.child("semicolon"),
@@ -2226,13 +2226,13 @@ const printCreateFunctionStatement: PrintFunc<
       ]),
       p.has("returns") ? line : "",
       docs.returns,
-      p.has("remote") || p.has("connection")
-        ? [line, docs.remote, p.has("remote") ? " " : "", docs.connection]
-        : "",
       p.has("determinism") ? line : "",
       docs.determinism,
       p.has("language") ? line : "",
       docs.language,
+      p.has("remote") || p.has("connection")
+        ? [line, docs.remote, p.has("remote") ? " " : "", docs.connection]
+        : "",
       p.has("options") ? line : "",
       docs.options,
       p.has("as") ? line : "",
