@@ -36,4 +36,12 @@ from t |> as u;
 
 from t |> call tvf() as u;
 
-from t |> order by col1 desc nulls last, col2
+-- keywords
+from t |> order by col1 desc nulls last, col2;
+
+-- select
+from t |> select col1, col2,;
+
+from t |> select distinct col;
+
+from t |> select all as struct col

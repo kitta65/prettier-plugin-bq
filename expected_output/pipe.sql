@@ -62,3 +62,15 @@ FROM t
 
 FROM t
 |> ORDER BY col1 DESC NULLS LAST, col2
+;
+
+FROM t
+|> SELECT col1, col2
+;
+
+FROM t
+|> SELECT DISTINCT col
+;
+
+FROM t
+|> SELECT ALL AS STRUCT col
