@@ -306,6 +306,13 @@ ALTER SCHEMA IF EXISTS prettier_plugin_bq_test SET OPTIONS (dummy = 'dummy');
 
 ALTER SCHEMA dataset_name SET DEFAULT COLLATE 'und:ci';
 
+ALTER SCHEMA dataset_name ADD REPLICA replica_name;
+
+ALTER SCHEMA dataset_name
+-- break
+DROP REPLICA replica_name
+;
+
 ----- ALTER TABLE statement -----
 -- SET
 ALTER TABLE t SET OPTIONS (dummy = 'dummy');

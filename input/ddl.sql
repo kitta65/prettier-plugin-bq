@@ -303,6 +303,12 @@ alter schema if exists prettier_plugin_bq_test set options(dummy = 'dummy');
 
 alter schema dataset_name set default collate 'und:ci';
 
+alter schema dataset_name add replica replica_name;
+
+alter schema dataset_name
+-- break
+drop replica replica_name;
+
 ----- ALTER TABLE statement -----
 -- SET
 alter table t set options (dummy='dummy');
