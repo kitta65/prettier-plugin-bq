@@ -106,3 +106,25 @@ FROM t
     col1 AS col_a DESC NULLS LAST,
     col2
 ;
+
+----- union pipe operator -----
+FROM t
+|> UNION ALL (SELECT 1), (SELECT 2)
+;
+
+FROM t
+|> UNION ALL BY NAME (SELECT 1)
+;
+
+FROM t
+|> LEFT OUTER INTERSECT DISTINCT BY NAME ON (col) (SELECT 1)
+;
+
+SELECT *
+|>
+  EXCEPT DISTINCT
+    (
+      SELECT 1
+      |> EXCEPT DISTINCT (SELECT 2)
+    ),
+;

@@ -781,6 +781,8 @@ export const printSQL = (
       return printUnaryOperator(path, options, print, node);
     case "UndropStatement":
       return printUndropStatement(path, options, print, node);
+    case "UnionPipeOperator":
+      return printUnionPipeOperator(path, options, print, node);
     case "UnpivotConfig":
       return printUnpivotConfig(path, options, print, node);
     case "UnpivotOperator":
@@ -1373,7 +1375,45 @@ const printBasePipeOperator: PrintFunc<bq2cst.BasePipeOperator> = (
   const p = new Printer(path, options, print, node);
   p.setNotRoot("exprs");
   p.setGroupRecommended("exprs");
-  if (node.children.exprs) {
+  // trailing comma is...
+  // allowed!
+  // * select
+  // * extend
+  // * set
+  // * drop
+  // * rename
+  // * aggregate
+  // * order by
+  // * union / intersect / except
+
+  // NOT allowed!
+  // * as
+  // * where
+  // * limit
+  // * call
+  // * join
+
+  // other
+  // * table sample
+  // * pivot
+  // * unpivot
+  const commaTolerantOperators = [
+    "SELECT",
+    "EXTEND",
+    "SET",
+    "DROP",
+    "RENAME",
+    "AGGREGATE",
+    "ORDER",
+    "UNION",
+    "INTERSECT",
+    "EXCEPT",
+  ];
+  if (
+    node.children.exprs &&
+    node.token &&
+    commaTolerantOperators.includes(node.token.literal.toUpperCase())
+  ) {
     node.children.exprs.NodeVec[p.len("exprs") - 1].isFinalColumn = true;
   }
   const docs: { [Key in Docs<bq2cst.BasePipeOperator>]: Doc } = {
@@ -4041,9 +4081,6 @@ const printLimitPipeOperator: PrintFunc<bq2cst.LimitPipeOperator> = (
   const p = new Printer(path, options, print, node);
   p.setNotRoot("exprs");
   p.setGroupRecommended("exprs");
-  if (node.children.exprs) {
-    node.children.exprs.NodeVec[p.len("exprs") - 1].isFinalColumn = true;
-  }
   const docs: { [Key in Docs<bq2cst.LimitPipeOperator>]: Doc } = {
     leading_comments: printLeadingComments(path, options, print, node),
     self: p.self(),
@@ -5170,6 +5207,45 @@ const printUndropStatement: PrintFunc<bq2cst.UndropStatement> = (
       docs.semicolon,
     ]),
     p.newLine(),
+  ];
+};
+
+const printUnionPipeOperator: PrintFunc<bq2cst.UnionPipeOperator> = (
+  path,
+  options,
+  print,
+  node,
+) => {
+  const p = new Printer(path, options, print, node);
+  p.setNotRoot("exprs");
+  p.setGroupRecommended("exprs");
+  if (node.children.exprs) {
+    // trailing comma is allowed
+    node.children.exprs.NodeVec[p.len("exprs") - 1].isFinalColumn = true;
+  }
+  const docs: { [Key in Docs<bq2cst.UnionPipeOperator>]: Doc } = {
+    method: p.child("method"),
+    leading_comments: p.has("method")
+      ? ""
+      : printLeadingComments(path, options, print, node),
+    self: p.self("asItIs", p.has("method")),
+    trailing_comments: printTrailingComments(path, options, print, node),
+    keywords: p.child("keywords", undefined, "all"),
+    by: p.child("by", undefined, "all"),
+    corresponding: p.child("corresponding", undefined, "all"),
+    exprs: p.child("exprs", (x) => group([line, x])),
+  };
+  return [
+    docs.method,
+    p.has("method") ? " " : "",
+    docs.leading_comments,
+    docs.self,
+    docs.trailing_comments,
+    p.has("keywords") ? " " : "",
+    docs.keywords,
+    p.has("by") ? [" ", docs.by] : "",
+    p.has("corresponding") ? [" ", docs.corresponding] : "",
+    indent(docs.exprs),
   ];
 };
 

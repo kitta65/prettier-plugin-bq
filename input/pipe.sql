@@ -63,3 +63,17 @@ from t
 |>
   aggregate count(*)
   group by col1 as col_a desc nulls last, col2;
+
+----- union pipe operator -----
+from t |> union all (select 1), (select 2);
+
+from t |> union all by name (select 1);
+
+from t |> left outer intersect distinct by name on (col) (select 1);
+
+select *
+|> except distinct
+(
+  select 1
+  |> except distinct (select 2)
+);
