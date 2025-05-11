@@ -693,6 +693,8 @@ export const printSQL = (
       return printIsDistinctFromOperator(path, options, print, node);
     case "JoinOperator":
       return printJoinOperator(path, options, print, node);
+    case "JoinPipeOperator":
+      return printJoinPipeOperator(path, options, print, node);
     case "Keyword":
       return printKeyword(path, options, print, node);
     case "KeywordSequence":
@@ -3878,6 +3880,43 @@ const printJoinOperator: PrintFunc<bq2cst.JoinOperator> = (
     docs.using,
     docs.alias,
     docs.pivot,
+  ];
+};
+
+const printJoinPipeOperator: PrintFunc<bq2cst.JoinPipeOperator> = (
+  path,
+  options,
+  print,
+  node,
+) => {
+  const p = new Printer(path, options, print, node);
+  p.setNotRoot("exprs");
+  p.setGroupRecommended("exprs");
+  const docs: { [Key in Docs<bq2cst.JoinPipeOperator>]: Doc } = {
+    method: p.child("method"),
+    leading_comments: p.has("method")
+      ? ""
+      : printLeadingComments(path, options, print, node),
+    self: p.self("asItIs", p.has("method")),
+    trailing_comments: printTrailingComments(path, options, print, node),
+    keywords: p.child("keywords", undefined, "all"),
+    exprs: p.child("exprs", (x) => group([line, x])),
+    on: p.child("on"),
+    using: p.child("using"),
+  };
+  return [
+    docs.method,
+    p.has("method") ? " " : "",
+    docs.leading_comments,
+    docs.self,
+    docs.trailing_comments,
+    p.has("keywords") ? " " : "",
+    docs.keywords,
+    indent(docs.exprs),
+    p.has("on") ? line : "",
+    docs.on,
+    p.has("using") ? line : "",
+    docs.using,
   ];
 };
 

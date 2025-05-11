@@ -128,3 +128,21 @@ SELECT *
       |> EXCEPT DISTINCT (SELECT 2)
     ),
 ;
+
+----- join pipe operator -----
+FROM t
+|> JOIN t USING(col)
+;
+
+FROM t
+|> JOIN (SELECT 1) AS u ON foo = bar
+;
+
+FROM t
+|> CROSS JOIN u
+;
+
+FROM t
+|>
+  -- comment before left
+  LEFT OUTER JOIN u AS u2 -- comment before outer -- comment before join

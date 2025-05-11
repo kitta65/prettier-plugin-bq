@@ -77,3 +77,19 @@ select *
   select 1
   |> except distinct (select 2)
 );
+
+----- join pipe operator -----
+from t |> join t using(col);
+
+from t |> join (select 1) as u on foo = bar;
+
+from t |> cross join u;
+
+from t |>
+-- comment before left
+left
+-- comment before outer
+outer
+-- comment before join
+join u as u2
+;
