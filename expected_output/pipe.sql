@@ -45,3 +45,20 @@ INNER JOIN table AS p2 USING(col)
 
 (FROM table AS t) ORDER BY 1 LIMIT 1
 |> SELECT *
+;
+
+----- base pipe operator -----
+FROM t
+|> extend 1 AS one, 2 AS two
+;
+
+FROM t
+|> AS u
+;
+
+FROM t
+|> call tvf() AS u
+;
+
+FROM t
+|> ORDER BY col1 DESC NULLS LAST, col2

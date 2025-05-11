@@ -1335,6 +1335,11 @@ const printBasePipeOperator: PrintFunc<bq2cst.BasePipeOperator> = (
   node,
 ) => {
   const p = new Printer(path, options, print, node);
+  p.setNotRoot("exprs");
+  p.setGroupRecommended("exprs");
+  if (node.children.exprs) {
+    node.children.exprs.NodeVec[p.len("exprs") - 1].isFinalColumn = true;
+  }
   const docs: { [Key in Docs<bq2cst.BasePipeOperator>]: Doc } = {
     leading_comments: printLeadingComments(path, options, print, node),
     self: p.self(),
