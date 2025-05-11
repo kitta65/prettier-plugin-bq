@@ -553,6 +553,8 @@ export const printSQL = (
       return printAddColumnClause(path, options, print, node);
     case "AddConstraintClause":
       return printAddConstraintClause(path, options, print, node);
+    case "AggregatePipeOperator":
+      return printAggregatePipeOperator(path, options, print, node);
     case "AlterBICapacityStatement":
       return printAlterBICapacityStatement(path, options, print, node);
     case "AlterColumnStatement":
@@ -874,6 +876,38 @@ const printAddColumnClause: PrintFunc<bq2cst.AddColumnClause> = (
       docs.type_declaration,
       docs.comma,
     ]),
+  ];
+};
+
+const printAggregatePipeOperator: PrintFunc<bq2cst.AggregatePipeOperator> = (
+  path,
+  options,
+  print,
+  node,
+) => {
+  const p = new Printer(path, options, print, node);
+  p.setNotRoot("exprs");
+  p.setGroupRecommended("exprs");
+  if (node.children.exprs) {
+    node.children.exprs.NodeVec[p.len("exprs") - 1].isFinalColumn = true;
+  }
+  const docs: { [Key in Docs<bq2cst.AggregatePipeOperator>]: Doc } = {
+    leading_comments: printLeadingComments(path, options, print, node),
+    self: p.self(),
+    trailing_comments: printTrailingComments(path, options, print, node),
+    keywords: p.child("keywords", undefined, "all"),
+    exprs: p.child("exprs", (x) => group([line, x])),
+    groupby: p.child("groupby"),
+  };
+  return [
+    docs.leading_comments,
+    docs.self,
+    docs.trailing_comments,
+    p.has("keywords") ? " " : "",
+    docs.keywords,
+    indent(docs.exprs),
+    p.has("groupby") ? hardline : "",
+    docs.groupby,
   ];
 };
 
@@ -4025,7 +4059,7 @@ const printLimitPipeOperator: PrintFunc<bq2cst.LimitPipeOperator> = (
     p.has("keywords") ? " " : "",
     docs.keywords,
     indent(docs.exprs),
-    line,
+    p.has("offset") ? line : "",
     docs.offset,
   ];
 };

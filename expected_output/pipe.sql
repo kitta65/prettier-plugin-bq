@@ -60,10 +60,12 @@ FROM t
 |> call tvf() AS u
 ;
 
+-- keywords
 FROM t
 |> ORDER BY col1 DESC NULLS LAST, col2
 ;
 
+-- select
 FROM t
 |> SELECT col1, col2
 ;
@@ -74,3 +76,33 @@ FROM t
 
 FROM t
 |> SELECT ALL AS STRUCT col
+;
+
+----- limit pipe operator -----
+FROM t
+|> LIMIT 1
+;
+
+FROM t
+|> LIMIT 1 OFFSET 2
+;
+
+FROM t
+|>
+  LIMIT 1
+  -- break
+  OFFSET 2
+;
+
+----- aggregate pipe operator -----
+FROM t
+|> aggregate COUNT(*) AS cnt DESC NULLS LAST
+;
+
+FROM t
+|>
+  aggregate COUNT(*)
+  GROUP BY
+    col1 AS col_a DESC NULLS LAST,
+    col2
+;

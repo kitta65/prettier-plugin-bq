@@ -50,7 +50,16 @@ from t |> select all as struct col;
 from t |> limit 1;
 
 from t |> limit 1 offset 2;
+
 from t |>
 limit 1
 -- break
 offset 2;
+
+----- aggregate pipe operator -----
+from t |> aggregate count(*) as cnt desc nulls last;
+
+from t
+|>
+  aggregate count(*)
+  group by col1 as col_a desc nulls last, col2;
