@@ -51,6 +51,23 @@ end;
 
 begin exception when error then end;
 
+----- case statement -----
+case when true then select 1; end case;
+
+case
+  when true then
+    select 1;
+    select 2;
+  when true then select 3;
+end case;
+
+case expr
+  when 'x' then select 1;
+  else select 2;
+end case;
+
+case when true then else end case;
+
 ----- IF statement -----
 if true then
   select 1;
