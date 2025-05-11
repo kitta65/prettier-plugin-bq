@@ -4308,7 +4308,7 @@ const printPipeStatement: PrintFunc<bq2cst.PipeStatement> = (
     hardline,
     docs.leading_comments,
     group([docs.self, docs.trailing_comments, indent([line, docs.right])]),
-    node.notRoot ? "" : softline,
+    p.has("semicolon") ? softline : "",
     docs.semicolon,
     p.newLine(),
   ];

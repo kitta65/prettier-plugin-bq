@@ -35,3 +35,13 @@ SELECT 2
 (SELECT 1) ORDER BY 1 LIMIT 1
 |> SELECT *
 ;
+
+----- from statement -----
+FROM tabe AS t1
+INNER JOIN table AS p2 USING(col)
+;
+
+(FROM tablename);
+
+(FROM table AS t) ORDER BY 1 LIMIT 1
+|> SELECT *
