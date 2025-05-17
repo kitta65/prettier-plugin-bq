@@ -7,6 +7,7 @@ import {
   hllCountFunctions,
   kllQuantilesFunctions,
   netFunctions,
+  objFunctions,
   mlFunctions,
   aiFunctions,
 } from "./keywords";
@@ -1835,6 +1836,12 @@ const printCallingFunctionGeneral: PrintFunc<
             toUpper(parent.token);
           }
           break;
+        case "OBJ":
+          if (objFunctions.includes(func.token.literal.toUpperCase())) {
+            func.isPreDefinedFunction = true;
+            toUpper(parent.token);
+          }
+          break;
         case "ML":
           if (mlFunctions.includes(func.token.literal.toUpperCase())) {
             func.isPreDefinedFunction = true;
@@ -1886,6 +1893,13 @@ const printCallingFunctionGeneral: PrintFunc<
             if (
               kllQuantilesFunctions.includes(func.token.literal.toUpperCase())
             ) {
+              func.isPreDefinedFunction = true;
+              toUpper(parent.token);
+              toUpper(grandParent.token);
+            }
+            break;
+          case "OBJ":
+            if (objFunctions.includes(func.token.literal.toUpperCase())) {
               func.isPreDefinedFunction = true;
               toUpper(parent.token);
               toUpper(grandParent.token);

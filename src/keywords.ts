@@ -542,6 +542,13 @@ export const netFunctions = [
   "REG_DOMAIN",
 ];
 
+export const objFunctions = [
+  // ObjectRef functions
+  "FETCH_METADATA",
+  "GET_ACCESS_URL",
+  "MAKE_REF",
+];
+
 export const mlFunctions = [
   "TRANSFORM",
   "FEATURE_INFO",
