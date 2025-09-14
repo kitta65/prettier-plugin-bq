@@ -229,6 +229,20 @@ SELECT (col).(safe.left)(3);
 
 SELECT STRUCT('a' AS b).TO_JSON().b.JSON_VALUE().CONCAT('c');
 
+SELECT
+  "foo"
+  .longfunctionname()
+  .longfunctionname()
+  .longfunctionname()
+  .longfunctionname()
+  -- comment
+  .longfunctionname()
+  .longfunctionname()
+  .longfunctionname()
+  .longfunctionname()
+  .longfunctionname(),
+;
+
 ----- with expression -----
 SELECT WITH(a AS 'a', UPPER(a));
 

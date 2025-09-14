@@ -246,6 +246,50 @@ from tmp unpivot include nulls (
 ) AS unpivot
 ;
 
+-- MATCH_RECOGNIZE
+select * from t match_recognize (
+  partition by col1, col2
+  order by col3, col4 desc nulls first
+  measures any_value(col4) as col4
+  after match skip to next row
+  pattern (symbol1)
+  define
+    symbol1 as col3 = 'foo',
+    symbol2 as col4 = 'bar'
+  options (use_longest_match = true)
+) as u
+;
+
+select *
+from t match_recognize (
+  order by col1
+  pattern (^ ()*? symbol1{0}{1,2}{,3} $)
+)
+;
+
+select *
+from t match_recognize (
+  order by col1
+  pattern (symbol1 | symbol2 symbol3)
+);
+
+select *
+from t match_recognize (
+  order by col1
+  pattern (
+    symbol1 symbol2
+    | symbol3 symbol4
+    -- comment
+    | symbol5 symbol6
+  )
+);
+
+select *
+from t match_recognize (
+  order by col1
+  pattern (( symbol1 | ) (| symbol2))
+);
+
 -- TABLESAMPLE
 select * from t tablesample system (20 percent);
 
