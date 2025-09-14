@@ -8,6 +8,8 @@ OPTIONS (endpoint = '')
 AS (SELECT 1)
 ;
 
+CREATE MODEL ident REMOTE WITH CONNECTION DEFAULT OPTIONS (endpoint = '');
+
 CREATE MODEL ident
 AS (
   training_data AS (SELECT 1),

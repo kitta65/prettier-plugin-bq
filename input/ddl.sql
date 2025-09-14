@@ -103,6 +103,10 @@ create external table dataset.new_table
 with connection ident
 options (dummy = 'dummy');
 
+create external table tablename
+with connection default
+options (dummy = 'dummy');
+
 ----- CREATE VIEW statement -----
 create view view_name
 as
