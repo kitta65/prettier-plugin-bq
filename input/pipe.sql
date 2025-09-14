@@ -11,6 +11,10 @@ from table
 -- comment before select
 select col;
 
+with t as (select 1) from t;
+
+select * from (from t |> select *);
+
 ----- select statement -----
 select 1 |> select *;
 

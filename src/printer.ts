@@ -3465,6 +3465,7 @@ const printFromStatement: PrintFunc<bq2cst.FromStatement> = (
 ) => {
   const p = new Printer(path, options, print, node);
   const docs: { [Key in Docs<bq2cst.FromStatement>]: Doc } = {
+    with: p.child("with"),
     leading_comments: printLeadingComments(path, options, print, node),
     self: p.self("upper"),
     trailing_comments: printTrailingComments(path, options, print, node),
@@ -3472,8 +3473,11 @@ const printFromStatement: PrintFunc<bq2cst.FromStatement> = (
     semicolon: p.child("semicolon"),
   };
   return [
+    docs.with,
+    p.has("with") ? hardline : "",
     docs.leading_comments,
     group([
+      p.has("with") ? breakParent : "",
       docs.self,
       docs.trailing_comments,
       " ",

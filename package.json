@@ -23,7 +23,7 @@
     "typescript": "^5.8.3"
   },
   "dependencies": {
-    "bq2cst": "0.5.12"
+    "bq2cst": "0.5.13"
   },
   "peerDependencies": {
     "prettier": "^3.2.4"

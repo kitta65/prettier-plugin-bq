@@ -17,6 +17,17 @@ FROM table
   SELECT col
 ;
 
+WITH t AS (SELECT 1)
+FROM t
+;
+
+SELECT *
+FROM (
+  FROM t
+  |> SELECT *
+)
+;
+
 ----- select statement -----
 SELECT 1
 |> SELECT *
