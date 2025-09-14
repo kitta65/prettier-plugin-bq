@@ -245,6 +245,12 @@ storing (a, b, c)
 options (dummy = 'dummy')
 ;
 
+create vector index new_index
+on tablename(col)
+partition by foo
+options(dummy='dummy')
+;
+
 ----- ALTER BI_CAPACITY statement -----
 alter bi_capacity `project.region-us.default`
 set options(preferred_tables = ['table1', 'table2']);

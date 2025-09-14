@@ -247,6 +247,12 @@ STORING (a, b, c)
 OPTIONS (dummy = 'dummy')
 ;
 
+CREATE VECTOR INDEX new_index
+ON tablename (col)
+PARTITION BY foo
+OPTIONS (dummy = 'dummy')
+;
+
 ----- ALTER BI_CAPACITY statement -----
 ALTER BI_CAPACITY `project.region-us.default`
 SET OPTIONS (preferred_tables = ['table1', 'table2'])
