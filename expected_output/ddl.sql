@@ -105,6 +105,11 @@ WITH CONNECTION ident
 OPTIONS (dummy = 'dummy')
 ;
 
+CREATE EXTERNAL TABLE tablename
+WITH CONNECTION DEFAULT
+OPTIONS (dummy = 'dummy')
+;
+
 ----- CREATE VIEW statement -----
 CREATE VIEW view_name AS SELECT * FROM t;
 
@@ -180,6 +185,10 @@ AS
   SELECT 1 AS one
 ;
 
+CREATE TABLE FUNCTION foo.bar(tablename TABLE<col1 INT64, col2 FLOAT64>)
+AS (SELECT 1)
+;
+
 -- remote function
 CREATE FUNCTION dataset.abc()
 RETURNS INT64
@@ -244,6 +253,12 @@ OPTIONS (dummy = 'dummy')
 CREATE OR REPLACE VECTOR INDEX new_index
 ON tablename (col)
 STORING (a, b, c)
+OPTIONS (dummy = 'dummy')
+;
+
+CREATE VECTOR INDEX new_index
+ON tablename (col)
+PARTITION BY foo
 OPTIONS (dummy = 'dummy')
 ;
 
@@ -374,6 +389,9 @@ ALTER VIEW viewname ALTER COLUMN colname SET OPTIONS (dummy = 'dummy');
 
 -- MATERIALIZED
 ALTER MATERIALIZED VIEW IF EXISTS example SET OPTIONS (dummy = 'dummy');
+
+----- ALTER VECTOR INDEX statement -----
+ALTER VECTOR INDEX index_name ON table_name REBUILD;
 
 ----- DROP statement -----
 -- general

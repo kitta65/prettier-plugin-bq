@@ -10,6 +10,7 @@ import {
   objFunctions,
   mlFunctions,
   aiFunctions,
+  vectorIndexFunctions,
 } from "./keywords";
 import { doc } from "prettier";
 import type { Doc, AstPath } from "prettier";
@@ -576,6 +577,8 @@ export const printSQL = (
       return printAlterTableStatement(path, options, print, node);
     case "AlterViewStatement":
       return printAlterViewStatement(path, options, print, node);
+    case "AlterVectorIndexStatement":
+      return printAlterVectorIndexStatement(path, options, print, node);
     case "ArrayLiteral":
       return printArrayLiteral(path, options, print, node);
     case "AssertStatement":
@@ -666,6 +669,8 @@ export const printSQL = (
       return printForSystemTimeAsOfclause(path, options, print, node);
     case "FromStatement":
       return printFromStatement(path, options, print, node);
+    case "FunctionChain":
+      return printFunctionChain(path, options, print, node);
     case "GrantStatement":
       return printGrantStatement(path, options, print, node);
     case "GroupByExprs":
@@ -676,6 +681,8 @@ export const printSQL = (
       return printGroupedExprs(path, options, print, node);
     case "GroupedIdentWithOptions":
       return printGroupedIdentWithOptions(path, options, print, node);
+    case "GroupedPattern":
+      return printGroupedPattern(path, options, print, node);
     case "GroupedStatement":
       return printGroupedStatement(path, options, print, node);
     case "GroupedType":
@@ -724,6 +731,12 @@ export const printSQL = (
       return printLoadStatement(path, options, print, node);
     case "LoopStatement":
       return printLoopStatement(path, options, print, node);
+    case "MatchRecognizeClause":
+      return printMatchRecognizeClause(path, options, print, node);
+    case "MatchRecognizeConfig":
+      return printMatchRecognizeConfig(path, options, print, node);
+    case "MatchRecognizePipeOperator":
+      return printMatchRecognizePipeOperator(path, options, print, node);
     case "MergeStatement":
       return printMergeStatement(path, options, print, node);
     case "MultiTokenIdentifier":
@@ -732,12 +745,20 @@ export const printSQL = (
       return printNullLiteral(path, options, print, node);
     case "NumericLiteral":
       return printNumericLiteral(path, options, print, node);
+    case "OrPattern":
+      return printOrPattern(path, options, print, node);
     case "OverClause":
       return printOverClause(path, options, print, node);
     case "OverwritePartitionsClause":
       return printOverwritePartitionsClause(path, options, print, node);
     case "Parameter":
       return printIdentifier(path, options, print, node);
+    case "Pattern":
+      return printPattern(path, options, print, node);
+    case "PatternClause":
+      return printPatternClause(path, options, print, node);
+    case "PatternQuantifier":
+      return printPatternQuantifier(path, options, print, node);
     case "PipeStatement":
       return printPipeStatement(path, options, print, node);
     case "PivotConfig":
@@ -756,6 +777,8 @@ export const printSQL = (
       return printRenameColumnClause(path, options, print, node);
     case "RepeatStatement":
       return printRepeatStatement(path, options, print, node);
+    case "SelectPipeOperator":
+      return printSelectPipeOperator(path, options, print, node);
     case "SelectStatement":
       return printSelectStatement(path, options, print, node);
     case "SetOperator":
@@ -820,6 +843,8 @@ export const printSQL = (
       return printWithOffsetClause(path, options, print, node);
     case "WithPartitionColumnsClause":
       return printWithPartitionColumnsClause(path, options, print, node);
+    case "WithPipeOperator":
+      return printWithPipeOperator(path, options, print, node);
     case "WithQuery":
       return printWithQuery(path, options, print, node);
     case "XXXByExprs":
@@ -1351,6 +1376,42 @@ const printAlterViewStatement: PrintFunc<bq2cst.AlterViewStatement> = (
   ];
 };
 
+const printAlterVectorIndexStatement: PrintFunc<
+  bq2cst.AlterVectorIndexStatement
+> = (path, options, print, node) => {
+  const p = new Printer(path, options, print, node);
+  const docs: { [Key in Docs<bq2cst.AlterVectorIndexStatement>]: Doc } = {
+    leading_comments: printLeadingComments(path, options, print, node),
+    self: p.self("upper"),
+    trailing_comments: printTrailingComments(path, options, print, node),
+    what: p.child("what", undefined, "all"),
+    if_exists: p.child("if_exists", (x) => group([line, x])),
+    ident: p.child("ident", undefined, "all"),
+    on: p.child("on"),
+    operation: p.child("operation"),
+    semicolon: p.child("semicolon"),
+  };
+  return [
+    docs.leading_comments,
+    group([
+      docs.self,
+      docs.trailing_comments,
+      " ",
+      docs.what,
+      docs.if_exists,
+      p.has("ident") ? " " : "",
+      docs.ident,
+      line,
+      docs.on,
+      line,
+      docs.operation,
+      p.has("semicolon") ? softline : "",
+      docs.semicolon,
+    ]),
+    p.newLine(),
+  ];
+};
+
 const printAsterisk: PrintFunc<bq2cst.Asterisk> = (
   path,
   options,
@@ -1854,6 +1915,12 @@ const printCallingFunctionGeneral: PrintFunc<
             toUpper(parent.token);
           }
           break;
+        case "VECTOR_INDEX":
+          if (vectorIndexFunctions.includes(func.token.literal.toUpperCase())) {
+            func.isPreDefinedFunction = true;
+            toUpper(parent.token);
+          }
+          break;
       }
     } else if (parent.node_type === "DotOperator") {
       // SAFE.KEYS.NEW_KEYSET('AEAD_AES_GCM_256')
@@ -1919,6 +1986,15 @@ const printCallingFunctionGeneral: PrintFunc<
               toUpper(grandParent.token);
             }
             break;
+          case "VECTOR_INDEX":
+            if (
+              vectorIndexFunctions.includes(func.token.literal.toUpperCase())
+            ) {
+              func.isPreDefinedFunction = true;
+              toUpper(parent.token);
+              toUpper(grandParent.token);
+            }
+            break;
         }
       }
     }
@@ -1940,7 +2016,8 @@ const printCallingFunctionGeneral: PrintFunc<
           func_literal,
         )
       ) {
-        args.NodeVec[2].isDatePart = true;
+        const node = args.NodeVec[2];
+        if (node) node.isDatePart = true; // not chained function
       }
       // XXX_TRUNC
       if (
@@ -1951,11 +2028,13 @@ const printCallingFunctionGeneral: PrintFunc<
           "TIMESTAMP_TRUNC",
         ].includes(func_literal)
       ) {
-        args.NodeVec[1].isDatePart = true;
+        const node = args.NodeVec[1];
+        if (node) node.isDatePart = true; // not chained function
       }
       // LAST_DAY
       if (func_literal === "LAST_DAY" && 2 <= p.len("args")) {
-        args.NodeVec[1].isDatePart = true;
+        const node = args.NodeVec[1];
+        if (node) node.isDatePart = true; // not chained function
       }
     }
   }
@@ -2036,10 +2115,12 @@ const printCallingTableFunction: PrintFunc<bq2cst.CallingTableFunction> = (
   print,
   node,
 ) => {
+  const p = new Printer(path, options, print, node);
   const docs: { [Key in Docs<bq2cst.CallingTableFunction>]: Doc } = {
     self: printCallingFunctionGeneral(path, options, print, node),
     pivot: printPivotOrUnpivotOperator(path, options, print, node),
     unpivot: "", // eslint-disable-line unicorn/no-unused-properties
+    match_recognize: p.child("match_recognize", undefined, "all"),
     with_offset: "", // eslint-disable-line unicorn/no-unused-properties
 
     /* eslint-disable unicorn/no-unused-properties */
@@ -2052,7 +2133,12 @@ const printCallingTableFunction: PrintFunc<bq2cst.CallingTableFunction> = (
     alias: "",
     /* eslint-enable unicorn/no-unused-properties */
   };
-  return [docs.self, docs.pivot];
+  return [
+    docs.self,
+    docs.pivot,
+    p.has("match_recognize") ? " " : "",
+    docs.match_recognize,
+  ];
 };
 
 const printCallingUnnest: PrintFunc<bq2cst.CallingUnnest> = (
@@ -2067,6 +2153,7 @@ const printCallingUnnest: PrintFunc<bq2cst.CallingUnnest> = (
     with_offset: p.child("with_offset", undefined, "all"),
     pivot: printPivotOrUnpivotOperator(path, options, print, node),
     unpivot: "", // eslint-disable-line unicorn/no-unused-properties
+    match_recognize: p.child("match_recognize", undefined, "all"),
 
     /* eslint-disable unicorn/no-unused-properties */
     leading_comments: "",
@@ -2083,6 +2170,8 @@ const printCallingUnnest: PrintFunc<bq2cst.CallingUnnest> = (
     p.has("with_offset") ? " " : "",
     docs.with_offset,
     docs.pivot,
+    p.has("match_recognize") ? " " : "",
+    docs.match_recognize,
   ];
 };
 
@@ -2705,6 +2794,7 @@ const printCreateIndexStatement: PrintFunc<bq2cst.CreateIndexStatement> = (
     tablename: p.child("tablename", undefined, "all"),
     column_group: p.child("column_group", undefined, "all"),
     storing: p.child("storing"),
+    partitionby: p.child("partitionby"),
     options: p.child("options"),
     semicolon: p.child("semicolon"),
   };
@@ -2727,6 +2817,8 @@ const printCreateIndexStatement: PrintFunc<bq2cst.CreateIndexStatement> = (
       docs.column_group,
       p.has("storing") ? line : "",
       docs.storing,
+      p.has("partitionby") ? line : "",
+      docs.partitionby,
       p.has("options") ? line : "",
       docs.options,
       p.has("semicolon") ? softline : "",
@@ -2976,6 +3068,7 @@ const printDotOperator: PrintFunc<bq2cst.DotOperator> = (
     for_system_time_as_of: p.child("for_system_time_as_of", undefined, "all"),
     pivot: printPivotOrUnpivotOperator(path, options, print, node),
     unpivot: "", // eslint-disable-line unicorn/no-unused-properties
+    match_recognize: p.child("match_recognize", undefined, "all"),
     with_offset: p.child("with_offset", undefined, "all"),
     tablesample: p.child("tablesample", undefined, "all"),
     order: printOrder(path, options, print, node),
@@ -2990,6 +3083,8 @@ const printDotOperator: PrintFunc<bq2cst.DotOperator> = (
     docs.alias,
     p.has("for_system_time_as_of") ? [" ", docs.for_system_time_as_of] : "",
     docs.pivot,
+    p.has("match_recognize") ? " " : "",
+    docs.match_recognize,
     p.has("with_offset") ? " " : "",
     docs.with_offset,
     p.has("tablesample") ? [" ", docs.tablesample] : "",
@@ -3370,6 +3465,7 @@ const printFromStatement: PrintFunc<bq2cst.FromStatement> = (
 ) => {
   const p = new Printer(path, options, print, node);
   const docs: { [Key in Docs<bq2cst.FromStatement>]: Doc } = {
+    with: p.child("with"),
     leading_comments: printLeadingComments(path, options, print, node),
     self: p.self("upper"),
     trailing_comments: printTrailingComments(path, options, print, node),
@@ -3377,8 +3473,11 @@ const printFromStatement: PrintFunc<bq2cst.FromStatement> = (
     semicolon: p.child("semicolon"),
   };
   return [
+    docs.with,
+    p.has("with") ? hardline : "",
     docs.leading_comments,
     group([
+      p.has("with") ? breakParent : "",
       docs.self,
       docs.trailing_comments,
       " ",
@@ -3387,6 +3486,53 @@ const printFromStatement: PrintFunc<bq2cst.FromStatement> = (
       docs.semicolon,
     ]),
     p.newLine(),
+  ];
+};
+
+const printFunctionChain: PrintFunc<bq2cst.FunctionChain> = (
+  path,
+  options,
+  print,
+  node,
+) => {
+  const p = new Printer(path, options, print, node);
+  const docs: { [Key in Docs<bq2cst.FunctionChain>]: Doc } = {
+    left: p.child("left"),
+    leading_comments: printLeadingComments(path, options, print, node),
+    self: p.self("upper"),
+    trailing_comments: printTrailingComments(path, options, print, node),
+    right: p.child("right", undefined, "all"),
+    as: "", // eslint-disable-line unicorn/no-unused-properties
+    alias: printAlias(path, options, print, node),
+    pivot: printPivotOrUnpivotOperator(path, options, print, node),
+    unpivot: "", // eslint-disable-line unicorn/no-unused-properties
+    match_recognize: p.child("match_recognize", undefined, "all"),
+    with_offset: p.child("with_offset", undefined, "all"),
+    order: printOrder(path, options, print, node),
+    null_order: "", // eslint-disable-line unicorn/no-unused-properties
+    comma: printComma(path, options, print, node),
+  };
+  let res: Doc | Doc[] = [
+    docs.left,
+    softline,
+    docs.leading_comments,
+    docs.self,
+    docs.trailing_comments,
+    docs.right,
+    docs.alias,
+  ];
+  if (node.groupRecommended) {
+    res = group(res);
+  }
+  return [
+    res,
+    docs.pivot,
+    p.has("match_recognize") ? " " : "",
+    docs.match_recognize,
+    p.has("with_offset") ? " " : "",
+    docs.with_offset,
+    docs.order,
+    docs.comma,
   ];
 };
 
@@ -3479,6 +3625,7 @@ const printGroupedExpr: PrintFunc<bq2cst.GroupedExpr> = (
     alias: printAlias(path, options, print, node),
     pivot: printPivotOrUnpivotOperator(path, options, print, node),
     unpivot: "", // eslint-disable-line unicorn/no-unused-properties
+    match_recognize: p.child("match_recognize", undefined, "all"),
     with_offset: "", // eslint-disable-line unicorn/no-unused-properties
     order: printOrder(path, options, print, node),
     null_order: "", // eslint-disable-line unicorn/no-unused-properties
@@ -3495,6 +3642,8 @@ const printGroupedExpr: PrintFunc<bq2cst.GroupedExpr> = (
     ]),
     docs.alias,
     docs.pivot,
+    p.has("match_recognize") ? " " : "",
+    docs.match_recognize,
     docs.order,
     docs.comma,
   ];
@@ -3560,6 +3709,34 @@ const printGroupedIdentWithOptions: PrintFunc<
   ];
 };
 
+const printGroupedPattern: PrintFunc<bq2cst.GroupedPattern> = (
+  path,
+  options,
+  print,
+  node,
+) => {
+  const p = new Printer(path, options, print, node);
+  const docs: { [Key in Docs<bq2cst.GroupedPattern>]: Doc } = {
+    leading_comments: printLeadingComments(path, options, print, node),
+    self: p.self(),
+    trailing_comments: printTrailingComments(path, options, print, node),
+    patterns: p.child("patterns", undefined, "none", line),
+    rparen: p.child("rparen"),
+    suffixes: p.child("suffixes", undefined, "all"),
+  };
+  return [
+    docs.leading_comments,
+    group([
+      docs.self,
+      docs.trailing_comments,
+      indent([softline, docs.patterns]),
+      softline,
+      docs.rparen,
+      docs.suffixes,
+    ]),
+  ];
+};
+
 const printGroupedStatement: PrintFunc<bq2cst.GroupedStatement> = (
   path,
   options,
@@ -3579,6 +3756,7 @@ const printGroupedStatement: PrintFunc<bq2cst.GroupedStatement> = (
     alias: printAlias(path, options, print, node),
     pivot: printPivotOrUnpivotOperator(path, options, print, node),
     unpivot: "", // eslint-disable-line unicorn/no-unused-properties
+    match_recognize: p.child("match_recognize", undefined, "all"),
     with_offset: "", // eslint-disable-line unicorn/no-unused-properties
     orderby: p.child("orderby"),
     limit: p.child("limit"),
@@ -3606,6 +3784,8 @@ const printGroupedStatement: PrintFunc<bq2cst.GroupedStatement> = (
         softline,
         docs.rparen,
         docs.pivot,
+        p.has("match_recognize") ? " " : "",
+        docs.match_recognize,
       ]),
       p.has("orderby") ? line : "",
       docs.orderby,
@@ -3682,6 +3862,7 @@ const printIdentifier: PrintFunc<
     for_system_time_as_of: p.child("for_system_time_as_of", undefined, "all"),
     pivot: printPivotOrUnpivotOperator(path, options, print, node),
     unpivot: "", // eslint-disable-line unicorn/no-unused-properties
+    match_recognize: p.child("match_recognize", undefined, "all"),
     with_offset: p.child("with_offset", undefined, "all"),
     tablesample: p.child("tablesample", undefined, "all"),
     order: printOrder(path, options, print, node),
@@ -3695,6 +3876,8 @@ const printIdentifier: PrintFunc<
     docs.alias,
     p.has("for_system_time_as_of") ? [" ", docs.for_system_time_as_of] : "",
     docs.pivot,
+    p.has("match_recognize") ? " " : "",
+    docs.match_recognize,
     p.has("with_offset") ? " " : "",
     docs.with_offset,
     p.has("tablesample") ? [" ", docs.tablesample] : "",
@@ -3945,6 +4128,7 @@ const printJoinOperator: PrintFunc<bq2cst.JoinOperator> = (
     alias: printAlias(path, options, print, node),
     pivot: printPivotOrUnpivotOperator(path, options, print, node),
     unpivot: "", // eslint-disable-line unicorn/no-unused-properties
+    match_recognize: p.child("match_recognize", undefined, "all"),
     with_offset: "", // eslint-disable-line unicorn/no-unused-properties
   };
   return [
@@ -3967,6 +4151,8 @@ const printJoinOperator: PrintFunc<bq2cst.JoinOperator> = (
     docs.using,
     docs.alias,
     docs.pivot,
+    p.has("match_recognize") ? " " : "",
+    docs.match_recognize,
   ];
 };
 
@@ -4353,6 +4539,88 @@ const printLoopStatement: PrintFunc<bq2cst.LoopStatement> = (
   ];
 };
 
+const printMatchRecognizeClause: PrintFunc<
+  bq2cst.MatchRecognizeClause | bq2cst.MatchRecognizePipeOperator
+> = (path, options, print, node) => {
+  const p = new Printer(path, options, print, node);
+  const docs: {
+    [Key in Docs<
+      bq2cst.MatchRecognizeClause | bq2cst.MatchRecognizePipeOperator
+    >]: Doc;
+  } = {
+    leading_comments: printLeadingComments(path, options, print, node),
+    self: p.self("upper"),
+    config: p.child("config", undefined, "all"),
+    trailing_comments: printTrailingComments(path, options, print, node),
+    as: p.child("as", undefined, "all"),
+    alias: p.child("alias", undefined, "all"),
+  };
+  return [
+    docs.leading_comments,
+    docs.self,
+    docs.trailing_comments,
+    " ",
+    docs.config,
+    p.has("alias")
+      ? [" ", docs.as || (options.printKeywordsInUpperCase ? "AS" : "as")]
+      : "",
+    p.has("alias") ? [" ", docs.alias] : "",
+  ];
+};
+
+const printMatchRecognizeConfig: PrintFunc<bq2cst.MatchRecognizeConfig> = (
+  path,
+  options,
+  print,
+  node,
+) => {
+  const p = new Printer(path, options, print, node);
+  const docs: { [Key in Docs<bq2cst.MatchRecognizeConfig>]: Doc } = {
+    leading_comments: printLeadingComments(path, options, print, node),
+    self: p.self("upper", true),
+    trailing_comments: printTrailingComments(path, options, print, node),
+    partitionby: p.child("partitionby"),
+    orderby: p.child("orderby"),
+    measures: p.child("measures"),
+    skip_rule: p.child("skip_rule"),
+    pattern: p.child("pattern"),
+    define: p.child("define"),
+    options: p.child("options"),
+    rparen: p.child("rparen"),
+  };
+  return [
+    docs.leading_comments,
+    docs.self,
+    docs.trailing_comments,
+    indent([
+      hardline,
+      group(docs.partitionby),
+      p.has("partitionby") ? line : "",
+      group(docs.orderby),
+
+      // some are necessary but handle as if optional for simplicity
+      p.has("measures") ? line : "",
+      docs.measures,
+      p.has("skip_rule") ? line : "",
+      docs.skip_rule,
+      p.has("pattern") ? line : "",
+      docs.pattern,
+      p.has("define") ? line : "",
+      docs.define,
+      p.has("options") ? line : "",
+      docs.options,
+    ]),
+    softline,
+    docs.rparen,
+  ];
+};
+
+const printMatchRecognizePipeOperator: PrintFunc<
+  bq2cst.MatchRecognizePipeOperator
+> = (path, options, print, node) => {
+  return printMatchRecognizeClause(path, options, print, node);
+};
+
 const printMergeStatement: PrintFunc<bq2cst.MergeStatement> = (
   path,
   options,
@@ -4408,6 +4676,7 @@ const printMultiTokenIdentifier: PrintFunc<bq2cst.MultiTokenIdentifier> = (
     for_system_time_as_of: p.child("for_system_time_as_of", undefined, "all"),
     pivot: printPivotOrUnpivotOperator(path, options, print, node),
     unpivot: "", // eslint-disable-line unicorn/no-unused-properties
+    match_recognize: p.child("match_recognize", undefined, "all"),
     with_offset: p.child("with_offset", undefined, "all"),
     tablesample: p.child("tablesample", undefined, "all"),
     // NOTE order, null_order, comma may be unnecessary for the time being.
@@ -4423,6 +4692,8 @@ const printMultiTokenIdentifier: PrintFunc<bq2cst.MultiTokenIdentifier> = (
     docs.alias,
     p.has("for_system_time_as_of") ? [" ", docs.for_system_time_as_of] : "",
     docs.pivot,
+    p.has("match_recognize") ? " " : "",
+    docs.match_recognize,
     p.has("with_offset") ? " " : "",
     docs.with_offset,
     p.has("tablesample") ? [" ", docs.tablesample] : "",
@@ -4485,6 +4756,30 @@ const printNumericLiteral: PrintFunc<bq2cst.NumericLiteral> = (
   ];
 };
 
+const printOrPattern: PrintFunc<bq2cst.OrPattern> = (
+  path,
+  options,
+  print,
+  node,
+) => {
+  const p = new Printer(path, options, print, node);
+  const docs: { [Key in Docs<bq2cst.OrPattern>]: Doc } = {
+    leading_comments: printLeadingComments(path, options, print, node),
+    self: p.self("upper"),
+    trailing_comments: printTrailingComments(path, options, print, node),
+    left: p.child("left", undefined, "none", line),
+    right: p.child("right", undefined, "all", line),
+  };
+  const left_is_or_pattern =
+    node.children.left.NodeVec[0]?.node_type === "OrPattern";
+  return [
+    left_is_or_pattern ? docs.left : group(docs.left),
+    line,
+    docs.leading_comments,
+    group([docs.self, docs.trailing_comments, indent([line, docs.right])]),
+  ];
+};
+
 const printOverClause: PrintFunc<bq2cst.OverClause> = (
   path,
   options,
@@ -4520,6 +4815,76 @@ const printOverwritePartitionsClause: PrintFunc<
     " ",
     docs.grouped_expr,
   ]);
+};
+
+const printPattern: PrintFunc<bq2cst.Pattern> = (
+  path,
+  options,
+  print,
+  node,
+) => {
+  const p = new Printer(path, options, print, node);
+  const docs: { [Key in Docs<bq2cst.Pattern>]: Doc } = {
+    leading_comments: printLeadingComments(path, options, print, node),
+    self: p.self("asItIs"),
+    trailing_comments: printTrailingComments(path, options, print, node),
+    suffixes: p.child("suffixes", undefined, "all"),
+  };
+  return [
+    docs.leading_comments,
+    docs.self,
+    docs.trailing_comments,
+    docs.suffixes,
+  ];
+};
+
+const printPatternClause: PrintFunc<bq2cst.PatternClause> = (
+  path,
+  options,
+  print,
+  node,
+) => {
+  const p = new Printer(path, options, print, node);
+  const docs: { [Key in Docs<bq2cst.PatternClause>]: Doc } = {
+    leading_comments: printLeadingComments(path, options, print, node),
+    self: p.self("upper"),
+    trailing_comments: printTrailingComments(path, options, print, node),
+    pattern: p.child("pattern", undefined, "all"),
+  };
+  return [
+    docs.leading_comments,
+    docs.self,
+    docs.trailing_comments,
+    " ",
+    docs.pattern,
+  ];
+};
+
+const printPatternQuantifier: PrintFunc<bq2cst.PatternQuantifier> = (
+  path,
+  options,
+  print,
+  node,
+) => {
+  const p = new Printer(path, options, print, node);
+  const docs: { [Key in Docs<bq2cst.PatternQuantifier>]: Doc } = {
+    leading_comments: printLeadingComments(path, options, print, node),
+    self: p.self("upper"),
+    trailing_comments: printTrailingComments(path, options, print, node),
+    min: p.child("min", undefined, "all"),
+    comma: p.child("comma", undefined, "all"),
+    max: p.child("max", undefined, "all"),
+    rbrace: p.child("rbrace", undefined, "all"),
+  };
+  return [
+    docs.leading_comments,
+    docs.self,
+    docs.trailing_comments,
+    docs.min,
+    docs.comma,
+    docs.max,
+    docs.rbrace,
+  ];
 };
 
 const printPipeStatement: PrintFunc<bq2cst.PipeStatement> = (
@@ -4820,6 +5185,38 @@ const printRepeatStatement: PrintFunc<bq2cst.RepeatStatement> = (
       docs.semicolon,
     ]),
     p.newLine(),
+  ];
+};
+
+const printSelectPipeOperator: PrintFunc<bq2cst.SelectPipeOperator> = (
+  path,
+  options,
+  print,
+  node,
+) => {
+  const p = new Printer(path, options, print, node);
+  p.setNotRoot("exprs");
+  p.setGroupRecommended("exprs");
+  if (node.children.exprs) {
+    node.children.exprs.NodeVec[p.len("exprs") - 1].isFinalColumn = true;
+  }
+  const docs: { [Key in Docs<bq2cst.SelectPipeOperator>]: Doc } = {
+    leading_comments: printLeadingComments(path, options, print, node),
+    self: p.self(),
+    trailing_comments: printTrailingComments(path, options, print, node),
+    keywords: p.child("keywords", undefined, "all"),
+    exprs: p.child("exprs", (x) => group([line, x])),
+    window: p.child("window"),
+  };
+  return [
+    docs.leading_comments,
+    docs.self,
+    docs.trailing_comments,
+    p.has("keywords") ? " " : "",
+    docs.keywords,
+    indent(docs.exprs),
+    p.has("window") ? line : "",
+    docs.window,
   ];
 };
 
@@ -5774,15 +6171,14 @@ const printWindowSpecification: PrintFunc<bq2cst.WindowSpecification> = (
   ];
 };
 
-const printWithClause: PrintFunc<bq2cst.WithClause> = (
-  path,
-  options,
-  print,
-  node,
-) => {
+const printWithClause: PrintFunc<
+  bq2cst.WithClause | bq2cst.WithPipeOperator
+> = (path, options, print, node) => {
   const sep = options.printBlankLineAfterCte ? [hardline, hardline] : line;
   const p = new Printer(path, options, print, node);
-  const docs: { [Key in Docs<bq2cst.WithClause>]: Doc } = {
+  const docs: {
+    [Key in Docs<bq2cst.WithClause | bq2cst.WithPipeOperator>]: Doc;
+  } = {
     leading_comments: printLeadingComments(path, options, print, node),
     self: p.self("upper"),
     trailing_comments: printTrailingComments(path, options, print, node),
@@ -5863,6 +6259,15 @@ const printWithPartitionColumnsClause: PrintFunc<
   ];
 };
 
+const printWithPipeOperator: PrintFunc<bq2cst.WithPipeOperator> = (
+  path,
+  options,
+  print,
+  node,
+) => {
+  return printWithClause(path, options, print, node);
+};
+
 const printWithQuery: PrintFunc<bq2cst.WithQuery> = (
   path,
   options,
@@ -5937,7 +6342,7 @@ const printAlias: PrintFunc<bq2cst.Expr & bq2cst.UnknownNode> = (
   } else {
     as_ = options.printKeywordsInUpperCase ? "AS" : "as";
   }
-  return [" ", as_, " ", p.child("alias", undefined, "all")];
+  return [" ", as_, " ", group(p.child("alias", undefined, "all"))];
 };
 
 const printComma: PrintFunc<bq2cst.Expr & bq2cst.UnknownNode> = (

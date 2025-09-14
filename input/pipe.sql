@@ -11,6 +11,10 @@ from table
 -- comment before select
 select col;
 
+with t as (select 1) from t;
+
+select * from (from t |> select *);
+
 ----- select statement -----
 select 1 |> select *;
 
@@ -19,6 +23,12 @@ select 1 |> select *;
 select 1 union all select 2 |> select *;
 
 (select 1) order by 1 limit 1 |> SELECT *;
+
+from t |>
+  select col
+  -- break parent
+  window a as (partition by b)
+;
 
 ----- from statement -----
 from tabe as t1
@@ -64,6 +74,9 @@ from t
   aggregate count(*)
   group by col1 as col_a desc nulls last, col2;
 
+----- distinct pipe operator -----
+from t |> distinct;
+
 ----- union pipe operator -----
 from t |> union all (select 1), (select 2);
 
@@ -108,3 +121,29 @@ sum(sales) for quarter in ('Q1', 'Q2')) as q;
 from t |> unpivot (sales for quarter in (q1, q2)) as q;
 
 from t |> unpivot include nulls (sales for quarter in (q1, q2)) as q;
+
+----- match recognize pipe operator -----
+from t |> match_recognize (
+  order by col1
+  pattern (symbol)
+);
+
+----- with pipe operator -----
+from t
+|> with u as (
+    select 1 as key
+  )
+|> inner join u using (key)
+;
+
+from t
+|> with
+  -- CTE
+  u as (
+    select 1 as key
+  ),
+  v as (
+    select 2 as key
+  ),
+|> inner join u using (key)
+;

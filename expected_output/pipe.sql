@@ -17,6 +17,17 @@ FROM table
   SELECT col
 ;
 
+WITH t AS (SELECT 1)
+FROM t
+;
+
+SELECT *
+FROM (
+  FROM t
+  |> SELECT *
+)
+;
+
 ----- select statement -----
 SELECT 1
 |> SELECT *
@@ -34,6 +45,13 @@ SELECT 2
 
 (SELECT 1) ORDER BY 1 LIMIT 1
 |> SELECT *
+;
+
+FROM t
+|>
+  SELECT col
+  -- break parent
+  WINDOW a AS (PARTITION BY b)
 ;
 
 ----- from statement -----
@@ -107,6 +125,11 @@ FROM t
     col2
 ;
 
+----- distinct pipe operator -----
+FROM t
+|> DISTINCT
+;
+
 ----- union pipe operator -----
 FROM t
 |> UNION ALL (SELECT 1), (SELECT 2)
@@ -170,4 +193,28 @@ FROM t
 
 FROM t
 |> unpivot INCLUDE NULLS (sales FOR quarter IN (q1, q2)) AS q
+;
+
+----- match recognize pipe operator -----
+FROM t
+|>
+  MATCH_RECOGNIZE (
+    ORDER BY col1
+    PATTERN (symbol)
+  )
+;
+
+----- with pipe operator -----
+FROM t
+|> WITH u AS (SELECT 1 AS key)
+|> INNER JOIN u USING(key)
+;
+
+FROM t
+|>
+  WITH
+    -- CTE
+    u AS (SELECT 1 AS key),
+    v AS (SELECT 2 AS key),
+|> INNER JOIN u USING(key)
 ;

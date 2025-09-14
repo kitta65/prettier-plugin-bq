@@ -13,6 +13,11 @@ as (select 1)
 ;
 
 create model ident
+remote with connection default
+options (endpoint = '')
+;
+
+create model ident
 as (
   training_data as (select 1),
   custom_holiday as (select 1)

@@ -103,6 +103,10 @@ create external table dataset.new_table
 with connection ident
 options (dummy = 'dummy');
 
+create external table tablename
+with connection default
+options (dummy = 'dummy');
+
 ----- CREATE VIEW statement -----
 create view view_name
 as
@@ -182,6 +186,12 @@ as
   select 1 as one
 ;
 
+create table function foo.bar (
+  tablename table<col1 int64, col2 float64>
+) as (
+  select 1
+);
+
 -- remote function
 create function dataset.abc()
 returns int64
@@ -243,6 +253,12 @@ create or replace vector index new_index
 on tablename(col)
 storing (a, b, c)
 options (dummy = 'dummy')
+;
+
+create vector index new_index
+on tablename(col)
+partition by foo
+options(dummy='dummy')
 ;
 
 ----- ALTER BI_CAPACITY statement -----
@@ -371,6 +387,9 @@ alter column colname set options(dummy='dummy')
 
 -- MATERIALIZED
 alter materialized view if exists example set options (dummy = 'dummy');
+
+----- ALTER VECTOR INDEX statement -----
+alter vector index index_name on table_name rebuild;
 
 ----- DROP statement -----
 -- general
