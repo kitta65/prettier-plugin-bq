@@ -70,6 +70,9 @@ from t
   aggregate count(*)
   group by col1 as col_a desc nulls last, col2;
 
+----- distinct pipe operator -----
+from t |> distinct;
+
 ----- union pipe operator -----
 from t |> union all (select 1), (select 2);
 

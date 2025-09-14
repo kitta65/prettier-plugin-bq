@@ -114,6 +114,11 @@ FROM t
     col2
 ;
 
+----- distinct pipe operator -----
+FROM t
+|> DISTINCT
+;
+
 ----- union pipe operator -----
 FROM t
 |> UNION ALL (SELECT 1), (SELECT 2)
