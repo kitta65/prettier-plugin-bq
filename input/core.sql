@@ -228,6 +228,18 @@ window
   named_window2 as (partition by str order by int)
 ;
 
+----- chained function call -----
+select (col).upper().lower();
+
+select
+  timestamp '2024-01-01'.timestamp_trunc(month),
+  case when true then timestamp '2024-01-01' end.timestamp_trunc(month),
+;
+
+select (col).(safe.left)(3);
+
+select struct('a' as b).to_json().b.json_value().concat('c');
+
 ----- with expression -----
 select with(a as 'a', upper(a));
 

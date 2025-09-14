@@ -669,6 +669,8 @@ export const printSQL = (
       return printForSystemTimeAsOfclause(path, options, print, node);
     case "FromStatement":
       return printFromStatement(path, options, print, node);
+    case "FunctionChain":
+      return printFunctionChain(path, options, print, node);
     case "GrantStatement":
       return printGrantStatement(path, options, print, node);
     case "GroupByExprs":
@@ -2000,7 +2002,8 @@ const printCallingFunctionGeneral: PrintFunc<
           func_literal,
         )
       ) {
-        args.NodeVec[2].isDatePart = true;
+        const node = args.NodeVec[2];
+        if (node) node.isDatePart = true; // not chained function
       }
       // XXX_TRUNC
       if (
@@ -2011,11 +2014,13 @@ const printCallingFunctionGeneral: PrintFunc<
           "TIMESTAMP_TRUNC",
         ].includes(func_literal)
       ) {
-        args.NodeVec[1].isDatePart = true;
+        const node = args.NodeVec[1];
+        if (node) node.isDatePart = true; // not chained function
       }
       // LAST_DAY
       if (func_literal === "LAST_DAY" && 2 <= p.len("args")) {
-        args.NodeVec[1].isDatePart = true;
+        const node = args.NodeVec[1];
+        if (node) node.isDatePart = true; // not chained function
       }
     }
   }
@@ -3453,6 +3458,43 @@ const printFromStatement: PrintFunc<bq2cst.FromStatement> = (
       docs.semicolon,
     ]),
     p.newLine(),
+  ];
+};
+
+const printFunctionChain: PrintFunc<bq2cst.FunctionChain> = (
+  path,
+  options,
+  print,
+  node,
+) => {
+  const p = new Printer(path, options, print, node);
+  const docs: { [Key in Docs<bq2cst.FunctionChain>]: Doc } = {
+    leading_comments: "", // eslint-disable-line unicorn/no-unused-properties
+    left: p.child("left"),
+    self: p.self("upper", true),
+    trailing_comments: printTrailingComments(path, options, print, node),
+    right: p.child("right", undefined, "all"),
+    as: "", // eslint-disable-line unicorn/no-unused-properties
+    alias: printAlias(path, options, print, node),
+    pivot: printPivotOrUnpivotOperator(path, options, print, node),
+    unpivot: "", // eslint-disable-line unicorn/no-unused-properties
+    match_recognize: "", // eslint-disable-line unicorn/no-unused-properties
+    with_offset: p.child("with_offset", undefined, "all"),
+    order: printOrder(path, options, print, node),
+    null_order: "", // eslint-disable-line unicorn/no-unused-properties
+    comma: printComma(path, options, print, node),
+  };
+  return [
+    docs.left,
+    docs.self,
+    docs.trailing_comments,
+    docs.right,
+    docs.alias,
+    docs.pivot,
+    p.has("with_offset") ? " " : "",
+    docs.with_offset,
+    docs.order,
+    docs.comma,
   ];
 };
 

@@ -217,5 +217,20 @@ WINDOW
   named_window2 AS (PARTITION BY str ORDER BY int)
 ;
 
+----- chained function call -----
+SELECT (col).UPPER().LOWER();
+
+SELECT
+  TIMESTAMP '2024-01-01'.TIMESTAMP_TRUNC(month),
+  CASE WHEN TRUE THEN TIMESTAMP '2024-01-01' END.TIMESTAMP_TRUNC(month),
+;
+
+SELECT (col).(safe.left)(3);
+
+SELECT STRUCT('a' AS b).TO_JSON().b.JSON_VALUE().CONCAT('c');
+
+----- with expression -----
+SELECT WITH(a AS 'a', UPPER(a));
+
 ----- template -----
 SELECT {{variable}}, {variable};
