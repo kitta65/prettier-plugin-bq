@@ -10,6 +10,7 @@ import {
   objFunctions,
   mlFunctions,
   aiFunctions,
+  vectorIndexFunctions,
 } from "./keywords";
 import { doc } from "prettier";
 import type { Doc, AstPath } from "prettier";
@@ -1898,6 +1899,12 @@ const printCallingFunctionGeneral: PrintFunc<
             toUpper(parent.token);
           }
           break;
+        case "VECTOR_INDEX":
+          if (vectorIndexFunctions.includes(func.token.literal.toUpperCase())) {
+            func.isPreDefinedFunction = true;
+            toUpper(parent.token);
+          }
+          break;
       }
     } else if (parent.node_type === "DotOperator") {
       // SAFE.KEYS.NEW_KEYSET('AEAD_AES_GCM_256')
@@ -1958,6 +1965,15 @@ const printCallingFunctionGeneral: PrintFunc<
             break;
           case "AI":
             if (aiFunctions.includes(func.token.literal.toUpperCase())) {
+              func.isPreDefinedFunction = true;
+              toUpper(parent.token);
+              toUpper(grandParent.token);
+            }
+            break;
+          case "VECTOR_INDEX":
+            if (
+              vectorIndexFunctions.includes(func.token.literal.toUpperCase())
+            ) {
               func.isPreDefinedFunction = true;
               toUpper(parent.token);
               toUpper(grandParent.token);

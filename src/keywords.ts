@@ -641,3 +641,5 @@ export const aiFunctions = [
   "GENERATE_TABLE",
   "FORECAST",
 ];
+
+export const vectorIndexFunctions = ["STATISTICS"];
