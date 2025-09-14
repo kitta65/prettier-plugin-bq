@@ -1,6 +1,6 @@
 {
   "name": "prettier-plugin-bq",
-  "version": "0.2.60",
+  "version": "0.2.61",
   "description": "",
   "main": "dist/index.js",
   "scripts": {
@@ -23,7 +23,7 @@
     "typescript": "^5.8.3"
   },
   "dependencies": {
-    "bq2cst": "0.5.11"
+    "bq2cst": "0.5.12"
   },
   "peerDependencies": {
     "prettier": "^3.2.4"
