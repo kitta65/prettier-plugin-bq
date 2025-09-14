@@ -228,5 +228,8 @@ window
   named_window2 as (partition by str order by int)
 ;
 
+----- with expression -----
+select with(a as 'a', upper(a));
+
 ----- template -----
 select {{variable}}, {variable};
