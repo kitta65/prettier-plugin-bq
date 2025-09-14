@@ -134,14 +134,17 @@ export const globalFunctions = [
   // array functions
   "ARRAY",
   "ARRAY_CONCAT",
+  "ARRAY_FIRST",
+  "ARRAY_LAST",
   "ARRAY_LENGTH",
+  "ARRAY_REVERSE",
+  "ARRAY_SLICE",
   "ARRAY_TO_STRING",
   "GENERATE_ARRAY",
   "GENERATE_DATE_ARRAY",
   "GENERATE_TIMESTAMP_ARRAY",
   "OFFSET",
   "ORDINAL",
-  "ARRAY_REVERSE",
   "SAFE_OFFSET",
   "SAFE_ORDINAL",
   // bit functions
