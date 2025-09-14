@@ -105,6 +105,11 @@ WITH CONNECTION ident
 OPTIONS (dummy = 'dummy')
 ;
 
+CREATE EXTERNAL TABLE tablename
+WITH CONNECTION DEFAULT
+OPTIONS (dummy = 'dummy')
+;
+
 ----- CREATE VIEW statement -----
 CREATE VIEW view_name AS SELECT * FROM t;
 
@@ -178,6 +183,10 @@ RETURNS TABLE<one INT64>
 AS
   -- break
   SELECT 1 AS one
+;
+
+CREATE TABLE FUNCTION foo.bar(tablename TABLE<col1 INT64, col2 FLOAT64>)
+AS (SELECT 1)
 ;
 
 -- remote function

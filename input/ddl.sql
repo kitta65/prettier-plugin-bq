@@ -186,6 +186,12 @@ as
   select 1 as one
 ;
 
+create table function foo.bar (
+  tablename table<col1 int64, col2 float64>
+) as (
+  select 1
+);
+
 -- remote function
 create function dataset.abc()
 returns int64
