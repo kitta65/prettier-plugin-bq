@@ -485,6 +485,13 @@ export const globalFunctions = [
   // utility functions
   "GENERATE_UUID",
   "TYPEOF",
+
+  // match recognize functions
+  "FIRST",
+  "LAST",
+  "MATCH_NUMBER",
+  "MATCH_ROW_NUMBER",
+  "CLASSIFIER",
 ];
 
 export const keysFunctions = [
