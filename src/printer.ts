@@ -4858,7 +4858,7 @@ const printSelectPipeOperator: PrintFunc<bq2cst.SelectPipeOperator> = (
     trailing_comments: printTrailingComments(path, options, print, node),
     keywords: p.child("keywords", undefined, "all"),
     exprs: p.child("exprs", (x) => group([line, x])),
-    window: "", // eslint-disable-line unicorn/no-unused-properties
+    window: p.child("window"),
   };
   return [
     docs.leading_comments,
@@ -4867,6 +4867,8 @@ const printSelectPipeOperator: PrintFunc<bq2cst.SelectPipeOperator> = (
     p.has("keywords") ? " " : "",
     docs.keywords,
     indent(docs.exprs),
+    p.has("window") ? line : "",
+    docs.window,
   ];
 };
 

@@ -20,6 +20,12 @@ select 1 union all select 2 |> select *;
 
 (select 1) order by 1 limit 1 |> SELECT *;
 
+from t |>
+  select col
+  -- break parent
+  window a as (partition by b)
+;
+
 ----- from statement -----
 from tabe as t1
 join table as p2 using (col);
