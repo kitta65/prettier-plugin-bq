@@ -724,6 +724,8 @@ export const printSQL = (
       return printLoadStatement(path, options, print, node);
     case "LoopStatement":
       return printLoopStatement(path, options, print, node);
+    case "MatchRecognizeClause":
+      return ""; // TODO
     case "MergeStatement":
       return printMergeStatement(path, options, print, node);
     case "MultiTokenIdentifier":
@@ -756,6 +758,8 @@ export const printSQL = (
       return printRenameColumnClause(path, options, print, node);
     case "RepeatStatement":
       return printRepeatStatement(path, options, print, node);
+    case "SelectPipeOperator":
+      return printSelectPipeOperator(path, options, print, node);
     case "SelectStatement":
       return printSelectStatement(path, options, print, node);
     case "SetOperator":
@@ -2040,6 +2044,7 @@ const printCallingTableFunction: PrintFunc<bq2cst.CallingTableFunction> = (
     self: printCallingFunctionGeneral(path, options, print, node),
     pivot: printPivotOrUnpivotOperator(path, options, print, node),
     unpivot: "", // eslint-disable-line unicorn/no-unused-properties
+    match_recognize: "", // eslint-disable-line unicorn/no-unused-properties
     with_offset: "", // eslint-disable-line unicorn/no-unused-properties
 
     /* eslint-disable unicorn/no-unused-properties */
@@ -2067,6 +2072,7 @@ const printCallingUnnest: PrintFunc<bq2cst.CallingUnnest> = (
     with_offset: p.child("with_offset", undefined, "all"),
     pivot: printPivotOrUnpivotOperator(path, options, print, node),
     unpivot: "", // eslint-disable-line unicorn/no-unused-properties
+    match_recognize: "", // eslint-disable-line unicorn/no-unused-properties
 
     /* eslint-disable unicorn/no-unused-properties */
     leading_comments: "",
@@ -2705,6 +2711,7 @@ const printCreateIndexStatement: PrintFunc<bq2cst.CreateIndexStatement> = (
     tablename: p.child("tablename", undefined, "all"),
     column_group: p.child("column_group", undefined, "all"),
     storing: p.child("storing"),
+    partitionby: p.child("partitionby"),
     options: p.child("options"),
     semicolon: p.child("semicolon"),
   };
@@ -2727,6 +2734,8 @@ const printCreateIndexStatement: PrintFunc<bq2cst.CreateIndexStatement> = (
       docs.column_group,
       p.has("storing") ? line : "",
       docs.storing,
+      p.has("partitionby") ? line : "",
+      docs.partitionby,
       p.has("options") ? line : "",
       docs.options,
       p.has("semicolon") ? softline : "",
@@ -2976,6 +2985,7 @@ const printDotOperator: PrintFunc<bq2cst.DotOperator> = (
     for_system_time_as_of: p.child("for_system_time_as_of", undefined, "all"),
     pivot: printPivotOrUnpivotOperator(path, options, print, node),
     unpivot: "", // eslint-disable-line unicorn/no-unused-properties
+    match_recognize: "", // eslint-disable-line unicorn/no-unused-properties
     with_offset: p.child("with_offset", undefined, "all"),
     tablesample: p.child("tablesample", undefined, "all"),
     order: printOrder(path, options, print, node),
@@ -3479,6 +3489,7 @@ const printGroupedExpr: PrintFunc<bq2cst.GroupedExpr> = (
     alias: printAlias(path, options, print, node),
     pivot: printPivotOrUnpivotOperator(path, options, print, node),
     unpivot: "", // eslint-disable-line unicorn/no-unused-properties
+    match_recognize: "", // eslint-disable-line unicorn/no-unused-properties
     with_offset: "", // eslint-disable-line unicorn/no-unused-properties
     order: printOrder(path, options, print, node),
     null_order: "", // eslint-disable-line unicorn/no-unused-properties
@@ -3579,6 +3590,7 @@ const printGroupedStatement: PrintFunc<bq2cst.GroupedStatement> = (
     alias: printAlias(path, options, print, node),
     pivot: printPivotOrUnpivotOperator(path, options, print, node),
     unpivot: "", // eslint-disable-line unicorn/no-unused-properties
+    match_recognize: "", // eslint-disable-line unicorn/no-unused-properties
     with_offset: "", // eslint-disable-line unicorn/no-unused-properties
     orderby: p.child("orderby"),
     limit: p.child("limit"),
@@ -3682,6 +3694,7 @@ const printIdentifier: PrintFunc<
     for_system_time_as_of: p.child("for_system_time_as_of", undefined, "all"),
     pivot: printPivotOrUnpivotOperator(path, options, print, node),
     unpivot: "", // eslint-disable-line unicorn/no-unused-properties
+    match_recognize: "", // eslint-disable-line unicorn/no-unused-properties
     with_offset: p.child("with_offset", undefined, "all"),
     tablesample: p.child("tablesample", undefined, "all"),
     order: printOrder(path, options, print, node),
@@ -3945,6 +3958,7 @@ const printJoinOperator: PrintFunc<bq2cst.JoinOperator> = (
     alias: printAlias(path, options, print, node),
     pivot: printPivotOrUnpivotOperator(path, options, print, node),
     unpivot: "", // eslint-disable-line unicorn/no-unused-properties
+    match_recognize: "", // eslint-disable-line unicorn/no-unused-properties
     with_offset: "", // eslint-disable-line unicorn/no-unused-properties
   };
   return [
@@ -4408,6 +4422,7 @@ const printMultiTokenIdentifier: PrintFunc<bq2cst.MultiTokenIdentifier> = (
     for_system_time_as_of: p.child("for_system_time_as_of", undefined, "all"),
     pivot: printPivotOrUnpivotOperator(path, options, print, node),
     unpivot: "", // eslint-disable-line unicorn/no-unused-properties
+    match_recognize: "", // eslint-disable-line unicorn/no-unused-properties
     with_offset: p.child("with_offset", undefined, "all"),
     tablesample: p.child("tablesample", undefined, "all"),
     // NOTE order, null_order, comma may be unnecessary for the time being.
@@ -4820,6 +4835,36 @@ const printRepeatStatement: PrintFunc<bq2cst.RepeatStatement> = (
       docs.semicolon,
     ]),
     p.newLine(),
+  ];
+};
+
+const printSelectPipeOperator: PrintFunc<bq2cst.SelectPipeOperator> = (
+  path,
+  options,
+  print,
+  node,
+) => {
+  const p = new Printer(path, options, print, node);
+  p.setNotRoot("exprs");
+  p.setGroupRecommended("exprs");
+  if (node.children.exprs) {
+    node.children.exprs.NodeVec[p.len("exprs") - 1].isFinalColumn = true;
+  }
+  const docs: { [Key in Docs<bq2cst.SelectPipeOperator>]: Doc } = {
+    leading_comments: printLeadingComments(path, options, print, node),
+    self: p.self(),
+    trailing_comments: printTrailingComments(path, options, print, node),
+    keywords: p.child("keywords", undefined, "all"),
+    exprs: p.child("exprs", (x) => group([line, x])),
+    window: "", // eslint-disable-line unicorn/no-unused-properties
+  };
+  return [
+    docs.leading_comments,
+    docs.self,
+    docs.trailing_comments,
+    p.has("keywords") ? " " : "",
+    docs.keywords,
+    indent(docs.exprs),
   ];
 };
 
