@@ -276,6 +276,59 @@ FROM
   ) AS unpivot
 ;
 
+-- MATCH_RECOGNIZE
+SELECT *
+FROM
+  t MATCH_RECOGNIZE (
+    PARTITION BY col1, col2
+    ORDER BY col3, col4 DESC NULLS FIRST
+    MEASURES ANY_VALUE(col4) AS col4
+    AFTER MATCH SKIP TO NEXT ROW
+    PATTERN (symbol1)
+    DEFINE
+      symbol1 AS col3 = 'foo',
+      symbol2 AS col4 = 'bar'
+    OPTIONS (use_longest_match = TRUE)
+  ) AS u
+;
+
+SELECT *
+FROM
+  t MATCH_RECOGNIZE (
+    ORDER BY col1
+    PATTERN (^ ()*? symbol1{0}{1,2}{,3} $)
+  )
+;
+
+SELECT *
+FROM
+  t MATCH_RECOGNIZE (
+    ORDER BY col1
+    PATTERN (symbol1 | symbol2 symbol3)
+  )
+;
+
+SELECT *
+FROM
+  t MATCH_RECOGNIZE (
+    ORDER BY col1
+    PATTERN (
+      symbol1 symbol2
+      | symbol3 symbol4
+      -- comment
+      | symbol5 symbol6
+    )
+  )
+;
+
+SELECT *
+FROM
+  t MATCH_RECOGNIZE (
+    ORDER BY col1
+    PATTERN ((symbol1 | ) ( | symbol2))
+  )
+;
+
 -- TABLESAMPLE
 SELECT * FROM t TABLESAMPLE SYSTEM (20 PERCENT);
 

@@ -118,6 +118,12 @@ from t |> unpivot (sales for quarter in (q1, q2)) as q;
 
 from t |> unpivot include nulls (sales for quarter in (q1, q2)) as q;
 
+----- match recognize pipe operator -----
+from t |> match_recognize (
+  order by col1
+  pattern (symbol)
+);
+
 ----- with pipe operator -----
 from t
 |> with u as (

@@ -184,6 +184,15 @@ FROM t
 |> unpivot INCLUDE NULLS (sales FOR quarter IN (q1, q2)) AS q
 ;
 
+----- match recognize pipe operator -----
+FROM t
+|>
+  MATCH_RECOGNIZE (
+    ORDER BY col1
+    PATTERN (symbol)
+  )
+;
+
 ----- with pipe operator -----
 FROM t
 |> WITH u AS (SELECT 1 AS key)

@@ -735,6 +735,8 @@ export const printSQL = (
       return printMatchRecognizeClause(path, options, print, node);
     case "MatchRecognizeConfig":
       return printMatchRecognizeConfig(path, options, print, node);
+    case "MatchRecognizePipeOperator":
+      return printMatchRecognizePipeOperator(path, options, print, node);
     case "MergeStatement":
       return printMergeStatement(path, options, print, node);
     case "MultiTokenIdentifier":
@@ -4533,14 +4535,15 @@ const printLoopStatement: PrintFunc<bq2cst.LoopStatement> = (
   ];
 };
 
-const printMatchRecognizeClause: PrintFunc<bq2cst.MatchRecognizeClause> = (
-  path,
-  options,
-  print,
-  node,
-) => {
+const printMatchRecognizeClause: PrintFunc<
+  bq2cst.MatchRecognizeClause | bq2cst.MatchRecognizePipeOperator
+> = (path, options, print, node) => {
   const p = new Printer(path, options, print, node);
-  const docs: { [Key in Docs<bq2cst.MatchRecognizeClause>]: Doc } = {
+  const docs: {
+    [Key in Docs<
+      bq2cst.MatchRecognizeClause | bq2cst.MatchRecognizePipeOperator
+    >]: Doc;
+  } = {
     leading_comments: printLeadingComments(path, options, print, node),
     self: p.self("upper"),
     config: p.child("config", undefined, "all"),
@@ -4606,6 +4609,12 @@ const printMatchRecognizeConfig: PrintFunc<bq2cst.MatchRecognizeConfig> = (
     softline,
     docs.rparen,
   ];
+};
+
+const printMatchRecognizePipeOperator: PrintFunc<
+  bq2cst.MatchRecognizePipeOperator
+> = (path, options, print, node) => {
+  return printMatchRecognizeClause(path, options, print, node);
 };
 
 const printMergeStatement: PrintFunc<bq2cst.MergeStatement> = (
