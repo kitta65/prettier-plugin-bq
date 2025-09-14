@@ -240,6 +240,11 @@ select (col).(safe.left)(3);
 
 select struct('a' as b).to_json().b.json_value().concat('c');
 
+select "foo"
+    .longfunctionname().longfunctionname().longfunctionname().longfunctionname()
+    -- comment
+    .longfunctionname().longfunctionname().longfunctionname().longfunctionname().longfunctionname();
+
 ----- with expression -----
 select with(a as 'a', upper(a));
 

@@ -3469,9 +3469,9 @@ const printFunctionChain: PrintFunc<bq2cst.FunctionChain> = (
 ) => {
   const p = new Printer(path, options, print, node);
   const docs: { [Key in Docs<bq2cst.FunctionChain>]: Doc } = {
-    leading_comments: "", // eslint-disable-line unicorn/no-unused-properties
     left: p.child("left"),
-    self: p.self("upper", true),
+    leading_comments: printLeadingComments(path, options, print, node),
+    self: p.self("upper"),
     trailing_comments: printTrailingComments(path, options, print, node),
     right: p.child("right", undefined, "all"),
     as: "", // eslint-disable-line unicorn/no-unused-properties
@@ -3484,12 +3484,20 @@ const printFunctionChain: PrintFunc<bq2cst.FunctionChain> = (
     null_order: "", // eslint-disable-line unicorn/no-unused-properties
     comma: printComma(path, options, print, node),
   };
-  return [
+  let res: Doc | Doc[] = [
     docs.left,
+    softline,
+    docs.leading_comments,
     docs.self,
     docs.trailing_comments,
     docs.right,
     docs.alias,
+  ];
+  if (node.groupRecommended) {
+    res = group(res);
+  }
+  return [
+    res,
     docs.pivot,
     p.has("with_offset") ? " " : "",
     docs.with_offset,
