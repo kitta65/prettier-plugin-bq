@@ -576,6 +576,8 @@ export const printSQL = (
       return printAlterTableStatement(path, options, print, node);
     case "AlterViewStatement":
       return printAlterViewStatement(path, options, print, node);
+    case "AlterVectorIndexStatement":
+      return printAlterVectorIndexStatement(path, options, print, node);
     case "ArrayLiteral":
       return printArrayLiteral(path, options, print, node);
     case "AssertStatement":
@@ -1350,6 +1352,42 @@ const printAlterViewStatement: PrintFunc<bq2cst.AlterViewStatement> = (
       p.has("set") ? " " : "",
       docs.options,
       docs.alter_column_stmt,
+      p.has("semicolon") ? softline : "",
+      docs.semicolon,
+    ]),
+    p.newLine(),
+  ];
+};
+
+const printAlterVectorIndexStatement: PrintFunc<
+  bq2cst.AlterVectorIndexStatement
+> = (path, options, print, node) => {
+  const p = new Printer(path, options, print, node);
+  const docs: { [Key in Docs<bq2cst.AlterVectorIndexStatement>]: Doc } = {
+    leading_comments: printLeadingComments(path, options, print, node),
+    self: p.self("upper"),
+    trailing_comments: printTrailingComments(path, options, print, node),
+    what: p.child("what", undefined, "all"),
+    if_exists: p.child("if_exists", (x) => group([line, x])),
+    ident: p.child("ident", undefined, "all"),
+    on: p.child("on"),
+    operation: p.child("operation"),
+    semicolon: p.child("semicolon"),
+  };
+  return [
+    docs.leading_comments,
+    group([
+      docs.self,
+      docs.trailing_comments,
+      " ",
+      docs.what,
+      docs.if_exists,
+      p.has("ident") ? " " : "",
+      docs.ident,
+      line,
+      docs.on,
+      line,
+      docs.operation,
       p.has("semicolon") ? softline : "",
       docs.semicolon,
     ]),

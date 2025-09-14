@@ -388,6 +388,9 @@ alter column colname set options(dummy='dummy')
 -- MATERIALIZED
 alter materialized view if exists example set options (dummy = 'dummy');
 
+----- ALTER VECTOR INDEX statement -----
+alter vector index index_name on table_name rebuild;
+
 ----- DROP statement -----
 -- general
 drop table example;

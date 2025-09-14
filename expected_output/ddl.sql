@@ -390,6 +390,9 @@ ALTER VIEW viewname ALTER COLUMN colname SET OPTIONS (dummy = 'dummy');
 -- MATERIALIZED
 ALTER MATERIALIZED VIEW IF EXISTS example SET OPTIONS (dummy = 'dummy');
 
+----- ALTER VECTOR INDEX statement -----
+ALTER VECTOR INDEX index_name ON table_name REBUILD;
+
 ----- DROP statement -----
 -- general
 DROP TABLE example;
