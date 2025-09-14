@@ -171,3 +171,18 @@ FROM t
 FROM t
 |> unpivot INCLUDE NULLS (sales FOR quarter IN (q1, q2)) AS q
 ;
+
+----- with pipe operator -----
+FROM t
+|> WITH u AS (SELECT 1 AS key)
+|> INNER JOIN u USING(key)
+;
+
+FROM t
+|>
+  WITH
+    -- CTE
+    u AS (SELECT 1 AS key),
+    v AS (SELECT 2 AS key),
+|> INNER JOIN u USING(key)
+;

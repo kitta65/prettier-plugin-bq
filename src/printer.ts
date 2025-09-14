@@ -824,6 +824,8 @@ export const printSQL = (
       return printWithOffsetClause(path, options, print, node);
     case "WithPartitionColumnsClause":
       return printWithPartitionColumnsClause(path, options, print, node);
+    case "WithPipeOperator":
+      return printWithPipeOperator(path, options, print, node);
     case "WithQuery":
       return printWithQuery(path, options, print, node);
     case "XXXByExprs":
@@ -5819,15 +5821,14 @@ const printWindowSpecification: PrintFunc<bq2cst.WindowSpecification> = (
   ];
 };
 
-const printWithClause: PrintFunc<bq2cst.WithClause> = (
-  path,
-  options,
-  print,
-  node,
-) => {
+const printWithClause: PrintFunc<
+  bq2cst.WithClause | bq2cst.WithPipeOperator
+> = (path, options, print, node) => {
   const sep = options.printBlankLineAfterCte ? [hardline, hardline] : line;
   const p = new Printer(path, options, print, node);
-  const docs: { [Key in Docs<bq2cst.WithClause>]: Doc } = {
+  const docs: {
+    [Key in Docs<bq2cst.WithClause | bq2cst.WithPipeOperator>]: Doc;
+  } = {
     leading_comments: printLeadingComments(path, options, print, node),
     self: p.self("upper"),
     trailing_comments: printTrailingComments(path, options, print, node),
@@ -5906,6 +5907,15 @@ const printWithPartitionColumnsClause: PrintFunc<
       docs.column_schema_group,
     ]),
   ];
+};
+
+const printWithPipeOperator: PrintFunc<bq2cst.WithPipeOperator> = (
+  path,
+  options,
+  print,
+  node,
+) => {
+  return printWithClause(path, options, print, node);
 };
 
 const printWithQuery: PrintFunc<bq2cst.WithQuery> = (

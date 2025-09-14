@@ -108,3 +108,23 @@ sum(sales) for quarter in ('Q1', 'Q2')) as q;
 from t |> unpivot (sales for quarter in (q1, q2)) as q;
 
 from t |> unpivot include nulls (sales for quarter in (q1, q2)) as q;
+
+----- with pipe operator -----
+from t
+|> with u as (
+    select 1 as key
+  )
+|> inner join u using (key)
+;
+
+from t
+|> with
+  -- CTE
+  u as (
+    select 1 as key
+  ),
+  v as (
+    select 2 as key
+  ),
+|> inner join u using (key)
+;
