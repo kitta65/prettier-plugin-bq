@@ -7,13 +7,6 @@ settings:
 importers:
 
   .:
-    dependencies:
-      bq2cst:
-        specifier: 0.5.13
-        version: 0.5.13
-      prettier:
-        specifier: ^3.2.4
-        version: 3.6.2
     devDependencies:
       '@eslint/eslintrc':
         specifier: ^3.3.1
@@ -51,6 +44,15 @@ importers:
       typescript:
         specifier: ^5.8.3
         version: 5.9.2
+
+  prettier-plugin-bq:
+    dependencies:
+      bq2cst:
+        specifier: 0.5.13
+        version: 0.5.13
+      prettier:
+        specifier: ^3.2.4
+        version: 3.6.2
 
 packages:
 
