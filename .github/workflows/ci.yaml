@@ -3,25 +3,29 @@ jobs:
   ci:
     runs-on: ubuntu-latest
     steps:
+      # since packageManager is specified in package.json, any pnpm version is OK
+      - run: npm install -g pnpm
+
       - uses: actions/checkout@v5
 
       - uses: actions/setup-node@v4
         with:
           node-version: "20.x"
           registry-url: "https://registry.npmjs.org"
-          cache: npm
+          cache: pnpm
 
-      - run: npm ci
-      - run: npm test
+      - run: pnpm install
+      - run: pnpm run test
 
       # always pass when ref_type == 'branch'
-      - uses: dr666m1/tag-version-match@main
+      - uses: kitta65/tag-version-match@main
         with:
           file: ./package.json
           query: .version
           pattern: '^([0-9]+\.[0-9]+\.[0-9]+)$'
 
-      - run: npm publish
+      # rm dry run option when ready
+      - run: pnpm publish --dry-run
         if: ${{ github.ref_type == 'tag' }}
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
