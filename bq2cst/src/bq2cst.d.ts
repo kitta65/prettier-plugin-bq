@@ -1,7 +1,7 @@
-use wasm_bindgen::prelude::*;
+// NOTE:
+// typescript_custom_section is available (https://wasm-bindgen.github.io/wasm-bindgen/reference/attributes/on-rust-exports/typescript_custom_section.html)
+// but i prefer to maintain this file as plain .d.ts file.
 
-#[wasm_bindgen(typescript_custom_section)]
-const NODES: &'static str = r#"
 export function parse(code: string): UnknownNode[];
 export function tokenize(code: string): Token[];
 
@@ -180,7 +180,7 @@ export type CallingFunctionGeneral = Expr & {
   children: {
     func: { Node: IdentifierGeneral & UnknownNode };
     distinct?: NodeChild;
-    args?: { NodeVec: (Expr & UnknownNode | SelectStatement)[] };
+    args?: { NodeVec: ((Expr & UnknownNode) | SelectStatement)[] };
     ignore_nulls?: NodeVecChild;
     orderby?: NodeChild;
     limit?: NodeChild;
@@ -238,7 +238,7 @@ export type PipeOperator = BaseNode & {
     keywords?: NodeChild;
     exprs?: NodeVecChild;
   };
-}
+};
 
 // ----- sub types of BaseNode (concrete) -----
 export type AddColumnClause = BaseNode & {
@@ -263,8 +263,8 @@ export type AggregatePipeOperator = PipeOperator & {
   node_type: "AggregatePipeOperator";
   children: {
     groupby?: NodeChild;
-  }
-}
+  };
+};
 
 export type AlterBICapacityStatement = XXXStatement & {
   node_type: "AlterBICapacityStatement";
@@ -451,7 +451,7 @@ export type Asterisk = Expr & {
 
 export type BasePipeOperator = PipeOperator & {
   node_type: "BasePipeOperator";
-}
+};
 
 export type BinaryOperator = Expr & {
   node_type: "BinaryOperator";
@@ -830,7 +830,7 @@ export type ElseIfClause = BaseNode & {
 export type EmptyStruct = Expr & {
   node_type: "EmptyStruct";
   children: {
-    rparen: NodeChild
+    rparen: NodeChild;
   };
 };
 
@@ -907,7 +907,7 @@ export type FromStatement = XXXStatement & {
     with: NodeChild;
     expr: NodeChild;
   };
-}
+};
 
 export type FunctionChain = FromItemExpr & {
   node_type: "FunctionChain";
@@ -915,7 +915,7 @@ export type FunctionChain = FromItemExpr & {
     left: NodeChild;
     right: NodeChild;
   };
-}
+};
 
 export type GrantStatement = XXXStatement & {
   node_type: "GrantStatement";
@@ -1096,8 +1096,8 @@ export type JoinPipeOperator = PipeOperator & {
     method?: NodeChild;
     on?: NodeChild;
     using?: NodeChild;
-  }
-}
+  };
+};
 
 export type Keyword = BaseNode & {
   token: Token;
@@ -1107,7 +1107,9 @@ export type Keyword = BaseNode & {
 export type KeywordSequence = BaseNode & {
   node_type: "KeywordSequence";
   children: {
-    next_keyword: { Node: Keyword | KeywordSequence | KeywordWithExpr | KeywordWithGroupedXXX };
+    next_keyword: {
+      Node: Keyword | KeywordSequence | KeywordWithExpr | KeywordWithGroupedXXX;
+    };
   };
 };
 
@@ -1165,8 +1167,8 @@ export type LimitPipeOperator = PipeOperator & {
   node_type: "LimitPipeOperator";
   children: {
     offset?: NodeChild;
-  }
-}
+  };
+};
 
 export type MatchRecognizeClause = BaseNode & {
   token: Token;
@@ -1263,7 +1265,6 @@ export type OrPattern = BaseNode & {
   };
 };
 
-
 export type OverClause = BaseNode & {
   token: Token;
   node_type: "OverClause";
@@ -1290,7 +1291,7 @@ export type Pattern = BaseNode & {
   node_type: "Pattern";
   children: {
     suffixes: NodeVecChild;
-  }
+  };
 };
 
 export type PatternClause = BaseNode & {
@@ -1298,7 +1299,7 @@ export type PatternClause = BaseNode & {
   node_type: "PatternClause";
   children: {
     pattern: NodeChild;
-  }
+  };
 };
 
 export type PatternQuantifier = BaseNode & {
@@ -1309,7 +1310,7 @@ export type PatternQuantifier = BaseNode & {
     comma?: NodeChild;
     max?: NodeChild;
     rbrace: NodeChild;
-  }
+  };
 };
 
 export type PipeStatement = XXXStatement & {
@@ -1318,7 +1319,7 @@ export type PipeStatement = XXXStatement & {
     left: NodeChild;
     right: NodeChild;
   };
-}
+};
 
 export type PivotPipeOperator = PipeOperator & {
   node_type: "PivotPipeOperator";
@@ -1327,8 +1328,8 @@ export type PivotPipeOperator = PipeOperator & {
     config: NodeChild;
     as?: NodeChild;
     alias?: NodeChild;
-  }
-}
+  };
+};
 
 export type PivotOperator = BaseNode & {
   token: Token;
@@ -1422,8 +1423,7 @@ export type SelectPipeOperator = PipeOperator & {
   children: {
     window?: NodeChild;
   };
-}
-
+};
 
 export type SetOperator = XXXStatement & {
   node_type: "SetOperator";
@@ -1481,8 +1481,8 @@ export type TableSamplePipeOperator = PipeOperator & {
   children: {
     exprs: undefined;
     group?: NodeChild;
-  }
-}
+  };
+};
 
 export type TableSampleRatio = BaseNode & {
   token: Token;
@@ -1536,7 +1536,7 @@ export type Type = BaseNode & {
     enforced?: NodeChild;
     default?: NodeChild;
     options?: NodeChild;
-    collate?: NodeChild
+    collate?: NodeChild;
     aggregate?: NodeChild;
   };
 };
@@ -1574,8 +1574,8 @@ export type UnionPipeOperator = PipeOperator & {
     method?: NodeChild;
     by?: NodeChild;
     corresponding?: NodeChild;
-  }
-}
+  };
+};
 
 export type UnpivotConfig = BaseNode & {
   token: Token;
@@ -1595,8 +1595,8 @@ export type UnpivotPipeOperator = PipeOperator & {
     config: NodeChild;
     as?: NodeChild;
     alias?: NodeChild;
-  }
-}
+  };
+};
 
 export type UnpivotOperator = BaseNode & {
   token: Token;
@@ -1732,4 +1732,3 @@ export type XXXByExprs = BaseNode & {
     exprs: { NodeVec: Expr[] & UnknownNode[] };
   };
 };
-"#;

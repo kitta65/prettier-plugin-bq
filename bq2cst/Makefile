@@ -16,6 +16,7 @@ test: setup
 build: test
 	wasm-pack build --target nodejs
 	cp ./LICENSE* pkg/
+	cp src/bq2cst.d.ts pkg/
 
 .PHONY: publish
 publish:
