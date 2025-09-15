@@ -49,7 +49,7 @@ jobs:
       #     query: .package.version
       #     pattern: '^([0-9]+\.[0-9]+\.[0-9]+)$'
 
-      - run: pnpm --filter prettier-plugin-bq run publish
+      - run: pnpm run publish
         if: ${{ github.ref_type == 'tag' }}
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

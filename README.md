@@ -22,6 +22,15 @@ You can format `.sql` and `.bq` file by the following command.
 npx prettier --write ./xxx.sql --plugin=prettier-plugin-bq
 ```
 
+If you want to omit `--plugin=prettier-plugin-bq`, add the plugin to your `.prettierrc`.
+
+```jsonc
+// .prettierrc
+{
+  "plugins": ["prettier-plugin-bq"]
+}
+```
+
 For more information, please read the prettier document.
 
 ## Configuration
