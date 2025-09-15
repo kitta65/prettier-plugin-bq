@@ -207,38 +207,14 @@ impl Lexer {
             }
             // template
             '{' => {
-                let first_position = self.position;
-                let mut count = 0;
-                while self.get_char(0) == Some('{') {
-                    count += 1;
-                    self.next_char()?; // { ->
-                }
-                let after_brace = self.get_char(0);
-                if count == 1
-                    && (&after_brace == &Some('@')
-                        || is_digit(&after_brace)
-                        || after_brace == Some(','))
-                {
+                let next = self.get_char(1);
+                if next == Some('@') || is_digit(&next) || next == Some(',') {
                     // maybe it is pattern quantifier like {m,n}
+                    self.next_char()?;
                     self.construct_token(line, column, ch.to_string())
                 } else {
-                    let mut end = false;
-                    'outer: while !end {
-                        self.next_char()?;
-                        for i in 0..count {
-                            if self.get_char(i) != Some('}') {
-                                continue 'outer;
-                            };
-                        }
-                        end = true
-                    }
-                    for _ in 0..count {
-                        self.next_char()?
-                    } // } ->
-                    let res = self.input[first_position..self.position]
-                        .into_iter()
-                        .collect();
-                    self.construct_token(line, column, res)
+                    let template = self.read_template()?;
+                    self.construct_token(line, column, template)
                 }
             }
             // int64 or float64 literal
@@ -410,6 +386,44 @@ impl Lexer {
             self.next_char()?;
         }
         self.next_char()?; // " ->
+        let res = self.input[first_position..self.position]
+            .into_iter()
+            .collect();
+        Ok(res)
+    }
+    fn read_template(&mut self) -> BQ2CSTResult<String> {
+        let first_position = self.position;
+        let outer_r = Some('}');
+        self.next_char()?; // -> { | # | % | ...
+        let inner_l = self.get_char(0);
+        let inner_r = match inner_l {
+            Some('{') => Some('}'),
+            _ => inner_l,
+        };
+        loop {
+            if let Some(ch) = self.get_char(0) {
+                if ch == '\'' || ch == '"' {
+                    self.read_string()?; // it may be multiline string but ok
+                }
+            }
+            match inner_l {
+                // jinja expression | statement | comment
+                Some('{' | '%' | '#') => {
+                    if self.get_char(0) == inner_r && self.get_char(1) == outer_r {
+                        self.next_char()?; // inner_r -> outer_r
+                        break;
+                    }
+                }
+                // python f-string or something (actually, it is out of scope)
+                _ => {
+                    if self.get_char(0) == outer_r {
+                        break;
+                    }
+                }
+            }
+            self.next_char()?;
+        }
+        self.next_char()?; // outer_r ->
         let res = self.input[first_position..self.position]
             .into_iter()
             .collect();

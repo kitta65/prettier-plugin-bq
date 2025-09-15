@@ -1091,6 +1091,7 @@ impl Parser {
         Ok(operator)
     }
     fn parse_statement(&mut self, semicolon: bool) -> BQ2CSTResult<Node> {
+        // TODO: if it is not a statement, try to parse as an expression
         let node = match self.get_token(0)?.literal.to_uppercase().as_str() {
             // SELECT
             "WITH" | "SELECT" | "(" => {
