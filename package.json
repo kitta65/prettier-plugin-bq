@@ -8,9 +8,11 @@
     "latest-bq2cst": "rm -rf ./node_modules/bq2cst && gh run download -R dr666m1/bq2cst -n pkg -D ./node_modules/bq2cst"
   },
   "keywords": [],
-  "author": "kitta65 <skndr666m1@gmail.com>",
+  "author": "kitta65 <kitta65kitta@gmail.com>",
   "license": "MIT",
   "devDependencies": {
+    "@eslint/eslintrc": "^3.3.1",
+    "@eslint/js": "^9.35.0",
     "@types/jest": "^29.0.0",
     "@types/node": "^24.3.1",
     "@typescript-eslint/eslint-plugin": "^8.0.1",
@@ -27,5 +29,6 @@
   },
   "peerDependencies": {
     "prettier": "^3.2.4"
-  }
+  },
+  "packageManager": "pnpm@10.13.1"
 }
