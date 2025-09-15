@@ -3,19 +3,38 @@ jobs:
   ci:
     runs-on: ubuntu-latest
     steps:
-      # since packageManager is specified in package.json, any pnpm version is OK
-      - run: npm install -g pnpm
-
       - uses: actions/checkout@v5
 
+      # ----- setup pnpm -----
+      # since packageManager is specified in package.json, any pnpm version is OK
+      - run: npm install -g pnpm
       - uses: actions/setup-node@v4
         with:
           node-version: "20.x"
           registry-url: "https://registry.npmjs.org"
           cache: pnpm
-
       - run: pnpm install
-      - run: pnpm run test
+
+      # ----- setup cargo -----
+      - uses: actions/cache@v4
+        with:
+          key: ${{ hashFiles('.bq2cst/Cargo.lock') }}
+          # https://doc.rust-lang.org/cargo/guide/cargo-home.html#caching-the-cargo-home-in-ci
+          path: |
+            ~/.cargo/bin
+            ~/.cargo/registry/index
+            ~/.cargo/registry/cache
+            ~/.cargo/db
+
+      # ----- build -----
+      - run: pnpm run build
+      - uses: actions/upload-artifact@v4
+        with:
+          name: bq2cst
+          path: ./bq2cst/pkg
+
+      # ----- test -----
+      - run: pnpm --recursive run test
 
       # always pass when ref_type == 'branch'
       - uses: kitta65/tag-version-match@main
@@ -23,9 +42,14 @@ jobs:
           file: ./prettier-plugin-bq/package.json
           query: .version
           pattern: '^([0-9]+\.[0-9]+\.[0-9]+)$'
+      - uses: kitta65/tag-version-match@main
+        with:
+          file: ./bq2cst/Cargo.toml
+          query: .package.version
+          pattern: '^([0-9]+\.[0-9]+\.[0-9]+)$'
 
       # rm dry run option when ready
-      - run: pnpm publish --dry-run
+      - run: pnpm publish --dry-run --recursive
         if: ${{ github.ref_type == 'tag' }}
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

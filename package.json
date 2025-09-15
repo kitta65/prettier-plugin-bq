@@ -1,6 +1,7 @@
 {
   "scripts": {
-    "test": "pnpm --recursive run test"
+    "test": "pnpm --recursive run test && cd bq2cst && make test && cd -",
+    "build": "pnpm --recursive run build && cd bq2cst && make build && cd -"
   },
   "keywords": [],
   "author": "kitta65 <kitta65kitta@gmail.com>",

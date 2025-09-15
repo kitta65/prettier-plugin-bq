@@ -1,0 +1,7 @@
+# https://github.com/rustwasm/wasm-pack-template/issues/53
+# library crate often ignores Cargo.lock, but this library doesn't
+/target
+**/*.rs.bk
+bin/
+pkg/
+wasm-pack.log

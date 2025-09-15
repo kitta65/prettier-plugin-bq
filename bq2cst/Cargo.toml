@@ -1,0 +1,32 @@
+[package]
+name = "bq2cst"
+version = "0.5.13"
+authors = ["kitta65 <kitta65kitta@gmail.com>"]
+edition = "2021"
+license = "MIT"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[features]
+default = ["console_error_panic_hook"]
+
+[dependencies]
+serde = { version = "1.0", features = ["derive"] }
+wasm-bindgen = "0.2.99"
+serde-wasm-bindgen = "0.6"
+regex = "1"
+
+# The `console_error_panic_hook` crate provides better debugging of panics by
+# logging them with `console.error`. This is great for development, but requires
+# all the `std::fmt` and `std::panicking` infrastructure, so isn't great for
+# code size when deploying.
+console_error_panic_hook = { version = "0.1.6", optional = true }
+
+[dev-dependencies]
+wasm-bindgen-test = "0.3.49"
+difference = "2.0"
+
+[profile.release]
+# Tell `rustc` to optimize for small code size.
+opt-level = "s"

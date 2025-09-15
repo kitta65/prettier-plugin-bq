@@ -9,6 +9,11 @@ updates:
     versioning-strategy: "widen"
     open-pull-requests-limit: 50
 
+  - package-ecosystem: "cargo"
+    directory: "/bq2cst"
+    schedule:
+      interval: "monthly"
+
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
