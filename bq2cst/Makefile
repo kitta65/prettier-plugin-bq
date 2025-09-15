@@ -20,4 +20,4 @@ build: test
 
 .PHONY: publish
 publish:
-	cd ./pkg && npm publish
+	cd ./pkg && pnpm publish --tag beta
