@@ -3,6 +3,9 @@ jobs:
   ci:
     runs-on: ubuntu-latest
     steps:
+      # since packageManager is specified in package.json, any pnpm version is OK
+      - run: npm install -g pnpm
+
       - uses: actions/checkout@v5
 
       - uses: actions/setup-node@v4
