@@ -53,6 +53,7 @@ declare module "bq2cst" {
     isPreDefinedFunction?: true;
     notGlobal?: true;
     notRoot?: true;
+    isChained?: true;
   }
 }
 
@@ -2008,7 +2009,7 @@ const printCallingFunctionGeneral: PrintFunc<
         ["NORMALIZE", "NORMALIZE_AND_CASEFOLD"].includes(func_literal) &&
         2 <= p.len("args")
       ) {
-        toUpper(args.NodeVec[1].token);
+        toUpper(args.NodeVec[node.isChained ? 0 : 1].token);
       }
       // XXX_DIFF
       if (
@@ -2016,8 +2017,7 @@ const printCallingFunctionGeneral: PrintFunc<
           func_literal,
         )
       ) {
-        const node = args.NodeVec[2];
-        if (node) node.isDatePart = true; // not chained function
+        args.NodeVec[node.isChained ? 1 : 2].isDatePart = true;
       }
       // XXX_TRUNC
       if (
@@ -2028,13 +2028,11 @@ const printCallingFunctionGeneral: PrintFunc<
           "TIMESTAMP_TRUNC",
         ].includes(func_literal)
       ) {
-        const node = args.NodeVec[1];
-        if (node) node.isDatePart = true; // not chained function
+        args.NodeVec[node.isChained ? 0 : 1].isDatePart = true;
       }
       // LAST_DAY
       if (func_literal === "LAST_DAY" && 2 <= p.len("args")) {
-        const node = args.NodeVec[1];
-        if (node) node.isDatePart = true; // not chained function
+        args.NodeVec[node.isChained ? 0 : 1].isDatePart = true;
       }
     }
   }
@@ -3496,6 +3494,7 @@ const printFunctionChain: PrintFunc<bq2cst.FunctionChain> = (
   node,
 ) => {
   const p = new Printer(path, options, print, node);
+  node.children.right.Node.isChained = true;
   const docs: { [Key in Docs<bq2cst.FunctionChain>]: Doc } = {
     left: p.child("left"),
     leading_comments: printLeadingComments(path, options, print, node),
