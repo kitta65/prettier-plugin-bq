@@ -7,13 +7,6 @@ settings:
 importers:
 
   .:
-    dependencies:
-      bq2cst:
-        specifier: 0.5.13
-        version: 0.5.13
-      prettier:
-        specifier: ^3.2.4
-        version: 3.6.2
     devDependencies:
       '@eslint/eslintrc':
         specifier: ^3.3.1
@@ -51,6 +44,17 @@ importers:
       typescript:
         specifier: ^5.8.3
         version: 5.9.2
+
+  bq2cst/pkg: {}
+
+  prettier-plugin-bq:
+    dependencies:
+      bq2cst:
+        specifier: workspace:*
+        version: link:../bq2cst/pkg
+      prettier:
+        specifier: ^3.2.4
+        version: 3.6.2
 
 packages:
 
@@ -558,9 +562,6 @@ packages:
   baseline-browser-mapping@2.8.3:
     resolution: {integrity: sha512-mcE+Wr2CAhHNWxXN/DdTI+n4gsPc5QpXpWnyCQWiQYIYZX+ZMJ8juXZgjRa/0/YPJo/NSsgW15/YgmI4nbysYw==}
     hasBin: true
-
-  bq2cst@0.5.13:
-    resolution: {integrity: sha512-fP97C0KyoR2ZineijHAdcDT8jYeSm46Vc9+oEqK89yKnCyj0GhGSNHBAJknEbzBoD02KWQI143+ymZ7iAlZ8XQ==}
 
   brace-expansion@1.1.12:
     resolution: {integrity: sha512-9T9UjW3r0UW5c1Q7GTwllptXwhvYmEzFhzMfZ9H7FQWt+uZePjZPjBP/W1ZEyZ1twGWom5/56TF4lPcqjnDHcg==}
@@ -2330,8 +2331,6 @@ snapshots:
   balanced-match@1.0.2: {}
 
   baseline-browser-mapping@2.8.3: {}
-
-  bq2cst@0.5.13: {}
 
   brace-expansion@1.1.12:
     dependencies:

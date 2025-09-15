@@ -1,11 +1,7 @@
 {
-  "name": "prettier-plugin-bq",
-  "version": "0.2.61",
-  "description": "",
-  "main": "dist/index.js",
   "scripts": {
-    "test": "eslint-config-prettier src/index.ts && eslint ./src && prettier --check ./src && tsc && NODE_OPTIONS='--experimental-vm-modules' jest",
-    "latest-bq2cst": "rm -rf ./node_modules/bq2cst && gh run download -R kitta65/bq2cst -n pkg -D ./node_modules/bq2cst"
+    "test": "pnpm --recursive run test && cd bq2cst && make test && cd -",
+    "build": "pnpm --recursive run build && cd bq2cst && make build && cd -"
   },
   "keywords": [],
   "author": "kitta65 <kitta65kitta@gmail.com>",
@@ -24,11 +20,7 @@
     "ts-jest": "^29.0.0",
     "typescript": "^5.8.3"
   },
-  "dependencies": {
-    "bq2cst": "0.5.13"
-  },
-  "peerDependencies": {
-    "prettier": "^3.2.4"
-  },
+  "dependencies": {},
+  "peerDependencies": {},
   "packageManager": "pnpm@10.13.1"
 }
