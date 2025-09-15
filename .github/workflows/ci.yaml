@@ -34,7 +34,7 @@ jobs:
           path: ./bq2cst/pkg
 
       # ----- test -----
-      - run: pnpm --recursive run test
+      - run: pnpm run test
 
       # TODO: uncomment when ready to publish
       # #  always pass when ref_type == 'branch'
@@ -49,8 +49,7 @@ jobs:
       #     query: .package.version
       #     pattern: '^([0-9]+\.[0-9]+\.[0-9]+)$'
 
-      # TODO: rm dry run option when ready
-      - run: pnpm publish --dry-run --recursive --tag beta
+      - run: pnpm --filter prettier-plugin-bq run publish
         if: ${{ github.ref_type == 'tag' }}
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
