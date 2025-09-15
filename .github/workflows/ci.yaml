@@ -18,7 +18,7 @@ jobs:
       # ----- setup cargo -----
       - uses: actions/cache@v4
         with:
-          key: ${{ hashFiles('.bq2cst/Cargo.lock') }}
+          key: ${{ hashFiles('./bq2cst/Cargo.lock') }}
           # https://doc.rust-lang.org/cargo/guide/cargo-home.html#caching-the-cargo-home-in-ci
           path: |
             ~/.cargo/bin
