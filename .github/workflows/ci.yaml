@@ -18,7 +18,7 @@ jobs:
       - run: pnpm run test
 
       # always pass when ref_type == 'branch'
-      - uses: dr666m1/tag-version-match@main
+      - uses: kitta65/tag-version-match@main
         with:
           file: ./package.json
           query: .version
