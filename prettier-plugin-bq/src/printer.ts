@@ -507,6 +507,44 @@ const getFirstNode = (
   return res;
 };
 
+const getLastNode = (
+  node: bq2cst.UnknownNode,
+  includeComment = false,
+): bq2cst.UnknownNode => {
+  const candidates = [];
+  for (const [k, v] of Object.entries(node.children)) {
+    if (
+      ["leading_comments", "trailing_comments"].includes(k) &&
+      !includeComment
+    ) {
+      continue;
+    }
+    if (isNodeChild(v)) {
+      candidates.push(getLastNode(v.Node, includeComment));
+    } else if (isNodeVecChild(v)) {
+      // NOTE maybe you don't have to check 2nd, 3rd, or latter node
+      v.NodeVec.forEach((x) => candidates.push(getLastNode(x, includeComment)));
+    }
+  }
+  let res = node;
+  for (const c of candidates) {
+    if (!c.token) {
+      continue;
+    }
+    if (!res.token) {
+      res = c;
+      continue;
+    }
+    if (
+      res.token.line < c.token.line ||
+      (c.token.line === res.token.line && res.token.column < c.token.column)
+    ) {
+      res = c;
+    }
+  }
+  return res;
+};
+
 export const printSQL = (
   path: AstPath,
   options: Options,
@@ -516,41 +554,23 @@ export const printSQL = (
 
   if (Array.isArray(node)) {
     for (let i = 0; i < node.length - 1; i++) {
-      const endNode = node[i];
-      if ("semicolon" in endNode.children) {
-        // end of statement
-        const semicolon = endNode.children.semicolon;
-        if (semicolon) {
-          let endLine = semicolon.Node.token.line;
-          const trailing_comments = semicolon.Node.children.trailing_comments;
-          if (trailing_comments) {
-            const comments = trailing_comments.NodeVec;
-            const len = comments.length;
-            const last_comments = comments[len - 1];
-            endLine = last_comments.token.line;
-            const endLiteral = last_comments.token.literal;
-            const newLines = endLiteral.match(/\n/g);
-            if (newLines) {
-              endLine += newLines.length;
-            }
-          }
-          // start of statement
-          const startNode = getFirstNode(node[i + 1], true);
-          let startLine;
-          if (startNode.token) {
-            startLine = startNode.token.line;
-          } else {
-            // EOF
-            startLine = endLine + 1;
-          }
-          node[i].emptyLines = startLine - endLine - 1; // >= -1
-        }
-      } else if (node[i].node_type === "StandAloneExpr") {
-        const startNode = node[i + 1];
-        // if any trailing statements exist
+      if (
+        "semicolon" in node[i].children ||
+        node[i].node_type === "StandAloneExpr"
+      ) {
+        const endNode = getLastNode(node[i], true);
+        if (!endNode.token) continue;
+        const endLine = endNode.token.line;
+
+        const startNode = getFirstNode(node[i + 1], true);
+        let startLine;
         if (startNode.token) {
-          node[i].emptyLines = 1;
+          startLine = startNode.token.line;
+        } else {
+          // EOF
+          startLine = endLine + 1;
         }
+        node[i].emptyLines = startLine - endLine - 1; // >= -1
       }
     }
     return path.map(print);
