@@ -138,6 +138,7 @@ impl Token {
         let first_char = match iter.next() {
             Some(c) => match c {
                 '-' | '/' => c,
+                '{' => c,
                 '#' => return true,
                 _ => return false,
             },
@@ -147,7 +148,10 @@ impl Token {
             Some(c) => c,
             None => return false,
         };
-        if first_char == '-' && second_char == '-' || first_char == '/' && second_char == '*' {
+        if first_char == '-' && second_char == '-'
+            || first_char == '/' && second_char == '*'
+            || first_char == '{' && second_char == '#'
+        {
             true
         } else {
             false

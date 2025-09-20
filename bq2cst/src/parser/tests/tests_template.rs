@@ -38,9 +38,10 @@ expr:
             0,
         )),
         Box::new(SuccessTestCase::new(
+            // fault tolerance (comma is missing here)
             "\
 {{ config() }}
-SELECT 1;
+SELECT 1
 {{ config() }}
 SELECT 1;
 ",
@@ -50,6 +51,22 @@ expr:
   self: {{ config() }} (TemplateExpr)
 ",
             2,
+        )),
+        Box::new(SuccessTestCase::new(
+            "\
+{# leading comment #}
+SELECT 1 {# trailing comment #}
+",
+            "\
+self: SELECT (SelectStatement)
+exprs:
+- self: 1 (NumericLiteral)
+  trailing_comments:
+  - self: {# trailing comment #} (Comment)
+leading_comments:
+- self: {# leading comment #} (Comment)
+",
+            0,
         )),
     ];
     for t in test_cases {

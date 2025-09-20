@@ -6,3 +6,7 @@ SELECT 1;
 {{ config() }}
 
 SELECT 1;
+
+{# this is comment #}
+/* this is comment */
+SELECT 1;
