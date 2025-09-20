@@ -68,6 +68,133 @@ leading_comments:
 ",
             0,
         )),
+        Box::new(SuccessTestCase::new(
+            "\
+SELECT
+  {% for i in range(10) %}
+    {{ i }},
+  {% endfor %}
+",
+            "\
+self: SELECT (SelectStatement)
+exprs:
+- self: {% for i in range(10) %} (TemplateExprStart)
+  continues: []
+  end:
+    self: {% endfor %} (TemplateExprEnd)
+  exprs:
+  - self: {{ i }} (TemplateExpr)
+    comma:
+      self: , (Symbol)
+",
+            0,
+        )),
+        Box::new(SuccessTestCase::new(
+            "\
+SELECT
+  {% for i in range(10) %}
+    {{ i }},
+  {% endfor %}
+  100,
+",
+            "\
+self: SELECT (SelectStatement)
+exprs:
+- self: {% for i in range(10) %} (TemplateExprStart)
+  continues: []
+  end:
+    self: {% endfor %} (TemplateExprEnd)
+  exprs:
+  - self: {{ i }} (TemplateExpr)
+    comma:
+      self: , (Symbol)
+- self: 100 (NumericLiteral)
+  comma:
+    self: , (Symbol)
+",
+            0,
+        )),
+        Box::new(SuccessTestCase::new(
+            "\
+SELECT
+  {% if true %}
+    foo
+  {% else %}
+    bar
+  {% endif %},
+  100,
+",
+            "\
+self: SELECT (SelectStatement)
+exprs:
+- self: {% if true %} (TemplateExprStart)
+  comma:
+    self: , (Symbol)
+  continues:
+  - self: {% else %} (TemplateExprContinue)
+    exprs:
+    - self: bar (Identifier)
+  end:
+    self: {% endif %} (TemplateExprEnd)
+  exprs:
+  - self: foo (Identifier)
+- self: 100 (NumericLiteral)
+  comma:
+    self: , (Symbol)
+",
+            0,
+        )),
+        Box::new(SuccessTestCase::new(
+            "\
+SELECT {% block exprs %}{% endblock %}
+",
+            "\
+self: SELECT (SelectStatement)
+exprs:
+- self: {% block exprs %} (TemplateExprStart)
+  continues: []
+  end:
+    self: {% endblock %} (TemplateExprEnd)
+  exprs: []
+",
+            0,
+        )),
+        Box::new(SuccessTestCase::new(
+            "\
+SELECT
+  {% for i in range(10) %}
+    {% for j in range(10) %}
+      {{ i }} + {{ j }},
+    {% endfor %}
+  {% endfor %}
+  100,
+",
+            "\
+self: SELECT (SelectStatement)
+exprs:
+- self: {% for i in range(10) %} (TemplateExprStart)
+  continues: []
+  end:
+    self: {% endfor %} (TemplateExprEnd)
+  exprs:
+  - self: {% for j in range(10) %} (TemplateExprStart)
+    continues: []
+    end:
+      self: {% endfor %} (TemplateExprEnd)
+    exprs:
+    - self: + (BinaryOperator)
+      comma:
+        self: , (Symbol)
+      left:
+        self: {{ i }} (TemplateExpr)
+      right:
+        self: {{ j }} (TemplateExpr)
+- self: 100 (NumericLiteral)
+  comma:
+    self: , (Symbol)
+",
+            0,
+        )),
     ];
     for t in test_cases {
         t.test();

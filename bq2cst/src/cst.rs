@@ -141,6 +141,9 @@ pub enum NodeType {
     TableSamplePipeOperator,
     TableSampleRatio, // (10 PERCENT)
     TemplateExpr,
+    TemplateExprEnd,
+    TemplateExprContinue,
+    TemplateExprStart,
     TrainingDataCustomHolidayClause, // (training_data AS (SELECT ...), custom_holiday AS (SELECT ...))
     TransactionStatement,            // BEGIN | COMMIT | ROLLBACK
     TruncateStatement,

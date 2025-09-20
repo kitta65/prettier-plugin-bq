@@ -352,6 +352,41 @@ impl Parser {
                 TemplateType::Expr => {
                     left.node_type = NodeType::TemplateExpr;
                 }
+                TemplateType::ExprStart => {
+                    left.node_type = NodeType::TemplateExprStart;
+                    if self.get_token(1)?.get_template_type() != Some(TemplateType::ExprEnd)
+                        && self.get_token(1)?.get_template_type()
+                            != Some(TemplateType::ExprContinue)
+                    {
+                        self.next_token()?; // -> expr
+                        left.push_node_vec("exprs", self.parse_exprs(&vec![], alias, order)?);
+                    } else {
+                        // {% block %} is sometimes empty
+                        left.push_node_vec("exprs", Vec::new());
+                    }
+
+                    let mut continues = Vec::new();
+                    while self.get_token(1)?.get_template_type() == Some(TemplateType::ExprContinue)
+                    {
+                        self.next_token()?; // -> {% else %}
+                        let mut continue_ = self.construct_node(NodeType::TemplateExprContinue)?;
+                        self.next_token()?; // -> exprs
+                        if self.get_token(0)?.get_template_type() != Some(TemplateType::ExprEnd)
+                            && self.get_token(0)?.get_template_type()
+                                != Some(TemplateType::ExprContinue)
+                        {
+                            continue_
+                                .push_node_vec("exprs", self.parse_exprs(&vec![], alias, order)?);
+                        } else {
+                            // {% block %} is sometimes empty
+                            continue_.push_node_vec("exprs", Vec::new());
+                        }
+                        continues.push(continue_)
+                    }
+                    left.push_node_vec("continues", continues);
+                    self.next_token()?; // -> {% else %} | {% end %}
+                    left.push_node("end", self.construct_node(NodeType::TemplateExprEnd)?);
+                }
                 _ => {}
             }
         } else if !after_dot {
@@ -853,27 +888,53 @@ impl Parser {
         let mut exprs: Vec<Node> = Vec::new();
         // first expr
         let mut expr = self.parse_expr(usize::MAX, alias, false, false, order)?;
+        let should_continue = self.should_continue(&expr)?;
         if self.get_token(1)?.is(",") {
             self.next_token()?; // expr -> ,
             expr.push_node("comma", self.construct_node(NodeType::Symbol)?);
-        } else {
+        } else if !should_continue {
             return Ok(vec![expr]);
         }
+
         exprs.push(expr);
         // second expr and later
-        while !self.get_token(1)?.in_(until) && !self.is_eof(1) {
+        while !self.get_token(1)?.in_(until)
+            && !self.is_eof(1)
+            && self.get_token(1)?.get_template_type() != Some(TemplateType::ExprContinue)
+            && self.get_token(1)?.get_template_type() != Some(TemplateType::ExprEnd)
+        {
             self.next_token()?;
             let mut expr = self.parse_expr(usize::MAX, alias, false, false, true)?;
+            let should_continue = self.should_continue(&expr)?;
             if self.get_token(1)?.is(",") {
                 self.next_token()?; // expr -> ,
                 expr.push_node("comma", self.construct_node(NodeType::Symbol)?);
                 exprs.push(expr);
-            } else {
+            } else if !should_continue {
                 exprs.push(expr);
                 break;
             }
         }
         Ok(exprs)
+    }
+    fn should_continue(&self, last_expr: &Node) -> BQ2CSTResult<bool> {
+        let mut should_continue = self.get_token(1)?.is(",");
+        let mut temp = last_expr;
+        while !should_continue && temp.node_type == NodeType::TemplateExprStart {
+            if let Some(ContentType::NodeVec(v)) = temp.children.get("exprs") {
+                if let Some(last) = v.last() {
+                    if last.children.get("comma").is_some() {
+                        should_continue = true;
+                    } else {
+                        temp = last;
+                        continue;
+                    }
+                }
+                break;
+            };
+            break;
+        }
+        Ok(should_continue)
     }
     fn parse_grouped_exprs(&mut self, alias: bool) -> BQ2CSTResult<Node> {
         let mut group = self.construct_node(NodeType::GroupedExprs)?;
@@ -2149,6 +2210,10 @@ impl Parser {
                     "UNION",
                     "INTERSECT",
                     "EXCEPT",
+                    "INNER",
+                    "FULL",
+                    "LEFT",
+                    "OUTER",
                     ";",
                     ")",
                 ],
