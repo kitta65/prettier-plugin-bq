@@ -12,6 +12,7 @@ mod tests_other;
 mod tests_pipe;
 mod tests_script;
 mod tests_select;
+mod tests_template;
 
 trait TestCase {
     fn test(&self);

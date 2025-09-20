@@ -53,3 +53,40 @@ fn test_is_comment() {
     assert!(Token::from_str0("/*\nxxx\n*/").is_comment());
     assert!(Token::from_str0("# xxx").is_comment());
 }
+
+#[test]
+fn test_get_template_type() {
+    assert_eq!(Token::from_str0("").get_template_type(), None);
+    assert_eq!(
+        Token::from_str0("{% for row in rows %}").get_template_type(),
+        Some(TemplateType::ExprStart)
+    );
+    assert_eq!(
+        Token::from_str0("{% include 'foo.html' %}").get_template_type(),
+        Some(TemplateType::Expr)
+    );
+    assert_eq!(
+        Token::from_str0("{% else %}").get_template_type(),
+        Some(TemplateType::ExprContinue)
+    );
+    assert_eq!(
+        Token::from_str0("{% import 'foo.html' as f %}").get_template_type(),
+        Some(TemplateType::Comment)
+    );
+    assert_eq!(
+        Token::from_str0("{% set foo = 'bar' %}").get_template_type(),
+        Some(TemplateType::Comment)
+    );
+    assert_eq!(
+        Token::from_str0("{% set foo %}").get_template_type(),
+        Some(TemplateType::ExprStart)
+    );
+    assert_eq!(
+        Token::from_str0("{% endfor %}").get_template_type(),
+        Some(TemplateType::ExprEnd)
+    );
+    assert_eq!(
+        Token::from_str0("{% materialization %}").get_template_type(),
+        Some(TemplateType::ExprStart)
+    );
+}

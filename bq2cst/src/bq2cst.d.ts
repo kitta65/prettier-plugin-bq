@@ -125,13 +125,14 @@ export type UnknownNode =
   | SetOperator
   | SetStatement
   | SingleTokenStatement
+  | StandAloneExpr
   | StringLiteral
   | StructLiteral
   | Symbol_
   | TableSampleClause
   | TableSamplePipeOperator
   | TableSampleRatio
-  | Template
+  | TemplateExpr
   | TransactionStatement
   | TrainingDataCustomHolidayClause
   | TruncateStatement
@@ -1449,6 +1450,16 @@ export type SingleTokenStatement = XXXStatement & {
   node_type: "SingleTokenStatement";
 };
 
+export type StandAloneExpr = BaseNode & {
+  token: null;
+  node_type: "StandAloneExpr";
+  children: {
+    leading_comments: undefined;
+    trailing_comments: undefined;
+    expr: NodeChild;
+  }
+};
+
 export type StringLiteral = Expr & {
   node_type: "StringLiteral";
 };
@@ -1494,8 +1505,8 @@ export type TableSampleRatio = BaseNode & {
   };
 };
 
-export type Template = IdentifierGeneral & {
-  node_type: "Template";
+export type TemplateExpr = IdentifierGeneral & {
+  node_type: "TemplateExpr";
 };
 
 export type TransactionStatement = XXXStatement & {
