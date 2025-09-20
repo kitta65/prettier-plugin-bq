@@ -21,13 +21,6 @@ leading_comments:
 ",
             0,
         )),
-        Box::new(ErrorTestCase::new(
-            "\
-HOGE
-",
-            usize::MAX,
-            usize::MAX,
-        )),
         // ----- eof -----
         Box::new(SuccessTestCase::new(
             "\
@@ -1974,25 +1967,6 @@ exprs:
     self: WITH (Identifier)
   rparen:
     self: ) (Symbol)
-",
-            0,
-        )),
-        // ----- template -----
-        Box::new(SuccessTestCase::new(
-            "\
-SELECT
-  {{variable}},
-  {variable},
-",
-            "\
-self: SELECT (SelectStatement)
-exprs:
-- self: {{variable}} (Template)
-  comma:
-    self: , (Symbol)
-- self: {variable} (Template)
-  comma:
-    self: , (Symbol)
 ",
             0,
         )),

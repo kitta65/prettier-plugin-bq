@@ -4,6 +4,7 @@ mod tests;
 use crate::constants;
 use regex::Regex;
 use serde::{Deserialize, Serialize};
+use std::sync::LazyLock;
 
 #[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
 pub struct Token {
@@ -11,6 +12,22 @@ pub struct Token {
     pub column: usize,
     pub literal: String,
 }
+
+pub enum TemplateType {
+    Expr,
+    // ExprStart,
+    // ExprContinue,
+    // ExprEnd,
+    Comment,
+    // CommentStart,
+    // CommentEnd,
+}
+
+static NUMBER_RE: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new(r"^([0-9]+|([0-9]*\.[0-9]+))([eE][\+\-]?[0-9]+)?$").unwrap());
+static TEMPLATE_JINJA_STATEMENT: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new(r"^\{%-?\s*(\w+)").unwrap());
+static TEMPLATE_OTHER: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"^\{.").unwrap());
 
 impl Token {
     pub fn new(line: usize, column: usize, literal: String) -> Token {
@@ -28,6 +45,25 @@ impl Token {
             column: usize::MAX,
             literal: "".to_string(),
         }
+    }
+    pub fn get_template_type(&self) -> Option<TemplateType> {
+        if self.literal.starts_with("{{") {
+            return Some(TemplateType::Expr);
+        } else if self.literal.starts_with("{#") {
+            return Some(TemplateType::Comment);
+        } else if self.literal.starts_with("{%") {
+            if let Some(caps) = TEMPLATE_JINJA_STATEMENT.captures(self.literal.as_str()) {
+                match &caps[1] {
+                    // TODO
+                    _ => return None,
+                }
+            }
+        } else if TEMPLATE_OTHER.is_match(self.literal.as_str()) {
+            // python f-string or something (actually, out of scope)
+            return Some(TemplateType::Expr);
+        };
+
+        return None;
     }
     pub fn is_string(&self) -> bool {
         if self.quoted_by('"') {
@@ -82,16 +118,8 @@ impl Token {
             _ => return false,
         }
     }
-    pub fn is_template(&self) -> bool {
-        let mut iterator = self.literal.chars();
-        match iterator.next() {
-            Some('{') => return true,
-            _ => return false,
-        }
-    }
     pub fn is_numeric(&self) -> bool {
-        let re = Regex::new(r"^([0-9]+|([0-9]*\.[0-9]+))([eE][\+\-]?[0-9]+)?$").unwrap();
-        re.is_match(self.literal.as_str())
+        NUMBER_RE.is_match(self.literal.as_str())
     }
     pub fn is_boolean(&self) -> bool {
         self.literal.to_uppercase() == "TRUE" || self.literal.to_uppercase() == "FALSE"

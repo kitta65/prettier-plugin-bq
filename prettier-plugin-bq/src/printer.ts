@@ -545,6 +545,12 @@ export const printSQL = (
           }
           node[i].emptyLines = startLine - endLine - 1; // >= -1
         }
+      } else if (node[i].node_type === "StandAloneExpr") {
+        const startNode = node[i + 1];
+        // if any trailing statements exist
+        if (startNode.token) {
+          node[i].emptyLines = 1;
+        }
       }
     }
     return path.map(print);
@@ -788,6 +794,8 @@ export const printSQL = (
       return printSetStatement(path, options, print, node);
     case "SingleTokenStatement":
       return printSingleTokenStatement(path, options, print, node);
+    case "StandAloneExpr":
+      return printStandAloneExpr(path, options, print, node);
     case "StringLiteral":
       return printStringLiteral(path, options, print, node);
     case "StructLiteral":
@@ -800,7 +808,7 @@ export const printSQL = (
       return printTableSamplePipeOperator(path, options, print, node);
     case "TableSampleRatio":
       return printTableSampleRatio(path, options, print, node);
-    case "Template":
+    case "TemplateExpr":
       return printIdentifier(path, options, print, node);
     case "TransactionStatement":
       return printTransactionStatement(path, options, print, node);
@@ -3848,7 +3856,7 @@ const printGroupedTypeDeclarations: PrintFunc<
 };
 
 const printIdentifier: PrintFunc<
-  bq2cst.Identifier | bq2cst.Parameter | bq2cst.Template
+  bq2cst.Identifier | bq2cst.Parameter | bq2cst.TemplateExpr
 > = (path, options, print, node) => {
   const p = new Printer(path, options, print, node);
   const docs: { [Key in Docs<bq2cst.Identifier>]: Doc } = {
@@ -5410,6 +5418,20 @@ const printSingleTokenStatement: PrintFunc<bq2cst.SingleTokenStatement> = (
     docs.semicolon,
     p.newLine(),
   ];
+};
+
+const printStandAloneExpr: PrintFunc<bq2cst.StandAloneExpr> = (
+  path,
+  options,
+  print,
+  node,
+) => {
+  const p = new Printer(path, options, print, node);
+  const docs: { [Key in Docs<bq2cst.StandAloneExpr>]: Doc } = {
+    self: "", // eslint-disable-line unicorn/no-unused-properties
+    expr: p.child("expr"),
+  };
+  return [docs.expr, p.newLine()];
 };
 
 const printStringLiteral: PrintFunc<bq2cst.StringLiteral> = (

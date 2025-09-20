@@ -5,7 +5,7 @@ use crate::cst::ContentType;
 use crate::cst::Node;
 use crate::cst::NodeType;
 use crate::error::{BQ2CSTError, BQ2CSTResult};
-use crate::token::Token;
+use crate::token::{TemplateType, Token};
 
 #[derive(Clone)]
 pub struct Parser {
@@ -56,7 +56,7 @@ impl Parser {
         // but it does not improve execution time.
         let curr_token = self.get_token(0)?;
         let mut node = match node_type {
-            NodeType::EOF => Node::empty(node_type),
+            NodeType::EOF | NodeType::StandAloneExpr => Node::empty(node_type),
             NodeType::Unknown => {
                 let mut node = Node::new(curr_token.clone(), node_type);
                 if curr_token.is_identifier() {
@@ -69,8 +69,6 @@ impl Parser {
                     node.node_type = NodeType::BooleanLiteral;
                 } else if curr_token.is_parameter() {
                     node.node_type = NodeType::Parameter;
-                } else if curr_token.is_template() {
-                    node.node_type = NodeType::Template;
                 } else if curr_token.literal.to_uppercase() == "NULL" {
                     node.node_type = NodeType::NullLiteral;
                 } else if let "(" | "." = self.get_token(1)?.literal.as_str() {
@@ -349,6 +347,13 @@ impl Parser {
         };
         if as_table {
             left = self.parse_identifier()?;
+        } else if let Some(type_) = self.get_token(0)?.get_template_type() {
+            match type_ {
+                TemplateType::Expr => {
+                    left.node_type = NodeType::TemplateExpr;
+                }
+                _ => {}
+            }
         } else if !after_dot {
             // prefix or literal
             match self.get_token(0)?.literal.to_uppercase().as_str() {
@@ -1223,7 +1228,13 @@ impl Parser {
                     self.parse_export_model_statement(semicolon)?
                 }
             }
-            _ => self.parse_labeled_statement(semicolon)?,
+            _ => {
+                if self.get_token(1)?.is(":") {
+                    self.parse_labeled_statement(semicolon)?
+                } else {
+                    self.parse_standalone_expr()?
+                }
+            }
         };
         Ok(node)
     }
@@ -4453,5 +4464,15 @@ impl Parser {
             load.push_node("semicolon", self.construct_node(NodeType::Symbol)?);
         }
         Ok(load)
+    }
+    fn parse_standalone_expr(&mut self) -> BQ2CSTResult<Node> {
+        let mut standalone_expr = self.construct_node(NodeType::StandAloneExpr)?;
+        standalone_expr.children.remove("leading_comments");
+        standalone_expr.children.remove("trailing_comments");
+        standalone_expr.push_node(
+            "expr",
+            self.parse_expr(usize::MAX, false, false, false, false)?,
+        );
+        Ok(standalone_expr)
     }
 }
