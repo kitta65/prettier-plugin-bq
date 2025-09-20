@@ -349,11 +349,11 @@ SELECT {{variable}};",
         )),
         Box::new(SuccessTestCase::new(
             "\
-{{ config(foo={}, bar='}}') }} SELECT 1",
+{{ config(foo={}, bar='}}', baz='''a''') }} SELECT 1",
             vec![
-                Token::from_str(1, 1, "{{ config(foo={}, bar='}}') }}"),
-                Token::from_str(1, 32, "SELECT"),
-                Token::from_str(1, 39, "1"),
+                Token::from_str(1, 1, "{{ config(foo={}, bar='}}', baz='''a''') }}"),
+                Token::from_str(1, 45, "SELECT"),
+                Token::from_str(1, 52, "1"),
             ],
         )),
         // operator
