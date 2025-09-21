@@ -25,7 +25,7 @@ jobs:
       # since packageManager is specified in package.json, any pnpm version is OK
       - run: mkdir -p bq2cst/{cjs,esm}
       - run: npm install -g pnpm
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
           node-version: "20.x"
           registry-url: "https://registry.npmjs.org"
