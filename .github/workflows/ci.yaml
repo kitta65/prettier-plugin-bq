@@ -5,17 +5,7 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
-      # ----- setup pnpm -----
-      # since packageManager is specified in package.json, any pnpm version is OK
-      - run: npm install -g pnpm
-      - uses: actions/setup-node@v4
-        with:
-          node-version: "20.x"
-          registry-url: "https://registry.npmjs.org"
-          cache: pnpm
-      - run: pnpm install
-
-      # ----- setup cargo -----
+      # ----- setup rust -----
       - uses: actions/cache@v4
         with:
           key: ${{ hashFiles('./bq2cst/Cargo.lock') }}
@@ -26,12 +16,27 @@ jobs:
             ~/.cargo/registry/cache
             ~/.cargo/db
 
-      # ----- build -----
-      - run: pnpm run build
+      # ----- build rust -----
+      - run: make build
+        working-directory: ./bq2cst
+
+      # ----- setup typescript -----
+      # since packageManager is specified in package.json, any pnpm version is OK
+      - run: mkdir -p bq2cst/{cjs,esm}
+      - run: npm install -g pnpm
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20.x"
+          registry-url: "https://registry.npmjs.org"
+          cache: pnpm
+      - run: pnpm install
+
+      # ----- build typescript -----
+      - run: pnpm --recursive run build
       - uses: actions/upload-artifact@v4
         with:
           name: bq2cst
-          path: ./bq2cst/pkg
+          path: ./bq2cst/cjs
 
       # ----- test -----
       - run: pnpm run test
