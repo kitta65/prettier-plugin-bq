@@ -4,9 +4,9 @@
 
 ## Features
 
-* support [pipe syntax](https://cloud.google.com/bigquery/docs/reference/standard-sql/pipe-syntax)
-* support [procedural language](https://cloud.google.com/bigquery/docs/reference/standard-sql/procedural-language) (a.k.a BigQuery Scripting)
-* try to handle jinja templates (though not perfect)
+- support [pipe syntax](https://cloud.google.com/bigquery/docs/reference/standard-sql/pipe-syntax)
+- support [procedural language](https://cloud.google.com/bigquery/docs/reference/standard-sql/procedural-language) (a.k.a BigQuery Scripting)
+- try to handle jinja templates (though not perfect)
 
 ## Install
 
@@ -35,19 +35,22 @@ For more information, please read the prettier document.
 
 ## Configuration
 
-Below are the options that `prettier-plugin-bq` currently supports.
+`prettier-plugin-bq` supports the options below.
 
-| API Option                    | CLI Option                         | Default | Description                                                                                                                                       |
-| ----------------------------- | ---------------------------------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
-| indentCte                     | indent-cte                         | true    | Indent CTEs in with clause.                                                                                                                       |
-| printBlankLineAfterCte        | print-blank-line-after-cte         | false   | Print blank line after CTE in with clause.                                                                                                        |
-| printKeywordsInUpperCase      | print-keywords-in-upper-case       | true    | Print [reserved keywords](https://cloud.google.com/bigquery/docs/reference/standard-sql/lexical#reserved_keywords) and functions in upper case.   |
-| printPseudoColumnsInUpperCase | print-pseudo-columns-in-upper-case | true    | Print pseudo columns (e.g. `_PARTITIONDATE`, `_PARTITIONTIME`) in upper case. When `printKeywordsInUpperCase` is `false`, this option is ignored. |
+| API Option               | CLI Option                   | Default | Description                                                                                                    |
+| ------------------------ | ---------------------------- | ------- | -------------------------------------------------------------------------------------------------------------- |
+| indentCte                | indent-cte                   | true    | Indent CTEs in with clause.                                                                                    |
+| printBlankLineAfterCte   | print-blank-line-after-cte   | false   | Print blank line after CTE in with clause.                                                                     |
+| printKeywordsInUpperCase | print-keywords-in-upper-case | true    | Print keywords, built-in functions and pseudo columns (e.g. `_PARTITIONDATE`, `_PARTITIONTIME`) in upper case. |
+
+> [!NOTE]
+>
+> `printPseudoColumnsInUpperCase` was merged into printKeywordsInUpperCase.
 
 ## Coding style
 
 This plugin doesn't follow any famous style guides,
-because none of them satisfies me.
+because none of them account for GoogleSQL's latest syntax (such as pipe syntax).
 
 ## Feedback
 
