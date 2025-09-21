@@ -2,26 +2,62 @@ on: [push]
 jobs:
   ci:
     runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
     steps:
       - uses: actions/checkout@v5
 
+      # ----- rust -----
+      - uses: actions/cache@v4
+        with:
+          key: ${{ hashFiles('./bq2cst/Cargo.lock') }}
+          # https://doc.rust-lang.org/cargo/guide/cargo-home.html#caching-the-cargo-home-in-ci
+          path: |
+            ~/.cargo/bin
+            ~/.cargo/registry/index
+            ~/.cargo/registry/cache
+            ~/.cargo/db
+      - run: make build
+        working-directory: ./bq2cst
+
+      # ----- typescript -----
+      # since packageManager is specified in package.json, any pnpm version is OK
+      - run: mkdir -p bq2cst/{cjs,esm}
+      - run: npm install -g pnpm
       - uses: actions/setup-node@v4
         with:
           node-version: "20.x"
           registry-url: "https://registry.npmjs.org"
-          cache: npm
+          cache: pnpm
+      - run: pnpm install
+      - run: pnpm --recursive run build
 
-      - run: npm ci
-      - run: npm test
+      # ----- test -----
+      - run: pnpm run test
 
-      # always pass when ref_type == 'branch'
-      - uses: dr666m1/tag-version-match@main
+      # ----- publish -----
+      # TODO: uncomment when ready to publish
+      # #  always pass when ref_type == 'branch'
+      # - uses: kitta65/tag-version-match@main
+      #   with:
+      #     file: ./prettier-plugin-bq/package.json
+      #     query: .version
+      #     pattern: '^([0-9]+\.[0-9]+\.[0-9]+)$'
+      # - uses: kitta65/tag-version-match@main
+      #   with:
+      #     file: ./bq2cst/Cargo.toml
+      #     query: .package.version
+      #     pattern: '^([0-9]+\.[0-9]+\.[0-9]+)$'
+      # see https://vite.dev/guide/static-deploy
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v4
         with:
-          file: ./package.json
-          query: .version
-          pattern: '^([0-9]+\.[0-9]+\.[0-9]+)$'
-
-      - run: npm publish
+          path: './web/dist'
+      - id: deployment
+        if: ${{ github.ref_type == 'tag' }}
+        uses: actions/deploy-pages@v4
+      - run: pnpm run publish
         if: ${{ github.ref_type == 'tag' }}
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

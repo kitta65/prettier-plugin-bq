@@ -1,0 +1,4 @@
+packages:
+  - prettier-plugin-bq
+  - bq2cst/cjs
+  - web

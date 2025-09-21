@@ -348,7 +348,7 @@ class Printer<T extends bq2cst.UnknownNode> {
       } else if (!this.node.notGlobal && this.includedIn(reservedKeywords)) {
         literal = literal.toUpperCase();
       } else if (
-        this.options.printPseudoColumnsInUpperCase &&
+        this.options.printKeywordsInUpperCase &&
         (literal.match(/^_PARTITION/i) ||
           literal.match(/^_TABLE_/i) ||
           literal.match(/^_FILE_/i) ||
@@ -507,6 +507,44 @@ const getFirstNode = (
   return res;
 };
 
+const getLastNode = (
+  node: bq2cst.UnknownNode,
+  includeComment = false,
+): bq2cst.UnknownNode => {
+  const candidates = [];
+  for (const [k, v] of Object.entries(node.children)) {
+    if (
+      ["leading_comments", "trailing_comments"].includes(k) &&
+      !includeComment
+    ) {
+      continue;
+    }
+    if (isNodeChild(v)) {
+      candidates.push(getLastNode(v.Node, includeComment));
+    } else if (isNodeVecChild(v)) {
+      // NOTE maybe you don't have to check 2nd, 3rd, or latter node
+      v.NodeVec.forEach((x) => candidates.push(getLastNode(x, includeComment)));
+    }
+  }
+  let res = node;
+  for (const c of candidates) {
+    if (!c.token) {
+      continue;
+    }
+    if (!res.token) {
+      res = c;
+      continue;
+    }
+    if (
+      res.token.line < c.token.line ||
+      (c.token.line === res.token.line && res.token.column < c.token.column)
+    ) {
+      res = c;
+    }
+  }
+  return res;
+};
+
 export const printSQL = (
   path: AstPath,
   options: Options,
@@ -516,35 +554,23 @@ export const printSQL = (
 
   if (Array.isArray(node)) {
     for (let i = 0; i < node.length - 1; i++) {
-      const endNode = node[i];
-      if ("semicolon" in endNode.children) {
-        // end of statement
-        const semicolon = endNode.children.semicolon;
-        if (semicolon) {
-          let endLine = semicolon.Node.token.line;
-          const trailing_comments = semicolon.Node.children.trailing_comments;
-          if (trailing_comments) {
-            const comments = trailing_comments.NodeVec;
-            const len = comments.length;
-            const last_comments = comments[len - 1];
-            endLine = last_comments.token.line;
-            const endLiteral = last_comments.token.literal;
-            const newLines = endLiteral.match(/\n/g);
-            if (newLines) {
-              endLine += newLines.length;
-            }
-          }
-          // start of statement
-          const startNode = getFirstNode(node[i + 1], true);
-          let startLine;
-          if (startNode.token) {
-            startLine = startNode.token.line;
-          } else {
-            // EOF
-            startLine = endLine + 1;
-          }
-          node[i].emptyLines = startLine - endLine - 1; // >= -1
+      if (
+        "semicolon" in node[i].children ||
+        node[i].node_type === "StandAloneExpr"
+      ) {
+        const endNode = getLastNode(node[i], true);
+        if (!endNode.token) continue;
+        const endLine = endNode.token.line;
+
+        const startNode = getFirstNode(node[i + 1], true);
+        let startLine;
+        if (startNode.token) {
+          startLine = startNode.token.line;
+        } else {
+          // EOF
+          startLine = endLine + 1;
         }
+        node[i].emptyLines = startLine - endLine - 1; // >= -1
       }
     }
     return path.map(print);
@@ -788,6 +814,8 @@ export const printSQL = (
       return printSetStatement(path, options, print, node);
     case "SingleTokenStatement":
       return printSingleTokenStatement(path, options, print, node);
+    case "StandAloneExpr":
+      return printStandAloneExpr(path, options, print, node);
     case "StringLiteral":
       return printStringLiteral(path, options, print, node);
     case "StructLiteral":
@@ -800,8 +828,14 @@ export const printSQL = (
       return printTableSamplePipeOperator(path, options, print, node);
     case "TableSampleRatio":
       return printTableSampleRatio(path, options, print, node);
-    case "Template":
+    case "TemplateExpr":
       return printIdentifier(path, options, print, node);
+    case "TemplateExprContinue":
+      return printTemplateExprContinue(path, options, print, node);
+    case "TemplateExprEnd":
+      return printTemplateExprEnd(path, options, print, node);
+    case "TemplateExprStart":
+      return printTemplateExprStart(path, options, print, node);
     case "TransactionStatement":
       return printTransactionStatement(path, options, print, node);
     case "TrainingDataCustomHolidayClause":
@@ -3848,7 +3882,7 @@ const printGroupedTypeDeclarations: PrintFunc<
 };
 
 const printIdentifier: PrintFunc<
-  bq2cst.Identifier | bq2cst.Parameter | bq2cst.Template
+  bq2cst.Identifier | bq2cst.Parameter | bq2cst.TemplateExpr
 > = (path, options, print, node) => {
   const p = new Printer(path, options, print, node);
   const docs: { [Key in Docs<bq2cst.Identifier>]: Doc } = {
@@ -5412,6 +5446,20 @@ const printSingleTokenStatement: PrintFunc<bq2cst.SingleTokenStatement> = (
   ];
 };
 
+const printStandAloneExpr: PrintFunc<bq2cst.StandAloneExpr> = (
+  path,
+  options,
+  print,
+  node,
+) => {
+  const p = new Printer(path, options, print, node);
+  const docs: { [Key in Docs<bq2cst.StandAloneExpr>]: Doc } = {
+    self: "", // eslint-disable-line unicorn/no-unused-properties
+    expr: p.child("expr"),
+  };
+  return [docs.expr, p.newLine()];
+};
+
 const printStringLiteral: PrintFunc<bq2cst.StringLiteral> = (
   path,
   options,
@@ -5561,6 +5609,97 @@ const printTableSampleRatio: PrintFunc<bq2cst.TableSampleRatio> = (
     " ",
     docs.percent,
     docs.rparen,
+  ];
+};
+
+const printTemplateExprContinue: PrintFunc<bq2cst.TemplateExprContinue> = (
+  path,
+  options,
+  print,
+  node,
+) => {
+  const p = new Printer(path, options, print, node);
+  p.setNotRoot("exprs");
+  p.setGroupRecommended("exprs");
+  const docs: { [Key in Docs<bq2cst.TemplateExprContinue>]: Doc } = {
+    leading_comments: printLeadingComments(path, options, print, node),
+    self: p.self("asItIs"),
+    trailing_comments: printTrailingComments(path, options, print, node),
+    exprs: p.child("exprs", (x) => [line, x]),
+  };
+  return [
+    docs.leading_comments,
+    docs.self,
+    docs.trailing_comments,
+    indent(docs.exprs),
+  ];
+};
+
+const printTemplateExprEnd: PrintFunc<bq2cst.TemplateExprEnd> = (
+  path,
+  options,
+  print,
+  node,
+) => {
+  const p = new Printer(path, options, print, node);
+  const docs: { [Key in Docs<bq2cst.TemplateExprEnd>]: Doc } = {
+    leading_comments: printLeadingComments(path, options, print, node),
+    self: p.self("asItIs"),
+    trailing_comments: printTrailingComments(path, options, print, node),
+  };
+  return [docs.leading_comments, docs.self, docs.trailing_comments];
+};
+
+const printTemplateExprStart: PrintFunc<bq2cst.TemplateExprStart> = (
+  path,
+  options,
+  print,
+  node,
+) => {
+  const p = new Printer(path, options, print, node);
+  p.setNotRoot("exprs");
+  p.setGroupRecommended("exprs");
+  const docs: { [Key in Docs<bq2cst.TemplateExprStart>]: Doc } = {
+    leading_comments: printLeadingComments(path, options, print, node),
+    self: p.self("asItIs"),
+    trailing_comments: printTrailingComments(path, options, print, node),
+    exprs: p.child("exprs", (x) => [line, x]),
+    continues: p.child("continues", (x) => [line, x]),
+    end: p.child("end"),
+    as: "", // eslint-disable-line unicorn/no-unused-properties
+    alias: printAlias(path, options, print, node),
+    order: printOrder(path, options, print, node),
+    null_order: "", // eslint-disable-line unicorn/no-unused-properties
+    // do not use printComma here
+    // additional trailing comma may break your code
+    comma: p.child("comma", undefined, "all"),
+    with_offset: p.child("with_offset", undefined, "all"),
+    pivot: printPivotOrUnpivotOperator(path, options, print, node),
+    unpivot: "", // eslint-disable-line unicorn/no-unused-properties
+    match_recognize: p.child("match_recognize", undefined, "all"),
+  };
+  return [
+    docs.leading_comments,
+    group([
+      docs.self,
+      indent(docs.exprs),
+      docs.continues,
+      0 < p.children.exprs.NodeVec.length ||
+      0 < p.children.continues.NodeVec.length
+        ? line
+        : "",
+      docs.end,
+      docs.trailing_comments,
+      docs.alias,
+      docs.order,
+      docs.pivot,
+      docs.comma,
+      p.has("match_recognize") ? " " : "",
+      docs.match_recognize,
+      p.has("with_offset") ? " " : "",
+      docs.with_offset,
+    ]),
+    p.newLine(),
   ];
 };
 

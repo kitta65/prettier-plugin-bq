@@ -1,0 +1,6 @@
+{
+  "prettier.requireConfig": true,
+  "files.associations": {
+    "*.css": "tailwindcss"
+  }
+}

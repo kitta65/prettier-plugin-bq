@@ -247,6 +247,3 @@ select "foo"
 
 ----- with expression -----
 select with(a as 'a', upper(a));
-
------ template -----
-select {{variable}}, {variable};
