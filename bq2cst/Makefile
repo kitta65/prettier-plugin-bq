@@ -14,7 +14,7 @@ test: setup
 
 .PHONY: build
 build: test
-	wasm-pack build --target nodejs
+	wasm-pack build --target browser
 	cp ./LICENSE* pkg/
 	cp src/bq2cst.d.ts pkg/
 

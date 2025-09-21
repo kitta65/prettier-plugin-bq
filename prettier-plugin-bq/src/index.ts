@@ -1,5 +1,5 @@
 import { parse } from "bq2cst";
-import { printSQL } from "./printer";
+import { printSQL } from "./printer.js";
 
 const languages = [
   {
@@ -59,9 +59,4 @@ const options = {
   },
 };
 
-module.exports = {
-  languages,
-  parsers,
-  printers,
-  options,
-};
+export { languages, parsers, printers, options };

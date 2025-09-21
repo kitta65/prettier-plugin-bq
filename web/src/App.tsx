@@ -1,10 +1,19 @@
 import clsx from "clsx";
 import { ArrowTopRightOnSquareIcon } from "@heroicons/react/24/solid";
 import { useState } from "react";
+import * as prettier from "prettier/standalone";
+import * as prettierPluginBq from "prettier-plugin-bq";
 
-function prettify(sql: string) {
+async function prettify(sql: string) {
   // TODO: exec prettier
-  return sql.toUpperCase();
+  const res = await prettier.format(sql, {
+    parser: "sql-parse",
+    plugins: [
+      // @ts-expect-error: ignore
+      prettierPluginBq,
+    ],
+  });
+  return res;
 }
 
 function App() {
@@ -34,7 +43,7 @@ function App() {
             "cursor-pointer shadow",
           )}
           onClick={() => {
-            setSql(prettify(sql));
+            prettify(sql).then((sql) => setSql(sql));
           }}
         >
           FORMAT

@@ -11,7 +11,7 @@ import {
   mlFunctions,
   aiFunctions,
   vectorIndexFunctions,
-} from "./keywords";
+} from "./keywords.js";
 import { doc } from "prettier";
 import type { Doc, AstPath } from "prettier";
 
