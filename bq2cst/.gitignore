@@ -3,5 +3,6 @@
 /target
 **/*.rs.bk
 bin/
-pkg/
+cjs/
+esm/
 wasm-pack.log

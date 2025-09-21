@@ -2,20 +2,13 @@ on: [push]
 jobs:
   ci:
     runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
     steps:
       - uses: actions/checkout@v5
 
-      # ----- setup pnpm -----
-      # since packageManager is specified in package.json, any pnpm version is OK
-      - run: npm install -g pnpm
-      - uses: actions/setup-node@v4
-        with:
-          node-version: "20.x"
-          registry-url: "https://registry.npmjs.org"
-          cache: pnpm
-      - run: pnpm install
-
-      # ----- setup cargo -----
+      # ----- rust -----
       - uses: actions/cache@v4
         with:
           key: ${{ hashFiles('./bq2cst/Cargo.lock') }}
@@ -25,17 +18,25 @@ jobs:
             ~/.cargo/registry/index
             ~/.cargo/registry/cache
             ~/.cargo/db
+      - run: make build
+        working-directory: ./bq2cst
 
-      # ----- build -----
-      - run: pnpm run build
-      - uses: actions/upload-artifact@v4
+      # ----- typescript -----
+      # since packageManager is specified in package.json, any pnpm version is OK
+      - run: mkdir -p bq2cst/{cjs,esm}
+      - run: npm install -g pnpm
+      - uses: actions/setup-node@v4
         with:
-          name: bq2cst
-          path: ./bq2cst/pkg
+          node-version: "20.x"
+          registry-url: "https://registry.npmjs.org"
+          cache: pnpm
+      - run: pnpm install
+      - run: pnpm --recursive run build
 
       # ----- test -----
       - run: pnpm run test
 
+      # ----- publish -----
       # TODO: uncomment when ready to publish
       # #  always pass when ref_type == 'branch'
       # - uses: kitta65/tag-version-match@main
@@ -48,7 +49,14 @@ jobs:
       #     file: ./bq2cst/Cargo.toml
       #     query: .package.version
       #     pattern: '^([0-9]+\.[0-9]+\.[0-9]+)$'
-
+      # see https://vite.dev/guide/static-deploy
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: './web/dist'
+      - id: deployment
+        if: ${{ github.ref_type == 'tag' }}
+        uses: actions/deploy-pages@v4
       - run: pnpm run publish
         if: ${{ github.ref_type == 'tag' }}
         env:

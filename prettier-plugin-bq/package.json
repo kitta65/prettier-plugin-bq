@@ -1,11 +1,11 @@
 {
   "name": "prettier-plugin-bq",
-  "version": "1.0.0-beta.1",
+  "version": "1.0.0-beta.2",
   "description": "",
   "main": "dist/index.js",
   "scripts": {
     "test": "eslint-config-prettier src/index.ts && eslint ./src && prettier --check ./src && tsc && NODE_OPTIONS='--experimental-vm-modules' jest",
-    "publish": "cp ../README.md . && pnpm publish --tag beta"
+    "release": "cp ../README.md . && pnpm publish --tag beta"
   },
   "keywords": [],
   "author": "kitta65 <kitta65kitta@gmail.com>",

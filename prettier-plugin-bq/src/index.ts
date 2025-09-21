@@ -59,9 +59,4 @@ const options = {
   },
 };
 
-module.exports = {
-  languages,
-  parsers,
-  printers,
-  options,
-};
+export { languages, parsers, printers, options };

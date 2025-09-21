@@ -1,0 +1,14 @@
+@import "tailwindcss";
+
+@theme {
+  --color-*: initial;
+  --color-dark: #333333;
+  --color-background: #f7f7f7;
+  --color-white: #ffffff;
+  --font-*: initial;
+}
+
+:root {
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+}
