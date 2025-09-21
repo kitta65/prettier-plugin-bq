@@ -38,11 +38,11 @@ jobs:
       - run: pnpm --recursive run build
       - uses: actions/upload-artifact@v4
         with:
-          name: bq2cst
+          name: bq2cst-${{ github.run_id }}
           path: ./bq2cst/cjs
       - uses: actions/upload-artifact@v4
         with:
-          name: web
+          name: web-${{ github.run_id }}
           path: ./web/dist
 
       # ----- test -----
@@ -63,8 +63,7 @@ jobs:
       #     pattern: '^([0-9]+\.[0-9]+\.[0-9]+)$'
       - uses: actions/deploy-pages@v4
         with:
-          artifact_name: web
-
+          artifact_name: web-${{ github.run_id }}
       - run: pnpm run publish
         if: ${{ github.ref_type == 'tag' }}
         env:
