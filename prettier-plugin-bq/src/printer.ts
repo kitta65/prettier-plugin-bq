@@ -348,7 +348,7 @@ class Printer<T extends bq2cst.UnknownNode> {
       } else if (!this.node.notGlobal && this.includedIn(reservedKeywords)) {
         literal = literal.toUpperCase();
       } else if (
-        this.options.printPseudoColumnsInUpperCase &&
+        this.options.printKeywordsInUpperCase &&
         (literal.match(/^_PARTITION/i) ||
           literal.match(/^_TABLE_/i) ||
           literal.match(/^_FILE_/i) ||

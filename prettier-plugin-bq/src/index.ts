@@ -47,13 +47,13 @@ const options = {
     type: "boolean",
     category: CATEGORY_BQ,
     default: true,
-    description: "Print reserved keywords and functions in upper case.",
+    description: "Print keywords, built-in functions and pseudo columns in upper case.",
   },
   printPseudoColumnsInUpperCase: {
     type: "boolean",
     category: CATEGORY_BQ,
     default: true,
-    description: "Print pseudo columns in upper case.",
+    description: "Deprecated: This option was merged into printKeywordsInUpperCase.",
   },
 };
 
