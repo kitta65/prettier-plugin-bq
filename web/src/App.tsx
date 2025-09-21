@@ -2,7 +2,7 @@ import clsx from "clsx";
 import { ArrowTopRightOnSquareIcon } from "@heroicons/react/24/solid";
 import { useState } from "react";
 import * as prettier from "prettier/standalone";
-import * as prettierPluginBq from "prettier-plugin-bq";
+import * as prettierPluginBq from "./prettier-plugin-bq";
 
 async function prettify(sql: string) {
   // TODO: exec prettier

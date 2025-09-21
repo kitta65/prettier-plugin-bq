@@ -1,6 +1,6 @@
 {
   "scripts": {
-    "publish": "cd bq2cst && make publish && cd - && pnpm --recursive run publish",
+    "release": "cd bq2cst && make release && cd - && pnpm --recursive run release",
     "test": " cd bq2cst && make test && cd - && pnpm --recursive run test",
     "build": "cd bq2cst && make build && cd - && pnpm --recursive run build"
   },

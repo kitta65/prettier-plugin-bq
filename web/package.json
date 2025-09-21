@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "prepare": "cp -r ../prettier-plugin-bq/src/* ./src/prettier-plugin-bq"
   },
   "dependencies": {
     "@heroicons/react": "^2.2.0",
@@ -17,7 +18,8 @@
     "prettier-plugin-bq": "workspace:*",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
-    "tailwindcss": "^4.1.13"
+    "tailwindcss": "^4.1.13",
+    "bq2cst": "file:../bq2cst/esm"
   },
   "devDependencies": {
     "@eslint/js": "^9.35.0",

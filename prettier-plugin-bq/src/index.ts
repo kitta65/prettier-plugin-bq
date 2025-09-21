@@ -1,5 +1,5 @@
 import { parse } from "bq2cst";
-import { printSQL } from "./printer.js";
+import { printSQL } from "./printer";
 
 const languages = [
   {

@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "lib": ["es2015"],
-    "module": "nodenext",
+    "module": "commonjs",
     "outDir": "dist",
     "sourceMap": true,
     "strict": true,
