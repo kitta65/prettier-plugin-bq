@@ -1,3 +1,4 @@
 packages:
   - prettier-plugin-bq
   - bq2cst/pkg
+  - web
