@@ -133,13 +133,17 @@ pub enum NodeType {
     SetOperator,          // UNION | INTERSECT | EXCEPT
     SetStatement,         // SET x = 5
     SingleTokenStatement, // BREAK; | LEAVE; | ...
+    StandAloneExpr,
     StringLiteral,
     StructLiteral,
     Symbol,            // ) | ] | * | ...
     TableSampleClause, // TABLESAMPLE SYSTEM (10 PERCENT)
     TableSamplePipeOperator,
-    TableSampleRatio,                // (10 PERCENT)
-    Template,                        // {{variable}}
+    TableSampleRatio, // (10 PERCENT)
+    TemplateExpr,
+    TemplateExprEnd,
+    TemplateExprContinue,
+    TemplateExprStart,
     TrainingDataCustomHolidayClause, // (training_data AS (SELECT ...), custom_holiday AS (SELECT ...))
     TransactionStatement,            // BEGIN | COMMIT | ROLLBACK
     TruncateStatement,

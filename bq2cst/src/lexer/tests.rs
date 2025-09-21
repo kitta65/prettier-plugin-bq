@@ -347,6 +347,15 @@ SELECT {{variable}};",
                 Token::from_str(1, 20, ";"),
             ],
         )),
+        Box::new(SuccessTestCase::new(
+            "\
+{{ config(foo={}, bar='}}', baz='''a''') }} SELECT 1",
+            vec![
+                Token::from_str(1, 1, "{{ config(foo={}, bar='}}', baz='''a''') }}"),
+                Token::from_str(1, 45, "SELECT"),
+                Token::from_str(1, 52, "1"),
+            ],
+        )),
         // operator
         Box::new(SuccessTestCase::new(
             "\

@@ -125,13 +125,17 @@ export type UnknownNode =
   | SetOperator
   | SetStatement
   | SingleTokenStatement
+  | StandAloneExpr
   | StringLiteral
   | StructLiteral
   | Symbol_
   | TableSampleClause
   | TableSamplePipeOperator
   | TableSampleRatio
-  | Template
+  | TemplateExpr
+  | TemplateExprEnd
+  | TemplateExprContinue
+  | TemplateExprStart
   | TransactionStatement
   | TrainingDataCustomHolidayClause
   | TruncateStatement
@@ -1449,6 +1453,16 @@ export type SingleTokenStatement = XXXStatement & {
   node_type: "SingleTokenStatement";
 };
 
+export type StandAloneExpr = BaseNode & {
+  token: null;
+  node_type: "StandAloneExpr";
+  children: {
+    leading_comments: undefined;
+    trailing_comments: undefined;
+    expr: NodeChild;
+  };
+};
+
 export type StringLiteral = Expr & {
   node_type: "StringLiteral";
 };
@@ -1494,8 +1508,32 @@ export type TableSampleRatio = BaseNode & {
   };
 };
 
-export type Template = IdentifierGeneral & {
-  node_type: "Template";
+export type TemplateExpr = IdentifierGeneral & {
+  node_type: "TemplateExpr";
+};
+
+export type TemplateExprEnd = BaseNode & {
+  token: Token;
+  node_type: "TemplateExprEnd";
+  children: {}
+};
+
+export type TemplateExprContinue = BaseNode & {
+  token: Token;
+  node_type: "TemplateExprContinue";
+  children: {
+    exprs: NodeVecChild;
+  }
+};
+
+export type TemplateExprStart = FromItemExpr & {
+  token: Token;
+  node_type: "TemplateExprStart";
+  children: {
+    exprs: NodeVecChild;
+    continues: NodeVecChild;
+    end: NodeChild;
+  }
 };
 
 export type TransactionStatement = XXXStatement & {

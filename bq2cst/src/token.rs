@@ -4,6 +4,7 @@ mod tests;
 use crate::constants;
 use regex::Regex;
 use serde::{Deserialize, Serialize};
+use std::sync::LazyLock;
 
 #[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
 pub struct Token {
@@ -11,6 +12,23 @@ pub struct Token {
     pub column: usize,
     pub literal: String,
 }
+
+#[derive(PartialEq, Debug)]
+pub enum TemplateType {
+    Expr,
+    ExprStart,
+    ExprContinue,
+    ExprEnd,
+    Comment,
+}
+
+static NUMBER_RE: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new(r"^([0-9]+|([0-9]*\.[0-9]+))([eE][\+\-]?[0-9]+)?$").unwrap());
+static TEMPLATE_JINJA_STATEMENT: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new(r"^\{%-?\s*(\w+).*$").unwrap());
+static TEMPLATE_JINJA_ONELINE_SET: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new(r"^\{%-?\s*set\s*\w+\s*=.*$").unwrap());
+static TEMPLATE_OTHER: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"^\{.+$").unwrap());
 
 impl Token {
     pub fn new(line: usize, column: usize, literal: String) -> Token {
@@ -28,6 +46,44 @@ impl Token {
             column: usize::MAX,
             literal: "".to_string(),
         }
+    }
+    pub fn get_template_type(&self) -> Option<TemplateType> {
+        if self.literal.starts_with("{{") {
+            return Some(TemplateType::Expr);
+        } else if self.literal.starts_with("{#") {
+            return Some(TemplateType::Comment);
+        } else if self.literal.starts_with("{%") {
+            if let Some(caps) = TEMPLATE_JINJA_STATEMENT.captures(self.literal.as_str()) {
+                match &caps[1] {
+                    "for" | "if" | "raw" | "block" | "macro" | "call" | "filter" => {
+                        return Some(TemplateType::ExprStart)
+                    }
+                    "include" => return Some(TemplateType::Expr),
+                    "elif" | "else" => return Some(TemplateType::ExprContinue),
+                    "extends" | "import" | "from" => return Some(TemplateType::Comment),
+                    "set" => {
+                        if TEMPLATE_JINJA_ONELINE_SET.is_match(self.literal.as_str()) {
+                            return Some(TemplateType::Comment);
+                        } else {
+                            return Some(TemplateType::ExprStart);
+                        }
+                    }
+                    _ => {
+                        if caps[1].starts_with("end") {
+                            return Some(TemplateType::ExprEnd);
+                        };
+                        // maybe extensions
+                        // https://jinja.palletsprojects.com/en/stable/templates/#extensions
+                        return Some(TemplateType::ExprStart);
+                    }
+                };
+            }
+        } else if TEMPLATE_OTHER.is_match(self.literal.as_str()) {
+            // python f-string or something (actually, out of scope)
+            return Some(TemplateType::Expr);
+        };
+
+        return None;
     }
     pub fn is_string(&self) -> bool {
         if self.quoted_by('"') {
@@ -82,16 +138,8 @@ impl Token {
             _ => return false,
         }
     }
-    pub fn is_template(&self) -> bool {
-        let mut iterator = self.literal.chars();
-        match iterator.next() {
-            Some('{') => return true,
-            _ => return false,
-        }
-    }
     pub fn is_numeric(&self) -> bool {
-        let re = Regex::new(r"^([0-9]+|([0-9]*\.[0-9]+))([eE][\+\-]?[0-9]+)?$").unwrap();
-        re.is_match(self.literal.as_str())
+        NUMBER_RE.is_match(self.literal.as_str())
     }
     pub fn is_boolean(&self) -> bool {
         self.literal.to_uppercase() == "TRUE" || self.literal.to_uppercase() == "FALSE"
@@ -107,6 +155,9 @@ impl Token {
     }
     pub fn is_comment(&self) -> bool {
         let mut iter = self.literal.chars();
+        if self.get_template_type() == Some(TemplateType::Comment) {
+            return true;
+        };
         let first_char = match iter.next() {
             Some(c) => match c {
                 '-' | '/' => c,

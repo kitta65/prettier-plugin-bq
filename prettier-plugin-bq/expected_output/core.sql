@@ -245,6 +245,3 @@ SELECT
 
 ----- with expression -----
 SELECT WITH(a AS 'a', UPPER(a));
-
------ template -----
-SELECT {{variable}}, {variable};
