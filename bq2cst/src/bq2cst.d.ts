@@ -133,6 +133,9 @@ export type UnknownNode =
   | TableSamplePipeOperator
   | TableSampleRatio
   | TemplateExpr
+  | TemplateExprEnd
+  | TemplateExprContinue
+  | TemplateExprStart
   | TransactionStatement
   | TrainingDataCustomHolidayClause
   | TruncateStatement
@@ -1457,7 +1460,7 @@ export type StandAloneExpr = BaseNode & {
     leading_comments: undefined;
     trailing_comments: undefined;
     expr: NodeChild;
-  }
+  };
 };
 
 export type StringLiteral = Expr & {
@@ -1507,6 +1510,30 @@ export type TableSampleRatio = BaseNode & {
 
 export type TemplateExpr = IdentifierGeneral & {
   node_type: "TemplateExpr";
+};
+
+export type TemplateExprEnd = BaseNode & {
+  token: Token;
+  node_type: "TemplateExprEnd";
+  children: {}
+};
+
+export type TemplateExprContinue = BaseNode & {
+  token: Token;
+  node_type: "TemplateExprContinue";
+  children: {
+    exprs: NodeVecChild;
+  }
+};
+
+export type TemplateExprStart = FromItemExpr & {
+  token: Token;
+  node_type: "TemplateExprStart";
+  children: {
+    exprs: NodeVecChild;
+    continues: NodeVecChild;
+    end: NodeChild;
+  }
 };
 
 export type TransactionStatement = XXXStatement & {

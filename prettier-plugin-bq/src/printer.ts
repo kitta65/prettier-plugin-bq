@@ -830,6 +830,12 @@ export const printSQL = (
       return printTableSampleRatio(path, options, print, node);
     case "TemplateExpr":
       return printIdentifier(path, options, print, node);
+    case "TemplateExprContinue":
+      return printTemplateExprContinue(path, options, print, node);
+    case "TemplateExprEnd":
+      return printTemplateExprEnd(path, options, print, node);
+    case "TemplateExprStart":
+      return printTemplateExprStart(path, options, print, node);
     case "TransactionStatement":
       return printTransactionStatement(path, options, print, node);
     case "TrainingDataCustomHolidayClause":
@@ -5603,6 +5609,95 @@ const printTableSampleRatio: PrintFunc<bq2cst.TableSampleRatio> = (
     " ",
     docs.percent,
     docs.rparen,
+  ];
+};
+
+const printTemplateExprContinue: PrintFunc<bq2cst.TemplateExprContinue> = (
+  path,
+  options,
+  print,
+  node,
+) => {
+  const p = new Printer(path, options, print, node);
+  p.setNotRoot("exprs");
+  p.setGroupRecommended("exprs");
+  const docs: { [Key in Docs<bq2cst.TemplateExprContinue>]: Doc } = {
+    leading_comments: printLeadingComments(path, options, print, node),
+    self: p.self("asItIs"),
+    trailing_comments: printTrailingComments(path, options, print, node),
+    exprs: p.child("exprs", (x) => [line, x]),
+  };
+  return [
+    docs.leading_comments,
+    docs.self,
+    docs.trailing_comments,
+    indent(docs.exprs),
+  ];
+};
+
+const printTemplateExprEnd: PrintFunc<bq2cst.TemplateExprEnd> = (
+  path,
+  options,
+  print,
+  node,
+) => {
+  const p = new Printer(path, options, print, node);
+  const docs: { [Key in Docs<bq2cst.TemplateExprEnd>]: Doc } = {
+    leading_comments: printLeadingComments(path, options, print, node),
+    self: p.self("asItIs"),
+    trailing_comments: printTrailingComments(path, options, print, node),
+  };
+  return [docs.leading_comments, docs.self, docs.trailing_comments];
+};
+
+const printTemplateExprStart: PrintFunc<bq2cst.TemplateExprStart> = (
+  path,
+  options,
+  print,
+  node,
+) => {
+  const p = new Printer(path, options, print, node);
+  p.setNotRoot("exprs");
+  p.setGroupRecommended("exprs");
+  const docs: { [Key in Docs<bq2cst.TemplateExprStart>]: Doc } = {
+    leading_comments: printLeadingComments(path, options, print, node),
+    self: p.self("asItIs"),
+    trailing_comments: printTrailingComments(path, options, print, node),
+    exprs: p.child("exprs", (x) => [line, x]),
+    continues: p.child("continues", (x) => [line, x]),
+    end: p.child("end"),
+    as: "", // eslint-disable-line unicorn/no-unused-properties
+    alias: printAlias(path, options, print, node),
+    order: printOrder(path, options, print, node),
+    null_order: "", // eslint-disable-line unicorn/no-unused-properties
+    comma: printComma(path, options, print, node),
+    with_offset: p.child("with_offset", undefined, "all"),
+    pivot: printPivotOrUnpivotOperator(path, options, print, node),
+    unpivot: "", // eslint-disable-line unicorn/no-unused-properties
+    match_recognize: p.child("match_recognize", undefined, "all"),
+  };
+  return [
+    docs.leading_comments,
+    group([
+      docs.self,
+      indent(docs.exprs),
+      docs.continues,
+      0 < p.children.exprs.NodeVec.length ||
+      0 < p.children.continues.NodeVec.length
+        ? line
+        : "",
+      docs.end,
+      docs.trailing_comments,
+      docs.alias,
+      docs.order,
+      docs.pivot,
+      docs.comma,
+      p.has("match_recognize") ? " " : "",
+      docs.match_recognize,
+      p.has("with_offset") ? " " : "",
+      docs.with_offset,
+    ]),
+    p.newLine(),
   ];
 };
 

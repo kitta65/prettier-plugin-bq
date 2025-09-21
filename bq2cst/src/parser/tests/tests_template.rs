@@ -92,18 +92,18 @@ exprs:
         Box::new(SuccessTestCase::new(
             "\
 SELECT
-  {% for i in range(10) %}
+  {%- for i in range(10) -%}
     {{ i }},
-  {% endfor %}
+  {%- endfor -%}
   100,
 ",
             "\
 self: SELECT (SelectStatement)
 exprs:
-- self: {% for i in range(10) %} (TemplateExprStart)
+- self: {%- for i in range(10) -%} (TemplateExprStart)
   continues: []
   end:
-    self: {% endfor %} (TemplateExprEnd)
+    self: {%- endfor -%} (TemplateExprEnd)
   exprs:
   - self: {{ i }} (TemplateExpr)
     comma:
@@ -192,6 +192,45 @@ exprs:
 - self: 100 (NumericLiteral)
   comma:
     self: , (Symbol)
+",
+            0,
+        )),
+        Box::new(SuccessTestCase::new(
+            "\
+SELECT *
+FROM T
+WHERE
+  {% if true %}
+    foo
+  {% else %}
+    bar
+  {% endif %}
+  and baz
+",
+            "\
+self: SELECT (SelectStatement)
+exprs:
+- self: * (Asterisk)
+from:
+  self: FROM (KeywordWithExpr)
+  expr:
+    self: T (Identifier)
+where:
+  self: WHERE (KeywordWithExpr)
+  expr:
+    self: and (BinaryOperator)
+    left:
+      self: {% if true %} (TemplateExprStart)
+      continues:
+      - self: {% else %} (TemplateExprContinue)
+        exprs:
+        - self: bar (Identifier)
+      end:
+        self: {% endif %} (TemplateExprEnd)
+      exprs:
+      - self: foo (Identifier)
+    right:
+      self: baz (Identifier)
 ",
             0,
         )),
