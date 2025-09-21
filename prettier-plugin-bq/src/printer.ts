@@ -5670,7 +5670,9 @@ const printTemplateExprStart: PrintFunc<bq2cst.TemplateExprStart> = (
     alias: printAlias(path, options, print, node),
     order: printOrder(path, options, print, node),
     null_order: "", // eslint-disable-line unicorn/no-unused-properties
-    comma: printComma(path, options, print, node),
+    // do not use printComma here
+    // additional trailing comma may break your code
+    comma: p.child("comma", undefined, "all"),
     with_offset: p.child("with_offset", undefined, "all"),
     pivot: printPivotOrUnpivotOperator(path, options, print, node),
     unpivot: "", // eslint-disable-line unicorn/no-unused-properties

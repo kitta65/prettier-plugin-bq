@@ -19,7 +19,7 @@ SELECT
   {% for i in range(10) %}
     -- comment
     {{ i }},
-  {% endfor %},
+  {% endfor %}
 ;
 
 SELECT
