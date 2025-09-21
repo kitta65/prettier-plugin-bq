@@ -8,7 +8,7 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
-      # ----- setup rust -----
+      # ----- rust -----
       - uses: actions/cache@v4
         with:
           key: ${{ hashFiles('./bq2cst/Cargo.lock') }}
@@ -18,12 +18,10 @@ jobs:
             ~/.cargo/registry/index
             ~/.cargo/registry/cache
             ~/.cargo/db
-
-      # ----- build rust -----
       - run: make build
         working-directory: ./bq2cst
 
-      # ----- setup typescript -----
+      # ----- typescript -----
       # since packageManager is specified in package.json, any pnpm version is OK
       - run: mkdir -p bq2cst/{cjs,esm}
       - run: npm install -g pnpm
@@ -33,15 +31,7 @@ jobs:
           registry-url: "https://registry.npmjs.org"
           cache: pnpm
       - run: pnpm install
-
-      # ----- build typescript -----
       - run: pnpm --recursive run build
-      - uses: actions/upload-artifact@v4
-        with:
-          name: bq2cst-${{ github.run_id }}
-          path: ./bq2cst/cjs
-      - name: Setup Pages
-        uses: actions/configure-pages@v4
 
       # ----- test -----
       - run: pnpm run test
@@ -65,6 +55,7 @@ jobs:
         with:
           path: './web/dist'
       - id: deployment
+        if: ${{ github.ref_type == 'tag' }}
         uses: actions/deploy-pages@v4
       - run: pnpm run publish
         if: ${{ github.ref_type == 'tag' }}
