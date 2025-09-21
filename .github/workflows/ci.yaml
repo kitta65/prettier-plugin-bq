@@ -37,10 +37,18 @@ jobs:
         with:
           name: bq2cst
           path: ./bq2cst/cjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: web
+          path: ./web/dist
+      - uses: actions/deploy-pages@v4
+        with:
+          artifact-name: web
 
       # ----- test -----
       - run: pnpm run test
 
+      # ----- publish -----
       # TODO: uncomment when ready to publish
       # #  always pass when ref_type == 'branch'
       # - uses: kitta65/tag-version-match@main
