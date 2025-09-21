@@ -2,7 +2,9 @@
 
 @theme {
   --color-*: initial;
-  --color-dark: #222222;
+  --color-dark: #333333;
+  --color-background: #f7f7f7;
+  --color-white: #ffffff;
   --font-*: initial;
 }
 
