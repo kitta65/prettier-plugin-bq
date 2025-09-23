@@ -4,6 +4,7 @@
   "description": "",
   "main": "dist/index.js",
   "scripts": {
+    "build": "tsc",
     "test": "eslint-config-prettier src/index.ts && eslint ./src && prettier --check ./src && tsc && NODE_OPTIONS='--experimental-vm-modules' jest",
     "release": "cp ../README.md . && pnpm publish --tag beta --no-git-checks"
   },
