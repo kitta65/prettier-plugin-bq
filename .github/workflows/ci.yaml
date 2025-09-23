@@ -1,10 +1,7 @@
 on: [push]
 jobs:
-  ci:
+  build:
     runs-on: ubuntu-latest
-    permissions:
-      pages: write
-      id-token: write
     steps:
       - uses: actions/checkout@v5
 
@@ -33,10 +30,31 @@ jobs:
       - run: pnpm install
       - run: pnpm --recursive run build
 
+      # ----- upload -----
+      # see https://github.com/actions/starter-workflows/blob/main/pages/static.yml
+      # see https://docs.github.com/en/pages/getting-started-with-github-pages/using-custom-workflows-with-github-pages
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: "./web/dist"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: bq2cst
+          path: ./bq2cst/cjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: prettier-plugin-bq
+          path: ./prettier-plugin-bq/dist
+
       # ----- test -----
       - run: pnpm run test
 
-      # ----- publish -----
+  deploy-pkg:
+    runs-on: ubuntu-latest
+    if: ${{ github.ref_type == 'tag' }}
+    needs: build
+    steps:
+      - uses: actions/checkout@v5
       # TODO: uncomment when ready to publish
       # #  always pass when ref_type == 'branch'
       # - uses: kitta65/tag-version-match@main
@@ -49,16 +67,26 @@ jobs:
       #     file: ./bq2cst/Cargo.toml
       #     query: .package.version
       #     pattern: '^([0-9]+\.[0-9]+\.[0-9]+)$'
-      # see https://github.com/actions/starter-workflows/blob/main/pages/static.yml
-      # see https://docs.github.com/en/pages/getting-started-with-github-pages/using-custom-workflows-with-github-pages
-      - uses: actions/configure-pages@v5
-      - uses: actions/upload-pages-artifact@v4
+      - uses: actions/download-artifact@v5
         with:
-          path: './web/dist'
+          name: bq2cst
+          path: ./bq2cst/cjs
+      - uses: actions/download-artifact@v5
+        with:
+          name: prettier-plugin-bq
+          path: ./prettier-plugin-bq/dist
+      - run: pnpm run release
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+  deploy-page:
+    runs-on: ubuntu-latest
+    if: ${{ github.ref_type == 'tag' }}
+    permissions:
+      pages: write
+      id-token: write
+    needs: build
+    steps:
       - id: deployment
         if: ${{ github.ref_type == 'tag' }}
         uses: actions/deploy-pages@v4
-      - run: pnpm run release
-        if: ${{ github.ref_type == 'tag' }}
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
