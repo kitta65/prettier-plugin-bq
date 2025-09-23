@@ -3967,7 +3967,7 @@ const printIfStatement: PrintFunc<bq2cst.IfStatement> = (
       docs.self,
       docs.trailing_comments,
       " ",
-      docs.condition,
+      group(docs.condition),
       " ",
       docs.then,
       docs.elseifs,
