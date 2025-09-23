@@ -74,14 +74,14 @@ jobs:
       #     pattern: '^([0-9]+\.[0-9]+\.[0-9]+)$'
       - run: npm install -g pnpm
       - *setup-node
-      # needed to resolve workspace protocol of dependency "bq2cst"
-      - run: pnpm install
       - uses: actions/download-artifact@v5
         with: *artifact-bq2cst-cjs
       - uses: actions/download-artifact@v5
         with: *artifact-bq2cst-esm
       - uses: actions/download-artifact@v5
         with: *artifact-prettier-plugin-bq
+      # needed to resolve workspace protocol of dependency "bq2cst"
+      - run: pnpm install
       - run: pnpm run release
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
