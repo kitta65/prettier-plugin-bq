@@ -8,6 +8,12 @@
 - support [procedural language](https://cloud.google.com/bigquery/docs/reference/standard-sql/procedural-language) (a.k.a BigQuery Scripting)
 - try to handle jinja templates (though not perfect)
 
+## Playground
+
+You can try `prettier-plugin-bq` online.
+
+https://kitta65.github.io/prettier-plugin-bq/
+
 ## Install
 
 ```
