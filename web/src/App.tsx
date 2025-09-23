@@ -1,4 +1,5 @@
 import clsx from "clsx";
+import type { ClassValue } from "clsx";
 import {
   ArrowTopRightOnSquareIcon,
   SparklesIcon,
@@ -41,6 +42,7 @@ async function prettify(sql: string) {
 
 function App() {
   const [sql, setSql] = useState(SAMPLE_SQL);
+  const [showErrorMessage, setShowErrorMessage] = useState(false);
   return (
     <>
       <header className={clsx("p-4", "font-extrabold text-5xl")}>
@@ -79,7 +81,12 @@ function App() {
             "cursor-pointer px-4 py-1 rounded-md font-bold",
           )}
           onClick={() => {
-            prettify(sql).then((sql) => setSql(sql));
+            prettify(sql)
+              .then((sql) => setSql(sql))
+              .catch(() => {
+                setShowErrorMessage(true);
+                setTimeout(() => setShowErrorMessage(false), 3000);
+              });
           }}
         >
           FORMAT
@@ -106,7 +113,31 @@ function App() {
         </div>
         Copyright © 2025 kitta65
       </footer>
+      {showErrorMessage && (
+        <Toast
+          message="Failed to format SQL."
+          className="absolute top-4 right-4"
+        />
+      )}
     </>
+  );
+}
+
+type ToastProps = {
+  message: string;
+  className?: ClassValue; // position is expected
+};
+function Toast({ message, className }: ToastProps) {
+  return (
+    <div
+      className={clsx(
+        className,
+        "bg-error text-background px-4 py-1 rounded-md",
+        "flex items-center justify-center gap-x-1",
+      )}
+    >
+      {message}
+    </div>
   );
 }
 
