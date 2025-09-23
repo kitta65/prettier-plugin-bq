@@ -70,6 +70,8 @@ jobs:
       #     pattern: '^([0-9]+\.[0-9]+\.[0-9]+)$'
       - run: npm install -g pnpm
       - *setup-node
+      # needed to resolve workspace protocol of dependency "bq2cst"
+      - run: pnpm install
       - uses: actions/download-artifact@v5
         with:
           name: bq2cst
