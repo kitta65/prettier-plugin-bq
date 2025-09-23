@@ -5,7 +5,7 @@
   "main": "dist/index.js",
   "scripts": {
     "test": "eslint-config-prettier src/index.ts && eslint ./src && prettier --check ./src && tsc && NODE_OPTIONS='--experimental-vm-modules' jest",
-    "release": "cp ../README.md . && pnpm publish --tag beta"
+    "release": "cp ../README.md . && pnpm publish --tag beta --no-git-checks"
   },
   "keywords": [],
   "author": "kitta65 <kitta65kitta@gmail.com>",
