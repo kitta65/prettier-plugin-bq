@@ -39,11 +39,15 @@ jobs:
         with:
           path: "./web/dist"
       - uses: actions/upload-artifact@v4
-        with:
-          name: bq2cst
+        with: &artifact-bq2cst-cjs
+          name: bq2cst-cjs
           path: ./bq2cst/cjs
       - uses: actions/upload-artifact@v4
-        with:
+        with: &artifact-bq2cst-esm
+          name: bq2cst-esm
+          path: ./bq2cst/esm
+      - uses: actions/upload-artifact@v4
+        with: &artifact-prettier-plugin-bq
           name: prettier-plugin-bq
           path: ./prettier-plugin-bq/dist
 
@@ -73,13 +77,11 @@ jobs:
       # needed to resolve workspace protocol of dependency "bq2cst"
       - run: pnpm install
       - uses: actions/download-artifact@v5
-        with:
-          name: bq2cst
-          path: ./bq2cst/cjs
+        with: *artifact-bq2cst-cjs
       - uses: actions/download-artifact@v5
-        with:
-          name: prettier-plugin-bq
-          path: ./prettier-plugin-bq/dist
+        with: *artifact-bq2cst-esm
+      - uses: actions/download-artifact@v5
+        with: *artifact-prettier-plugin-bq
       - run: pnpm run release
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
