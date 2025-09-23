@@ -22,7 +22,8 @@ jobs:
       # since packageManager is specified in package.json, any pnpm version is OK
       - run: mkdir -p bq2cst/{cjs,esm}
       - run: npm install -g pnpm
-      - uses: actions/setup-node@v5
+      - &setup-node
+        uses: actions/setup-node@v5
         with:
           node-version: "20.x"
           registry-url: "https://registry.npmjs.org"
@@ -68,6 +69,7 @@ jobs:
       #     query: .package.version
       #     pattern: '^([0-9]+\.[0-9]+\.[0-9]+)$'
       - run: npm install -g pnpm
+      - *setup-node
       - uses: actions/download-artifact@v5
         with:
           name: bq2cst
