@@ -169,4 +169,3 @@ begin
 exception when error then
   select @@error.message;
 end;
-

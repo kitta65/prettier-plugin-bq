@@ -2411,7 +2411,7 @@ impl Parser {
             operator.push_node("keywords", temp)
         }
         self.next_token()?; // -> expr
-        let exprs = self.parse_exprs(&vec![";", "WINDOW"], true, true)?;
+        let exprs = self.parse_exprs(&vec![";", "WINDOW", "|>"], true, true)?;
         operator.push_node_vec("exprs", exprs);
         if self.get_token(1)?.is("WINDOW") {
             self.next_token()?; // -> WINDOW

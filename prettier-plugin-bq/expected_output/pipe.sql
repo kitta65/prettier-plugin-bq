@@ -54,6 +54,14 @@ FROM t
   WINDOW a AS (PARTITION BY b)
 ;
 
+FROM t
+|>
+  SELECT
+    x,
+    -- comment
+    y,
+;
+
 ----- from statement -----
 FROM tabe AS t1
 INNER JOIN table AS p2 USING(col)

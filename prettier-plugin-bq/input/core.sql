@@ -236,6 +236,7 @@ select
   case when true then timestamp '2024-01-01' end.timestamp_trunc(month),
 ;
 
+select (col).(starts_with)(3);
 select (col).(safe.left)(3);
 
 select struct('a' as b).to_json().b.json_value().concat('c');

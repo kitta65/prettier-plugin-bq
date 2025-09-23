@@ -1868,6 +1868,10 @@ const printCallingFunctionGeneral: PrintFunc<
   p.setNotRoot("args");
 
   let func = node.children.func.Node;
+  if (func.node_type === "GroupedExpr" && node.isChained) {
+    func = func.children.expr.Node as bq2cst.IdentifierGeneral &
+      bq2cst.UnknownNode;
+  }
   let parent;
   let grandParent;
   if (node.isDatePart) {
@@ -2504,7 +2508,7 @@ const printCreateFunctionStatement: PrintFunc<
     leading_comments: printLeadingComments(path, options, print, node),
     self: p.self("upper"),
     trailing_comments: printTrailingComments(path, options, print, node),
-    or_replace: p.child("or_replace", (x) => group([line, x])),
+    or_replace: p.child("or_replace", (x) => [" ", x], "all"),
     temp: p.child("temp", undefined, "all"),
     table: p.child("table", undefined, "all"),
     aggregate: p.child("aggregate", undefined, "all"),
@@ -2576,7 +2580,7 @@ const printCreateModelStatement: PrintFunc<bq2cst.CreateModelStatement> = (
     leading_comments: printLeadingComments(path, options, print, node),
     self: p.self("upper"),
     trailing_comments: printTrailingComments(path, options, print, node),
-    or_replace: p.child("or_replace", (x) => group([line, x])),
+    or_replace: p.child("or_replace", (x) => [" ", x], "all"),
     what: p.child("what", undefined, "all"),
     if_not_exists: p.child("if_not_exists", (x) => group([line, x])),
     ident: p.child("ident", undefined, "all"),
@@ -2630,7 +2634,7 @@ const printCreateProcedureStatement: PrintFunc<
     leading_comments: printLeadingComments(path, options, print, node),
     self: p.self("upper"),
     trailing_comments: printTrailingComments(path, options, print, node),
-    or_replace: p.child("or_replace", (x) => group([line, x])),
+    or_replace: p.child("or_replace", (x) => [" ", x], "all"),
     what: p.child("what", undefined, "all"),
     if_not_exists: p.child("if_not_exists", (x) => group([line, x])),
     ident: p.child("ident", undefined, "all"),
@@ -2723,7 +2727,7 @@ const printCreateRowAccessPolicyStatement: PrintFunc<
     leading_comments: printLeadingComments(path, options, print, node),
     self: p.self("upper"),
     trailing_comments: printTrailingComments(path, options, print, node),
-    or_replace: p.child("or_replace", (x) => group([line, x])),
+    or_replace: p.child("or_replace", (x) => [" ", x], "all"),
     what: p.child("what", undefined, "all", " "),
     if_not_exists: p.child("if_not_exists", (x) => group([line, x])),
     ident: p.child("ident", undefined, "all"),
@@ -2818,7 +2822,7 @@ const printCreateIndexStatement: PrintFunc<bq2cst.CreateIndexStatement> = (
     leading_comments: printLeadingComments(path, options, print, node),
     self: p.self("upper"),
     trailing_comments: printTrailingComments(path, options, print, node),
-    or_replace: p.child("or_replace", (x) => group([line, x])),
+    or_replace: p.child("or_replace", (x) => [" ", x], "all"),
     what: p.child("what", undefined, "all"),
     if_not_exists: p.child("if_not_exists", (x) => group([line, x])),
     ident: p.child("ident", undefined, "all"),
@@ -2872,7 +2876,7 @@ const printCreateTableStatement: PrintFunc<bq2cst.CreateTableStatement> = (
     leading_comments: printLeadingComments(path, options, print, node),
     self: p.self("upper"),
     trailing_comments: printTrailingComments(path, options, print, node),
-    or_replace: p.child("or_replace", (x) => group([line, x])),
+    or_replace: p.child("or_replace", (x) => [" ", x], "all"),
     temp: p.child("temp", undefined, "all"),
     external: p.child("external", undefined, "all"),
     snapshot: p.child("snapshot", undefined, "all"),
@@ -2949,7 +2953,7 @@ const printCreateViewStatement: PrintFunc<bq2cst.CreateViewStatement> = (
     leading_comments: printLeadingComments(path, options, print, node),
     self: p.self("upper"),
     trailing_comments: printTrailingComments(path, options, print, node),
-    or_replace: p.child("or_replace", (x) => group([line, x])),
+    or_replace: p.child("or_replace", (x) => [" ", x], "all"),
     materialized: p.child("materialized", undefined, "all"),
     what: p.child("what", undefined, "all"),
     if_not_exists: p.child("if_not_exists", (x) => group([line, x])),
@@ -3967,7 +3971,7 @@ const printIfStatement: PrintFunc<bq2cst.IfStatement> = (
       docs.self,
       docs.trailing_comments,
       " ",
-      docs.condition,
+      group(docs.condition),
       " ",
       docs.then,
       docs.elseifs,
@@ -5238,16 +5242,18 @@ const printSelectPipeOperator: PrintFunc<bq2cst.SelectPipeOperator> = (
     self: p.self(),
     trailing_comments: printTrailingComments(path, options, print, node),
     keywords: p.child("keywords", undefined, "all"),
-    exprs: p.child("exprs", (x) => group([line, x])),
+    exprs: p.child("exprs", (x) => [line, x]),
     window: p.child("window"),
   };
   return [
     docs.leading_comments,
-    docs.self,
-    docs.trailing_comments,
-    p.has("keywords") ? " " : "",
-    docs.keywords,
-    indent(docs.exprs),
+    group([
+      docs.self,
+      docs.trailing_comments,
+      p.has("keywords") ? " " : "",
+      docs.keywords,
+      indent(docs.exprs),
+    ]),
     p.has("window") ? line : "",
     docs.window,
   ];

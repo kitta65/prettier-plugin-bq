@@ -72,6 +72,33 @@ semicolon:
         )),
         Box::new(SuccessTestCase::new(
             "\
+FROM table |> SELECT col, |> SELECT col;
+",
+            "\
+self: |> (PipeStatement)
+left:
+  self: |> (PipeStatement)
+  left:
+    self: FROM (FromStatement)
+    expr:
+      self: table (Identifier)
+  right:
+    self: SELECT (SelectPipeOperator)
+    exprs:
+    - self: col (Identifier)
+      comma:
+        self: , (Symbol)
+right:
+  self: SELECT (SelectPipeOperator)
+  exprs:
+  - self: col (Identifier)
+semicolon:
+  self: ; (Symbol)
+",
+            0,
+        )),
+        Box::new(SuccessTestCase::new(
+            "\
 WITH t AS (SELECT 1) FROM t
 ",
             "\

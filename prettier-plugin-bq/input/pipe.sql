@@ -30,6 +30,14 @@ from t |>
   window a as (partition by b)
 ;
 
+from t
+|>
+  select
+    x,
+    -- comment
+    y,
+;
+
 ----- from statement -----
 from tabe as t1
 join table as p2 using (col);
