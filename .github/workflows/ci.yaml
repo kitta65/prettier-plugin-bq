@@ -58,7 +58,7 @@ jobs:
       - id: deployment
         if: ${{ github.ref_type == 'tag' }}
         uses: actions/deploy-pages@v4
-      - run: pnpm run publish
+      - run: pnpm run release
         if: ${{ github.ref_type == 'tag' }}
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
