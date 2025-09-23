@@ -67,6 +67,7 @@ jobs:
       #     file: ./bq2cst/Cargo.toml
       #     query: .package.version
       #     pattern: '^([0-9]+\.[0-9]+\.[0-9]+)$'
+      - run: npm install -g pnpm
       - uses: actions/download-artifact@v5
         with:
           name: bq2cst
