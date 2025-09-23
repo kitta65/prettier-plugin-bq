@@ -1,10 +1,7 @@
 on: [push]
 jobs:
-  ci:
+  build:
     runs-on: ubuntu-latest
-    permissions:
-      pages: write
-      id-token: write
     steps:
       - uses: actions/checkout@v5
 
@@ -25,7 +22,8 @@ jobs:
       # since packageManager is specified in package.json, any pnpm version is OK
       - run: mkdir -p bq2cst/{cjs,esm}
       - run: npm install -g pnpm
-      - uses: actions/setup-node@v5
+      - &setup-node
+        uses: actions/setup-node@v5
         with:
           node-version: "20.x"
           registry-url: "https://registry.npmjs.org"
@@ -33,32 +31,68 @@ jobs:
       - run: pnpm install
       - run: pnpm --recursive run build
 
-      # ----- test -----
-      - run: pnpm run test
-
-      # ----- publish -----
-      # TODO: uncomment when ready to publish
-      # #  always pass when ref_type == 'branch'
-      # - uses: kitta65/tag-version-match@main
-      #   with:
-      #     file: ./prettier-plugin-bq/package.json
-      #     query: .version
-      #     pattern: '^([0-9]+\.[0-9]+\.[0-9]+)$'
-      # - uses: kitta65/tag-version-match@main
-      #   with:
-      #     file: ./bq2cst/Cargo.toml
-      #     query: .package.version
-      #     pattern: '^([0-9]+\.[0-9]+\.[0-9]+)$'
+      # ----- upload -----
       # see https://github.com/actions/starter-workflows/blob/main/pages/static.yml
       # see https://docs.github.com/en/pages/getting-started-with-github-pages/using-custom-workflows-with-github-pages
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v4
         with:
-          path: './web/dist'
+          path: "./web/dist"
+      - uses: actions/upload-artifact@v4
+        with: &artifact-bq2cst-cjs
+          name: bq2cst-cjs
+          path: ./bq2cst/cjs
+      - uses: actions/upload-artifact@v4
+        with: &artifact-bq2cst-esm
+          name: bq2cst-esm
+          path: ./bq2cst/esm
+      - uses: actions/upload-artifact@v4
+        with: &artifact-prettier-plugin-bq
+          name: prettier-plugin-bq
+          path: ./prettier-plugin-bq/dist
+
+      # ----- test -----
+      - run: pnpm run test
+
+  deploy-pkg:
+    runs-on: ubuntu-latest
+    if: ${{ github.ref_type == 'tag' }}
+    needs: build
+    steps:
+      - uses: actions/checkout@v5
+      #  always pass when ref_type == 'branch'
+      - uses: kitta65/tag-version-match@main
+        with:
+          file: ./prettier-plugin-bq/package.json
+          query: .version
+          pattern: '^([0-9]+\.[0-9]+\.[0-9]+)$'
+      - uses: kitta65/tag-version-match@main
+        with:
+          file: ./bq2cst/Cargo.toml
+          query: .package.version
+          pattern: '^([0-9]+\.[0-9]+\.[0-9]+)$'
+      - run: npm install -g pnpm
+      - *setup-node
+      - uses: actions/download-artifact@v5
+        with: *artifact-bq2cst-cjs
+      - uses: actions/download-artifact@v5
+        with: *artifact-bq2cst-esm
+      - uses: actions/download-artifact@v5
+        with: *artifact-prettier-plugin-bq
+      # needed to resolve workspace protocol of dependency "bq2cst"
+      - run: pnpm install
+      - run: pnpm run release
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+  deploy-page:
+    runs-on: ubuntu-latest
+    if: ${{ github.ref_type == 'tag' }}
+    permissions:
+      pages: write
+      id-token: write
+    needs: build
+    steps:
       - id: deployment
         if: ${{ github.ref_type == 'tag' }}
         uses: actions/deploy-pages@v4
-      - run: pnpm run release
-        if: ${{ github.ref_type == 'tag' }}
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

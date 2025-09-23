@@ -23,4 +23,4 @@ build: test
 
 .PHONY: release
 release:
-	cd ./cjs && pnpm publish --tag beta
+	cd ./cjs && pnpm publish --no-git-checks
