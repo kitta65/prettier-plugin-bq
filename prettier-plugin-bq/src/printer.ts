@@ -1868,6 +1868,10 @@ const printCallingFunctionGeneral: PrintFunc<
   p.setNotRoot("args");
 
   let func = node.children.func.Node;
+  if (func.node_type === "GroupedExpr" && node.isChained) {
+    func = func.children.expr.Node as bq2cst.IdentifierGeneral &
+      bq2cst.UnknownNode;
+  }
   let parent;
   let grandParent;
   if (node.isDatePart) {
