@@ -14,6 +14,8 @@ You can try `prettier-plugin-bq` online.
 
 https://kitta65.github.io/prettier-plugin-bq/
 
+<img width="1523" height="527" alt="image" src="https://github.com/user-attachments/assets/7ddb4cb0-821b-452a-a3ef-37302deb2f88" />
+
 ## Install
 
 ```
