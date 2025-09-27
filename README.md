@@ -6,7 +6,36 @@
 
 - support [pipe syntax](https://cloud.google.com/bigquery/docs/reference/standard-sql/pipe-syntax)
 - support [procedural language](https://cloud.google.com/bigquery/docs/reference/standard-sql/procedural-language) (a.k.a BigQuery Scripting)
-- try to handle jinja templates (though not perfect)
+- try to handle jinja templates (see below)
+
+<details><summary>about jinja template support</summary>
+<p>
+Roughly speaking, jinja statements are expected to contain valid SQL expression(s).
+
+```sql
+SELECT
+  -- OK! `foo * {{i}}` and `bar * {{i}}` are valid SQL expressions (alias is also allowed).
+  {% for i in range(10) %}
+    foo * {{i}} as `f_{{i}}`,
+    bar * {{i}} as `b_{{i}}`,
+  {% endfor %}
+FROM tabelname
+WHERE
+  -- OK! `CURRENT_DATE() - 3 <= dt` and `TRUE` are valid SQL expressions.
+  {% target.name == 'dev' %} CURRENT_DATE() - 3 <= dt {% else %} TRUE {% endif %}
+;
+```
+
+```sql
+SELECT *
+FROM tabelname
+-- Error! WHERE clause is not valid SQL expression.
+{% target.name == 'dev' %} WHERE CURRENT_DATE() - 3 <= dt {% endif %}
+;
+```
+
+</p>
+</details>
 
 ## Playground
 
