@@ -908,7 +908,7 @@ export type ForSystemTimeAsOfClause = BaseNode & {
 export type FromStatement = XXXStatement & {
   node_type: "FromStatement";
   children: {
-    with: NodeChild;
+    with?: NodeChild;
     expr: NodeChild;
   };
 };
@@ -1320,6 +1320,7 @@ export type PatternQuantifier = BaseNode & {
 export type PipeStatement = XXXStatement & {
   node_type: "PipeStatement";
   children: {
+    with?: { Node: WithClause };
     left: NodeChild;
     right: NodeChild;
   };
