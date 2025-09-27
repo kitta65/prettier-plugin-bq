@@ -21,6 +21,11 @@ WITH t AS (SELECT 1)
 FROM t
 ;
 
+WITH temp AS (SELECT 1)
+SELECT * FROM temp
+|> LIMIT 100
+;
+
 SELECT *
 FROM (
   FROM t

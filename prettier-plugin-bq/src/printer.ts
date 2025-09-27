@@ -3509,8 +3509,14 @@ const printFromStatement: PrintFunc<bq2cst.FromStatement> = (
     semicolon: p.child("semicolon"),
   };
   return [
-    docs.with,
-    p.has("with") ? hardline : "",
+    group([
+      docs.with,
+      p.has("with")
+        ? options.printBlankLineAfterCte
+          ? [hardline, hardline]
+          : hardline
+        : "",
+    ]),
     docs.leading_comments,
     group([
       p.has("with") ? breakParent : "",
@@ -4934,6 +4940,7 @@ const printPipeStatement: PrintFunc<bq2cst.PipeStatement> = (
   p.setNotRoot("left");
   p.setNotRoot("right");
   const docs: { [Key in Docs<bq2cst.PipeStatement>]: Doc } = {
+    with: p.child("with"),
     left: p.child("left"),
     leading_comments: printLeadingComments(path, options, print, node),
     self: p.self("upper"),
@@ -4942,6 +4949,14 @@ const printPipeStatement: PrintFunc<bq2cst.PipeStatement> = (
     semicolon: p.child("semicolon"),
   };
   return [
+    group([
+      docs.with,
+      p.has("with")
+        ? options.printBlankLineAfterCte
+          ? [hardline, hardline]
+          : hardline
+        : "",
+    ]),
     docs.left,
     hardline,
     docs.leading_comments,
