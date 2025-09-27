@@ -13,6 +13,12 @@ select col;
 
 with t as (select 1) from t;
 
+with temp as (select 1)
+select
+  *,
+from temp 
+|> limit 100;
+
 select * from (from t |> select *);
 
 ----- select statement -----

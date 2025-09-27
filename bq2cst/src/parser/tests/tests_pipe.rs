@@ -101,6 +101,7 @@ semicolon:
             "\
 WITH t AS (SELECT 1) FROM t
 ",
+            // WITH belongs to the FromStatement
             "\
 self: FROM (FromStatement)
 expr:
@@ -109,6 +110,44 @@ with:
   self: WITH (WithClause)
   queries:
   - self: t (WithQuery)
+    as:
+      self: AS (Keyword)
+    stmt:
+      self: ( (GroupedStatement)
+      rparen:
+        self: ) (Symbol)
+      stmt:
+        self: SELECT (SelectStatement)
+        exprs:
+        - self: 1 (NumericLiteral)
+",
+            0,
+        )),
+        Box::new(SuccessTestCase::new(
+            "\
+WITH temp AS (SELECT 1)
+SELECT * FROM temp 
+|> LIMIT 100
+",
+            // WITH belongs to the PipeStatement
+            "\
+self: |> (PipeStatement)
+left:
+  self: SELECT (SelectStatement)
+  exprs:
+  - self: * (Asterisk)
+  from:
+    self: FROM (KeywordWithExpr)
+    expr:
+      self: temp (Identifier)
+right:
+  self: LIMIT (LimitPipeOperator)
+  exprs:
+  - self: 100 (NumericLiteral)
+with:
+  self: WITH (WithClause)
+  queries:
+  - self: temp (WithQuery)
     as:
       self: AS (Keyword)
     stmt:
