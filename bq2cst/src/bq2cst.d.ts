@@ -1120,7 +1120,7 @@ export type KeywordSequence = BaseNode & {
 export type KeywordWithExpr = BaseNode & {
   node_type: "KeywordWithExpr";
   children: {
-    expr: NodeChild;
+    expr: { Node: Expr & UnknownNode };
   };
 };
 
@@ -1351,7 +1351,7 @@ export type PivotConfig = BaseNode & {
   node_type: "PivotConfig";
   children: {
     exprs: NodeVecChild;
-    for: NodeChild;
+    for: { Node: KeywordWithExpr };
     in: NodeChild;
     rparen: NodeChild;
   };
@@ -1621,7 +1621,7 @@ export type UnpivotConfig = BaseNode & {
   node_type: "UnpivotConfig";
   children: {
     expr: NodeChild;
-    for: NodeChild;
+    for: { Node: KeywordWithExpr };
     in: NodeChild;
     rparen: NodeChild;
   };
