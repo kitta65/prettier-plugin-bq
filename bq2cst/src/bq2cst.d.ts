@@ -446,8 +446,8 @@ export type AssertStatement = XXXStatement & {
 export type Asterisk = Expr & {
   node_type: "Asterisk";
   children: {
-    except?: NodeChild;
-    replace?: NodeChild;
+    except?: { Node: KeywordWithGroupedXXX & UnknownNode };
+    replace?: { Node: KeywordWithGroupedXXX & UnknownNode };
     order: undefined;
     null_order: undefined;
   };
@@ -1330,7 +1330,7 @@ export type PivotPipeOperator = PipeOperator & {
   node_type: "PivotPipeOperator";
   children: {
     exprs: undefined;
-    config: NodeChild;
+    config: { Node: PivotConfig & UnknownNode };
     as?: NodeChild;
     alias?: NodeChild;
   };
@@ -1516,7 +1516,7 @@ export type TemplateExpr = IdentifierGeneral & {
 export type TemplateExprEnd = BaseNode & {
   token: Token;
   node_type: "TemplateExprEnd";
-  children: {}
+  children: {};
 };
 
 export type TemplateExprContinue = BaseNode & {
@@ -1524,7 +1524,7 @@ export type TemplateExprContinue = BaseNode & {
   node_type: "TemplateExprContinue";
   children: {
     exprs: NodeVecChild;
-  }
+  };
 };
 
 export type TemplateExprStart = FromItemExpr & {
@@ -1534,7 +1534,7 @@ export type TemplateExprStart = FromItemExpr & {
     exprs: NodeVecChild;
     continues: NodeVecChild;
     end: NodeChild;
-  }
+  };
 };
 
 export type TransactionStatement = XXXStatement & {
@@ -1631,7 +1631,7 @@ export type UnpivotPipeOperator = PipeOperator & {
   node_type: "UnpivotPipeOperator";
   children: {
     exprs: undefined;
-    config: NodeChild;
+    config: { Node: UnpivotConfig & UnknownNode };
     as?: NodeChild;
     alias?: NodeChild;
   };
