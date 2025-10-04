@@ -208,8 +208,8 @@ export type Expr = BaseNode & {
 export type FromItemExpr = Expr & {
   children: {
     with_offset: NodeChild;
-    pivot?: PivotOperator;
-    unpivot?: UnpivotOperator;
+    pivot?: { Node: PivotOperator };
+    unpivot?: { Node: UnpivotOperator };
     match_recognize?: NodeChild;
   };
 };
