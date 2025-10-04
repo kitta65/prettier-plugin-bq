@@ -1350,9 +1350,9 @@ export type PivotConfig = BaseNode & {
   token: Token;
   node_type: "PivotConfig";
   children: {
-    exprs: NodeVecChild;
+    exprs: { NodeVec: Expr[] & UnknownNode[] };
     for: { Node: KeywordWithExpr };
-    in: NodeChild;
+    in: { Node: KeywordWithGroupedXXX };
     rparen: NodeChild;
   };
 };
