@@ -945,7 +945,7 @@ export type GroupByExprs = BaseNode & {
 export type GroupedExpr = FromItemExpr & {
   node_type: "GroupedExpr";
   children: {
-    expr: NodeChild;
+    expr: { Node: Expr & UnknownNode };
     rparen: NodeChild;
   };
 };
@@ -954,7 +954,7 @@ export type GroupedExprs = BaseNode & {
   token: Token;
   node_type: "GroupedExprs";
   children: {
-    exprs?: NodeVecChild;
+    exprs?: { NodeVec: Expr[] & UnknownNode[] };
     rparen: NodeChild;
     // only in UNPIVOT operator
     as?: NodeChild;
