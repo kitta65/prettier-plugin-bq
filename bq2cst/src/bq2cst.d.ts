@@ -208,8 +208,8 @@ export type Expr = BaseNode & {
 export type FromItemExpr = Expr & {
   children: {
     with_offset: NodeChild;
-    pivot?: NodeChild;
-    unpivot?: NodeChild;
+    pivot?: { Node: PivotOperator };
+    unpivot?: { Node: UnpivotOperator };
     match_recognize?: NodeChild;
   };
 };
@@ -446,8 +446,8 @@ export type AssertStatement = XXXStatement & {
 export type Asterisk = Expr & {
   node_type: "Asterisk";
   children: {
-    except?: NodeChild;
-    replace?: NodeChild;
+    except?: { Node: KeywordWithGroupedXXX & UnknownNode };
+    replace?: { Node: KeywordWithGroupedXXX & UnknownNode };
     order: undefined;
     null_order: undefined;
   };
@@ -938,14 +938,14 @@ export type GroupByExprs = BaseNode & {
   children: {
     by: NodeChild;
     how?: NodeVecChild;
-    exprs?: { NodeVec: Expr[] & UnknownNode[] };
+    exprs?: { NodeVec: (Expr & UnknownNode)[] };
   };
 };
 
 export type GroupedExpr = FromItemExpr & {
   node_type: "GroupedExpr";
   children: {
-    expr: NodeChild;
+    expr: { Node: Expr & UnknownNode };
     rparen: NodeChild;
   };
 };
@@ -954,7 +954,8 @@ export type GroupedExprs = BaseNode & {
   token: Token;
   node_type: "GroupedExprs";
   children: {
-    exprs?: NodeVecChild;
+    // NOTE: contains GroupedExprs in UnpivotConfig. it's a little inconsistent...
+    exprs?: { NodeVec: (Expr & UnknownNode)[] };
     rparen: NodeChild;
     // only in UNPIVOT operator
     as?: NodeChild;
@@ -1120,7 +1121,7 @@ export type KeywordSequence = BaseNode & {
 export type KeywordWithExpr = BaseNode & {
   node_type: "KeywordWithExpr";
   children: {
-    expr: NodeChild;
+    expr: { Node: Expr & UnknownNode };
   };
 };
 
@@ -1330,7 +1331,7 @@ export type PivotPipeOperator = PipeOperator & {
   node_type: "PivotPipeOperator";
   children: {
     exprs: undefined;
-    config: NodeChild;
+    config: { Node: PivotConfig & UnknownNode };
     as?: NodeChild;
     alias?: NodeChild;
   };
@@ -1340,7 +1341,7 @@ export type PivotOperator = BaseNode & {
   token: Token;
   node_type: "PivotOperator";
   children: {
-    config: NodeChild;
+    config: { Node: PivotConfig & UnknownNode };
     as?: NodeChild;
     alias?: NodeChild;
   };
@@ -1350,9 +1351,9 @@ export type PivotConfig = BaseNode & {
   token: Token;
   node_type: "PivotConfig";
   children: {
-    exprs: NodeVecChild;
-    for: NodeChild;
-    in: NodeChild;
+    exprs: { NodeVec: (Expr & UnknownNode)[] };
+    for: { Node: KeywordWithExpr };
+    in: { Node: KeywordWithGroupedXXX };
     rparen: NodeChild;
   };
 };
@@ -1516,7 +1517,7 @@ export type TemplateExpr = IdentifierGeneral & {
 export type TemplateExprEnd = BaseNode & {
   token: Token;
   node_type: "TemplateExprEnd";
-  children: {}
+  children: {};
 };
 
 export type TemplateExprContinue = BaseNode & {
@@ -1524,7 +1525,7 @@ export type TemplateExprContinue = BaseNode & {
   node_type: "TemplateExprContinue";
   children: {
     exprs: NodeVecChild;
-  }
+  };
 };
 
 export type TemplateExprStart = FromItemExpr & {
@@ -1534,7 +1535,7 @@ export type TemplateExprStart = FromItemExpr & {
     exprs: NodeVecChild;
     continues: NodeVecChild;
     end: NodeChild;
-  }
+  };
 };
 
 export type TransactionStatement = XXXStatement & {
@@ -1621,8 +1622,8 @@ export type UnpivotConfig = BaseNode & {
   node_type: "UnpivotConfig";
   children: {
     expr: NodeChild;
-    for: NodeChild;
-    in: NodeChild;
+    for: { Node: KeywordWithExpr };
+    in: { Node: KeywordWithGroupedXXX };
     rparen: NodeChild;
   };
 };
@@ -1631,7 +1632,7 @@ export type UnpivotPipeOperator = PipeOperator & {
   node_type: "UnpivotPipeOperator";
   children: {
     exprs: undefined;
-    config: NodeChild;
+    config: { Node: UnpivotConfig & UnknownNode };
     as?: NodeChild;
     alias?: NodeChild;
   };
@@ -1642,7 +1643,7 @@ export type UnpivotOperator = BaseNode & {
   node_type: "UnpivotOperator";
   children: {
     include_or_exclude_nulls: NodeVecChild;
-    config: NodeChild;
+    config: { Node: UnpivotConfig & UnknownNode };
     as?: NodeChild;
     alias?: NodeChild;
   };
@@ -1768,6 +1769,6 @@ export type XXXByExprs = BaseNode & {
   node_type: "XXXByExprs";
   children: {
     by: NodeChild;
-    exprs: { NodeVec: Expr[] & UnknownNode[] };
+    exprs: { NodeVec: (Expr & UnknownNode)[] };
   };
 };
