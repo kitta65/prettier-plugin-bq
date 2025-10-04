@@ -938,7 +938,7 @@ export type GroupByExprs = BaseNode & {
   children: {
     by: NodeChild;
     how?: NodeVecChild;
-    exprs?: { NodeVec: Expr[] & UnknownNode[] };
+    exprs?: { NodeVec: (Expr & UnknownNode)[] };
   };
 };
 
@@ -954,7 +954,7 @@ export type GroupedExprs = BaseNode & {
   token: Token;
   node_type: "GroupedExprs";
   children: {
-    exprs?: { NodeVec: Expr[] & UnknownNode[] };
+    exprs?: { NodeVec: (Expr & UnknownNode)[] };
     rparen: NodeChild;
     // only in UNPIVOT operator
     as?: NodeChild;
@@ -1350,7 +1350,7 @@ export type PivotConfig = BaseNode & {
   token: Token;
   node_type: "PivotConfig";
   children: {
-    exprs: { NodeVec: Expr[] & UnknownNode[] };
+    exprs: { NodeVec: (Expr & UnknownNode)[] };
     for: { Node: KeywordWithExpr };
     in: { Node: KeywordWithGroupedXXX };
     rparen: NodeChild;
@@ -1768,6 +1768,6 @@ export type XXXByExprs = BaseNode & {
   node_type: "XXXByExprs";
   children: {
     by: NodeChild;
-    exprs: { NodeVec: Expr[] & UnknownNode[] };
+    exprs: { NodeVec: (Expr & UnknownNode)[] };
   };
 };
