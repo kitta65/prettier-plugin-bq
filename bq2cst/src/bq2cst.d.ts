@@ -954,6 +954,7 @@ export type GroupedExprs = BaseNode & {
   token: Token;
   node_type: "GroupedExprs";
   children: {
+    // NOTE: contains GroupedExprs in UnpivotConfig. it's a little inconsistent...
     exprs?: { NodeVec: (Expr & UnknownNode)[] };
     rparen: NodeChild;
     // only in UNPIVOT operator
@@ -1622,7 +1623,7 @@ export type UnpivotConfig = BaseNode & {
   children: {
     expr: NodeChild;
     for: { Node: KeywordWithExpr };
-    in: NodeChild;
+    in: { Node: KeywordWithGroupedXXX };
     rparen: NodeChild;
   };
 };
