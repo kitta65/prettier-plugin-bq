@@ -1340,7 +1340,7 @@ export type PivotOperator = BaseNode & {
   token: Token;
   node_type: "PivotOperator";
   children: {
-    config: NodeChild;
+    config: { Node: PivotConfig & UnknownNode };
     as?: NodeChild;
     alias?: NodeChild;
   };
@@ -1642,7 +1642,7 @@ export type UnpivotOperator = BaseNode & {
   node_type: "UnpivotOperator";
   children: {
     include_or_exclude_nulls: NodeVecChild;
-    config: NodeChild;
+    config: { Node: UnpivotConfig & UnknownNode };
     as?: NodeChild;
     alias?: NodeChild;
   };
