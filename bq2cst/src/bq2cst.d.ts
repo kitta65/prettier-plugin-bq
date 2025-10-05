@@ -238,6 +238,7 @@ export type XXXStatement = BaseNode & {
 };
 
 export type PipeOperator = BaseNode & {
+  token: Token;
   children: {
     keywords?: NodeChild;
     exprs?: NodeVecChild;
