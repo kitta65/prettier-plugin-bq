@@ -238,6 +238,7 @@ export type XXXStatement = BaseNode & {
 };
 
 export type PipeOperator = BaseNode & {
+  token: Token;
   children: {
     keywords?: NodeChild;
     exprs?: NodeVecChild;
@@ -908,7 +909,7 @@ export type ForSystemTimeAsOfClause = BaseNode & {
 export type FromStatement = XXXStatement & {
   node_type: "FromStatement";
   children: {
-    with?: NodeChild;
+    with?: { Node: WithClause };
     expr: NodeChild;
   };
 };
