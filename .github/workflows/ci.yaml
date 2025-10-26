@@ -38,15 +38,15 @@ jobs:
       - uses: actions/upload-pages-artifact@v4
         with:
           path: "./web/dist"
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v5
         with: &artifact-bq2cst-cjs
           name: bq2cst-cjs
           path: ./bq2cst/cjs
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v5
         with: &artifact-bq2cst-esm
           name: bq2cst-esm
           path: ./bq2cst/esm
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v5
         with: &artifact-prettier-plugin-bq
           name: prettier-plugin-bq
           path: ./prettier-plugin-bq/dist
