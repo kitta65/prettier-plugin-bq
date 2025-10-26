@@ -33,6 +33,13 @@ FROM (
 )
 ;
 
+FROM (
+  -- comment
+  SELECT 1 AS one
+)
+|> SELECT *
+;
+
 ----- select statement -----
 SELECT 1
 |> SELECT *
