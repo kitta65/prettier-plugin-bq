@@ -641,6 +641,7 @@ export const mlFunctions = [
 ];
 
 export const aiFunctions = [
+  "EVALUATE",
   "GENERATE",
   "GENERATE_BOOL",
   "GENERATE_DOUBLE",
