@@ -21,6 +21,7 @@ build: test
 	wasm-pack build --target browser --out-dir esm
 	cp ./LICENSE* esm/
 	cp src/bq2cst.d.ts esm/
+	rm esm/.gitignore
 
 .PHONY: release
 release:
