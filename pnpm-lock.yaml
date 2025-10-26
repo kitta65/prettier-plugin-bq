@@ -63,7 +63,7 @@ importers:
         version: 2.2.0(react@19.1.1)
       '@tailwindcss/vite':
         specifier: ^4.1.13
-        version: 4.1.13(vite@7.1.11(@types/node@24.4.0)(jiti@2.5.1)(lightningcss@1.30.1))
+        version: 4.1.13(vite@7.1.12(@types/node@24.4.0)(jiti@2.5.1)(lightningcss@1.30.1))
       bq2cst:
         specifier: file:../bq2cst/esm
         version: file:bq2cst/esm
@@ -97,7 +97,7 @@ importers:
         version: 19.1.9(@types/react@19.1.13)
       '@vitejs/plugin-react-swc':
         specifier: ^4.0.1
-        version: 4.1.0(vite@7.1.11(@types/node@24.4.0)(jiti@2.5.1)(lightningcss@1.30.1))
+        version: 4.1.0(vite@7.1.12(@types/node@24.4.0)(jiti@2.5.1)(lightningcss@1.30.1))
       eslint:
         specifier: ^9.35.0
         version: 9.35.0(jiti@2.5.1)
@@ -118,10 +118,10 @@ importers:
         version: 8.44.0(eslint@9.35.0(jiti@2.5.1))(typescript@5.8.3)
       vite:
         specifier: ^7.1.6
-        version: 7.1.11(@types/node@24.4.0)(jiti@2.5.1)(lightningcss@1.30.1)
+        version: 7.1.12(@types/node@24.4.0)(jiti@2.5.1)(lightningcss@1.30.1)
       vite-plugin-wasm:
         specifier: ^3.5.0
-        version: 3.5.0(vite@7.1.11(@types/node@24.4.0)(jiti@2.5.1)(lightningcss@1.30.1))
+        version: 3.5.0(vite@7.1.12(@types/node@24.4.0)(jiti@2.5.1)(lightningcss@1.30.1))
 
 packages:
 
@@ -2368,8 +2368,8 @@ packages:
     peerDependencies:
       vite: ^2 || ^3 || ^4 || ^5 || ^6 || ^7
 
-  vite@7.1.11:
-    resolution: {integrity: sha512-uzcxnSDVjAopEUjljkWh8EIrg6tlzrjFUfMcR1EVsRDGwf/ccef0qQPRyOrROwhrTDaApueq+ja+KLPlzR/zdg==}
+  vite@7.1.12:
+    resolution: {integrity: sha512-ZWyE8YXEXqJrrSLvYgrRP7p62OziLW7xI5HYGWFzOvupfAlrLvURSzv/FyGyy0eidogEM3ujU+kUG1zuHgb6Ug==}
     engines: {node: ^20.19.0 || >=22.12.0}
     hasBin: true
     peerDependencies:
@@ -3188,12 +3188,12 @@ snapshots:
       '@tailwindcss/oxide-win32-arm64-msvc': 4.1.13
       '@tailwindcss/oxide-win32-x64-msvc': 4.1.13
 
-  '@tailwindcss/vite@4.1.13(vite@7.1.11(@types/node@24.4.0)(jiti@2.5.1)(lightningcss@1.30.1))':
+  '@tailwindcss/vite@4.1.13(vite@7.1.12(@types/node@24.4.0)(jiti@2.5.1)(lightningcss@1.30.1))':
     dependencies:
       '@tailwindcss/node': 4.1.13
       '@tailwindcss/oxide': 4.1.13
       tailwindcss: 4.1.13
-      vite: 7.1.11(@types/node@24.4.0)(jiti@2.5.1)(lightningcss@1.30.1)
+      vite: 7.1.12(@types/node@24.4.0)(jiti@2.5.1)(lightningcss@1.30.1)
 
   '@types/babel__core@7.20.5':
     dependencies:
@@ -3445,11 +3445,11 @@ snapshots:
       '@typescript-eslint/types': 8.44.0
       eslint-visitor-keys: 4.2.1
 
-  '@vitejs/plugin-react-swc@4.1.0(vite@7.1.11(@types/node@24.4.0)(jiti@2.5.1)(lightningcss@1.30.1))':
+  '@vitejs/plugin-react-swc@4.1.0(vite@7.1.12(@types/node@24.4.0)(jiti@2.5.1)(lightningcss@1.30.1))':
     dependencies:
       '@rolldown/pluginutils': 1.0.0-beta.35
       '@swc/core': 1.13.5
-      vite: 7.1.11(@types/node@24.4.0)(jiti@2.5.1)(lightningcss@1.30.1)
+      vite: 7.1.12(@types/node@24.4.0)(jiti@2.5.1)(lightningcss@1.30.1)
     transitivePeerDependencies:
       - '@swc/helpers'
 
@@ -4864,11 +4864,11 @@ snapshots:
       '@types/istanbul-lib-coverage': 2.0.6
       convert-source-map: 2.0.0
 
-  vite-plugin-wasm@3.5.0(vite@7.1.11(@types/node@24.4.0)(jiti@2.5.1)(lightningcss@1.30.1)):
+  vite-plugin-wasm@3.5.0(vite@7.1.12(@types/node@24.4.0)(jiti@2.5.1)(lightningcss@1.30.1)):
     dependencies:
-      vite: 7.1.11(@types/node@24.4.0)(jiti@2.5.1)(lightningcss@1.30.1)
+      vite: 7.1.12(@types/node@24.4.0)(jiti@2.5.1)(lightningcss@1.30.1)
 
-  vite@7.1.11(@types/node@24.4.0)(jiti@2.5.1)(lightningcss@1.30.1):
+  vite@7.1.12(@types/node@24.4.0)(jiti@2.5.1)(lightningcss@1.30.1):
     dependencies:
       esbuild: 0.25.11
       fdir: 6.5.0(picomatch@4.0.3)
