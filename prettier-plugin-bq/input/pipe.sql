@@ -27,6 +27,11 @@ from (
 )
 |> select *;
 
+from
+  a
+  inner join b
+|> select *;
+
 ----- select statement -----
 select 1 |> select *;
 

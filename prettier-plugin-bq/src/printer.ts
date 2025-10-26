@@ -3500,12 +3500,15 @@ const printFromStatement: PrintFunc<bq2cst.FromStatement> = (
   node,
 ) => {
   const p = new Printer(path, options, print, node);
+  p.setNotRoot("expr");
   const docs: { [Key in Docs<bq2cst.FromStatement>]: Doc } = {
     with: p.child("with"),
     leading_comments: printLeadingComments(path, options, print, node),
     self: p.self("upper"),
     trailing_comments: printTrailingComments(path, options, print, node),
-    expr: p.child("expr", undefined, "first"),
+    expr: p.shouldIndentExpr("expr")
+      ? indent([line, p.child("expr")])
+      : [" ", p.child("expr", undefined, "all")],
     semicolon: p.child("semicolon"),
   };
   return [
@@ -3520,10 +3523,7 @@ const printFromStatement: PrintFunc<bq2cst.FromStatement> = (
     docs.leading_comments,
     group([
       p.has("with") ? breakParent : "",
-      docs.self,
-      docs.trailing_comments,
-      " ",
-      docs.expr,
+      group([docs.self, docs.trailing_comments, docs.expr]),
       p.has("semicolon") ? softline : "",
       docs.semicolon,
     ]),
