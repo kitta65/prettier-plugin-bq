@@ -1,0 +1,16 @@
+{
+  "name": "bq2cst",
+  "collaborators": [
+    "kitta65 <kitta65kitta@gmail.com>"
+  ],
+  "version": "1.0.3",
+  "license": "MIT",
+  "files": [
+    "bq2cst_bg.wasm",
+    "bq2cst.js",
+    "bq2cst.d.ts",
+    "LICENSE-THIRD-PARTY"
+  ],
+  "main": "bq2cst.js",
+  "types": "bq2cst.d.ts"
+}

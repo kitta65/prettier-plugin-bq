@@ -17,6 +17,7 @@ build: test
 	wasm-pack build --target nodejs --out-dir cjs
 	cp ./LICENSE* cjs/
 	cp src/bq2cst.d.ts cjs/
+	rm cjs/.gitignore
 	wasm-pack build --target browser --out-dir esm
 	cp ./LICENSE* esm/
 	cp src/bq2cst.d.ts esm/
