@@ -3,7 +3,7 @@
   "collaborators": [
     "kitta65 <kitta65kitta@gmail.com>"
   ],
-  "version": "1.0.3",
+  "version": "1.0.4",
   "license": "MIT",
   "files": [
     "bq2cst_bg.wasm",
