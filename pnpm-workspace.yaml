@@ -2,3 +2,7 @@ packages:
   - prettier-plugin-bq
   - bq2cst/cjs
   - web
+
+onlyBuiltDependencies:
+  - '@swc/core'
+  - esbuild
