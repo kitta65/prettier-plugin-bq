@@ -1,9 +1,25 @@
 version: 2
 updates:
-  # do not have to specify each workspace
-  # https://github.com/dependabot/dependabot-core/issues/4993
   - package-ecosystem: "npm"
     directory: "/"
+    schedule:
+      interval: "monthly"
+    versioning-strategy: "widen"
+    open-pull-requests-limit: 50
+  # config each workspace (see #760)
+  - package-ecosystem: "npm"
+    directory: "/prettier-plugin-bq"
+    schedule:
+      interval: "monthly"
+    versioning-strategy: "widen"
+    open-pull-requests-limit: 50
+  - package-ecosystem: "npm"
+    directory: "/web"
+    schedule:
+      interval: "monthly"
+    open-pull-requests-limit: 50
+  - package-ecosystem: "npm"
+    directory: "/bq2cst/cjs"
     schedule:
       interval: "monthly"
     versioning-strategy: "widen"
