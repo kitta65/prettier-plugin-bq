@@ -2138,7 +2138,7 @@ impl Parser {
             if self.get_token(1)?.is(";") && semicolon && root {
                 self.next_token()?; // expr -> ;
                 node.push_node("semicolon", self.construct_node(NodeType::Symbol)?)
-            } else if self.get_token(1)?.is("|>") {
+            } else if self.get_token(1)?.is("|>") && root {
                 self.next_token()?; // -> |>
                 return self.parse_pipe_statement(node);
             }
