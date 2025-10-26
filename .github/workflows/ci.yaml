@@ -23,7 +23,7 @@ jobs:
       - run: mkdir -p bq2cst/{cjs,esm}
       - run: npm install -g pnpm
       - &setup-node
-        uses: actions/setup-node@v5
+        uses: actions/setup-node@v6
         with:
           node-version: "20.x"
           registry-url: "https://registry.npmjs.org"
