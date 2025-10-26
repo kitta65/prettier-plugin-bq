@@ -18,7 +18,7 @@
     "prettier-plugin-bq": "workspace:*",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
-    "tailwindcss": "^4.1.13",
+    "tailwindcss": "^4.1.16",
     "bq2cst": "file:../bq2cst/esm"
   },
   "devDependencies": {
