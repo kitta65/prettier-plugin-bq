@@ -188,6 +188,33 @@ from:
 ",
             0,
         )),
+        Box::new(SuccessTestCase::new(
+            "\
+FROM (SELECT 1 AS one) |> SELECT *
+",
+            "\
+self: |> (PipeStatement)
+left:
+  self: FROM (FromStatement)
+  expr:
+    self: ( (GroupedStatement)
+    rparen:
+      self: ) (Symbol)
+    stmt:
+      self: SELECT (SelectStatement)
+      exprs:
+      - self: 1 (NumericLiteral)
+        alias:
+          self: one (Identifier)
+        as:
+          self: AS (Keyword)
+right:
+  self: SELECT (SelectPipeOperator)
+  exprs:
+  - self: * (Asterisk)
+",
+            0,
+        )),
         // ----- select statement -----
         Box::new(SuccessTestCase::new(
             "\

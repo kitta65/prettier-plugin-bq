@@ -21,6 +21,17 @@ from temp
 
 select * from (from t |> select *);
 
+from (
+  -- comment
+  select 1 as one
+)
+|> select *;
+
+from
+  a
+  inner join b
+|> select *;
+
 ----- select statement -----
 select 1 |> select *;
 

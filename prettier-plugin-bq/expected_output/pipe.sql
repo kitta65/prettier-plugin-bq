@@ -33,6 +33,19 @@ FROM (
 )
 ;
 
+FROM (
+  -- comment
+  SELECT 1 AS one
+)
+|> SELECT *
+;
+
+FROM
+  a
+  INNER JOIN b
+|> SELECT *
+;
+
 ----- select statement -----
 SELECT 1
 |> SELECT *
@@ -68,8 +81,9 @@ FROM t
 ;
 
 ----- from statement -----
-FROM tabe AS t1
-INNER JOIN table AS p2 USING(col)
+FROM
+  tabe AS t1
+  INNER JOIN table AS p2 USING(col)
 ;
 
 (FROM tablename);
