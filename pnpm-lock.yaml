@@ -13,7 +13,7 @@ importers:
         version: 3.3.1
       '@eslint/js':
         specifier: ^9.35.0
-        version: 9.39.0
+        version: 9.39.1
       '@types/jest':
         specifier: ^29.0.0
         version: 29.5.14
@@ -88,7 +88,7 @@ importers:
     devDependencies:
       '@eslint/js':
         specifier: ^9.35.0
-        version: 9.39.0
+        version: 9.39.1
       '@types/react':
         specifier: ^19.1.13
         version: 19.2.2
@@ -482,10 +482,6 @@ packages:
 
   '@eslint/eslintrc@3.3.3':
     resolution: {integrity: sha512-Kr+LPIUVKz2qkx1HAMH8q1q6azbqBAsXJUxBl/ODDuVPX45Z9DfwB8tPjTi6nNZ8BuM3nbJxC5zCAg5elnBUTQ==}
-    engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
-
-  '@eslint/js@9.39.0':
-    resolution: {integrity: sha512-BIhe0sW91JGPiaF1mOuPy5v8NflqfjIcDNpC+LbW9f609WVRX1rArrhi6Z2ymvrAry9jw+5POTj4t2t62o8Bmw==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
 
   '@eslint/js@9.39.1':
@@ -2767,8 +2763,6 @@ snapshots:
       strip-json-comments: 3.1.1
     transitivePeerDependencies:
       - supports-color
-
-  '@eslint/js@9.39.0': {}
 
   '@eslint/js@9.39.1': {}
 
