@@ -267,7 +267,7 @@ export type AddConstraintClause = BaseNode & {
 export type AggregatePipeOperator = PipeOperator & {
   node_type: "AggregatePipeOperator";
   children: {
-    groupby?: NodeChild;
+    group_and_order_by?: NodeChild;
   };
 };
 

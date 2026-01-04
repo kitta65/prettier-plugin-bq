@@ -968,11 +968,11 @@ const printAggregatePipeOperator: PrintFunc<bq2cst.AggregatePipeOperator> = (
   }
   const docs: { [Key in Docs<bq2cst.AggregatePipeOperator>]: Doc } = {
     leading_comments: printLeadingComments(path, options, print, node),
-    self: p.self(),
+    self: p.self("upper"),
     trailing_comments: printTrailingComments(path, options, print, node),
     keywords: p.child("keywords", undefined, "all"),
     exprs: p.child("exprs", (x) => group([line, x])),
-    groupby: p.child("groupby"),
+    group_and_order_by: p.child("group_and_order_by"),
   };
   return [
     docs.leading_comments,
@@ -981,8 +981,8 @@ const printAggregatePipeOperator: PrintFunc<bq2cst.AggregatePipeOperator> = (
     p.has("keywords") ? " " : "",
     docs.keywords,
     indent(docs.exprs),
-    p.has("groupby") ? hardline : "",
-    docs.groupby,
+    p.has("group_and_order_by") ? hardline : "",
+    docs.group_and_order_by,
   ];
 };
 
