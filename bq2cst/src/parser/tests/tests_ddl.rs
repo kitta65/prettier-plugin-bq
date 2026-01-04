@@ -1209,6 +1209,30 @@ with_connection:
 ",
             0,
         )),
+        // TODO
+        Box::new(SuccessTestCase::new(
+            "\
+CREATE TABLE tablename (
+  embedding STRING GENERATED
+)
+",
+            "\
+self: CREATE (CreateTableStatement)
+column_schema_group:
+  self: ( (GroupedTypeDeclarationOrConstraints)
+  declarations:
+  - self: embedding (TypeDeclaration)
+    type:
+      self: STRING (Type)
+  rparen:
+    self: ) (Symbol)
+ident:
+  self: tablename (Identifier)
+what:
+  self: TABLE (Keyword)
+",
+            0,
+        )),
         // ----- CREATE VIEW statement -----
         Box::new(SuccessTestCase::new(
             "\

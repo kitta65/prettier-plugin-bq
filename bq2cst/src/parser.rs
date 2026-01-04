@@ -1602,6 +1602,9 @@ impl Parser {
                     self.parse_expr(usize::MAX, false, false, false, true)?,
                 );
                 res.push_node("default", default);
+            } else if self.get_token(1)?.is("GENERATED") {
+                // TODO
+                self.next_token()?; // -> GENERATED
             }
             if self.get_token(1)?.is("NOT") {
                 self.next_token()?; // -> NOT
