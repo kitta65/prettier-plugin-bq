@@ -643,15 +643,19 @@ export const mlFunctions = [
 export const aiFunctions = [
   "CLASSIFY",
   "DETECT_ANOMALIES",
+  "EMBED",
   "EVALUATE",
   "GENERATE",
   "GENERATE_BOOL",
   "GENERATE_DOUBLE",
+  "GENERATE_EMBEDDING",
   "GENERATE_INT",
   "GENERATE_TABLE",
+  "GENERATE_TEXT",
   "IF",
   "FORECAST",
   "SCORE",
+  "SIMILARITY",
 ];
 
 export const vectorIndexFunctions = ["STATISTICS"];
