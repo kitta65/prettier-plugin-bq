@@ -110,6 +110,18 @@ WITH CONNECTION DEFAULT
 OPTIONS (dummy = 'dummy')
 ;
 
+-- autonomous embedding generation
+CREATE TABLE datasetname.tablename (
+  col_a STRING,
+  col_a_embedding STRUCT<result ARRAY<FLOAT64>, status STRING>
+  GENERATED ALWAYS AS (
+    AI.EMBED(col_a, connection_id => 'conneciton_id', endpoint => 'endpoint')
+  )
+  STORED OPTIONS (asynchronous = TRUE),
+  col_b INT64
+)
+;
+
 ----- CREATE VIEW statement -----
 CREATE VIEW view_name AS SELECT * FROM t;
 

@@ -5816,6 +5816,8 @@ const printType: PrintFunc<bq2cst.Type> = (path, options, print, node) => {
     enforced: p.child("enforced", undefined, "all"), // NOT ENFORCED
     not_null: p.child("not_null", (x) => group([line, x])), // NOT NULL
     default: p.child("default", undefined, "all"), // DEFAULT CURRENT_TIMESTAMP
+    generated_as: p.child("generated_as", undefined, "all"), // DEFAULT CURRENT_TIMESTAMP
+    stored_options: p.child("stored_options", undefined, "all"), // DEFAULT CURRENT_TIMESTAMP
     options: p.child("options", undefined, "all"), // OPTIONS()
     aggregate: p.child("aggregate", (x) => group([line, x])), // NOT AGGREGATEj:w
   };
@@ -5840,6 +5842,10 @@ const printType: PrintFunc<bq2cst.Type> = (path, options, print, node) => {
     docs.not_null,
     p.has("default") ? line : "",
     docs.default,
+    p.has("generated_as") ? line : "",
+    docs.generated_as,
+    p.has("stored_options") ? line : "",
+    docs.stored_options,
     p.has("options") ? line : "",
     docs.options,
     docs.aggregate,
