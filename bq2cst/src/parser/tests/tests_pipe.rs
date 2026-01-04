@@ -699,24 +699,24 @@ right:
       self: COUNT (Identifier)
     rparen:
       self: ) (Symbol)
-  groupby:
-    self: GROUP (GroupByExprs)
-    by:
-      self: BY (Keyword)
-    exprs:
-    - self: col1 (Identifier)
-      alias:
-        self: col_a (Identifier)
-      as:
-        self: AS (Keyword)
-      comma:
-        self: , (Symbol)
-      null_order:
-      - self: NULLS (Keyword)
-      - self: LAST (Keyword)
-      order:
-        self: DESC (Keyword)
-    - self: col2 (Identifier)
+  group_and_order_by:
+    self: GROUP (KeywordSequence)
+    next_keyword:
+      self: BY (KeywordWithExprs)
+      exprs:
+      - self: col1 (Identifier)
+        alias:
+          self: col_a (Identifier)
+        as:
+          self: AS (Keyword)
+        comma:
+          self: , (Symbol)
+        null_order:
+        - self: NULLS (Keyword)
+        - self: LAST (Keyword)
+        order:
+          self: DESC (Keyword)
+      - self: col2 (Identifier)
 ",
             0,
         )),

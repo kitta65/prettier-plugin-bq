@@ -1114,7 +1114,12 @@ export type KeywordSequence = BaseNode & {
   node_type: "KeywordSequence";
   children: {
     next_keyword: {
-      Node: Keyword | KeywordSequence | KeywordWithExpr | KeywordWithGroupedXXX;
+      Node:
+        | Keyword
+        | KeywordSequence
+        | KeywordWithExpr
+        | KeywordWithExprs
+        | KeywordWithGroupedXXX;
     };
   };
 };
