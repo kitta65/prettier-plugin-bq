@@ -5816,10 +5816,10 @@ const printType: PrintFunc<bq2cst.Type> = (path, options, print, node) => {
     enforced: p.child("enforced", undefined, "all"), // NOT ENFORCED
     not_null: p.child("not_null", (x) => group([line, x])), // NOT NULL
     default: p.child("default", undefined, "all"), // DEFAULT CURRENT_TIMESTAMP
-    generated_as: p.child("generated_as", undefined, "all"), // DEFAULT CURRENT_TIMESTAMP
-    stored_options: p.child("stored_options", undefined, "all"), // DEFAULT CURRENT_TIMESTAMP
+    generated_as: p.child("generated_as", undefined, "all"), // GENERATED ALWAYS AS ()
+    stored_options: p.child("stored_options", undefined, "all"), // STORED OPTIONS (...)
     options: p.child("options", undefined, "all"), // OPTIONS()
-    aggregate: p.child("aggregate", (x) => group([line, x])), // NOT AGGREGATEj:w
+    aggregate: p.child("aggregate", (x) => group([line, x])), // NOT AGGREGATE
   };
   return [
     docs.leading_comments,
@@ -5835,7 +5835,7 @@ const printType: PrintFunc<bq2cst.Type> = (path, options, print, node) => {
     docs.constraint,
     p.has("primarykey") ? line : "",
     docs.primarykey,
-    p.has("references") ? " " : "",
+    p.has("references") ? line : "",
     docs.references,
     p.has("enforced") ? " " : "",
     docs.enforced,
