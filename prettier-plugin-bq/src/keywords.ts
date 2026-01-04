@@ -641,13 +641,16 @@ export const mlFunctions = [
 ];
 
 export const aiFunctions = [
+  "CLASSIFY",
   "EVALUATE",
   "GENERATE",
   "GENERATE_BOOL",
   "GENERATE_DOUBLE",
   "GENERATE_INT",
   "GENERATE_TABLE",
+  "IF",
   "FORECAST",
+  "SCORE",
 ];
 
 export const vectorIndexFunctions = ["STATISTICS"];
