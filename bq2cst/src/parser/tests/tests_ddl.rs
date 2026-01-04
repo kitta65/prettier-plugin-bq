@@ -1209,11 +1209,12 @@ with_connection:
 ",
             0,
         )),
-        // TODO
         Box::new(SuccessTestCase::new(
             "\
 CREATE TABLE tablename (
-  embedding STRING GENERATED
+  embedding STRING
+  GENERATED ALWAYS AS (expr)
+  STORED OPTIONS (dummy = 'dummy')
 )
 ",
             "\
@@ -1224,6 +1225,32 @@ column_schema_group:
   - self: embedding (TypeDeclaration)
     type:
       self: STRING (Type)
+      generated_as:
+        self: GENERATED (KeywordSequence)
+        next_keyword:
+          self: ALWAYS (KeywordSequence)
+          next_keyword:
+            self: AS (KeywordWithExpr)
+            expr:
+              self: ( (GroupedExpr)
+              expr:
+                self: expr (Identifier)
+              rparen:
+                self: ) (Symbol)
+      stored_options:
+        self: STORED (KeywordSequence)
+        next_keyword:
+          self: OPTIONS (KeywordWithGroupedXXX)
+          group:
+            self: ( (GroupedExprs)
+            exprs:
+            - self: = (BinaryOperator)
+              left:
+                self: dummy (Identifier)
+              right:
+                self: 'dummy' (StringLiteral)
+            rparen:
+              self: ) (Symbol)
   rparen:
     self: ) (Symbol)
 ident:

@@ -1603,8 +1603,27 @@ impl Parser {
                 );
                 res.push_node("default", default);
             } else if self.get_token(1)?.is("GENERATED") {
-                // TODO
                 self.next_token()?; // -> GENERATED
+                let mut generated = self.construct_node(NodeType::KeywordSequence)?;
+                self.next_token()?; // -> ALWAYS
+                let mut always = self.construct_node(NodeType::KeywordSequence)?;
+                self.next_token()?; // -> AS
+                let mut as_ = self.construct_node(NodeType::KeywordWithExpr)?;
+                self.next_token()?; // -> (
+                as_.push_node(
+                    "expr",
+                    self.parse_expr(usize::MAX, false, false, false, false)?,
+                );
+                always.push_node("next_keyword", as_);
+                generated.push_node("next_keyword", always);
+                res.push_node("generated_as", generated);
+
+                self.next_token()?; // -> STORAED
+                let mut stored = self.construct_node(NodeType::KeywordSequence)?;
+                self.next_token()?; // -> OPTIONS
+                let options = self.parse_keyword_with_grouped_exprs(false)?;
+                stored.push_node("next_keyword", options);
+                res.push_node("stored_options", stored);
             }
             if self.get_token(1)?.is("NOT") {
                 self.next_token()?; // -> NOT
