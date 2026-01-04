@@ -655,6 +655,7 @@ export const aiFunctions = [
   "IF",
   "FORECAST",
   "SCORE",
+  "SEARCH",
   "SIMILARITY",
 ];
 
