@@ -2423,6 +2423,18 @@ impl Parser {
 
         Ok(operator)
     }
+    fn parse_extend_pipe_operator(&mut self) -> BQ2CSTResult<Node> {
+        let mut operator = self.construct_node(NodeType::BasePipeOperator)?;
+        self.next_token()?; // -> expr
+        let exprs = self.parse_exprs(&vec!["|>", ";", "WINDOW"], true, false)?;
+        operator.push_node_vec("exprs", exprs);
+        if self.get_token(1)?.is("WINDOW") {
+            self.next_token()?; // -> WINDOW
+            let window = self.parse_window_clause()?;
+            operator.push_node("window", window);
+        }
+        Ok(operator)
+    }
     fn parse_limit_pipe_operator(&mut self) -> BQ2CSTResult<Node> {
         let mut operator = self.construct_node(NodeType::LimitPipeOperator)?;
         self.next_token()?; // -> expr
@@ -2603,13 +2615,6 @@ impl Parser {
             self.next_token()?; // -> keyword
             operator.push_node("keywords", self.construct_node(NodeType::Keyword)?);
         }
-        self.next_token()?; // -> expr
-        let exprs = self.parse_exprs(&vec!["|>", ";"], true, true)?;
-        operator.push_node_vec("exprs", exprs);
-        Ok(operator)
-    }
-    fn parse_extend_pipe_operator(&mut self) -> BQ2CSTResult<Node> {
-        let mut operator = self.construct_node(NodeType::BasePipeOperator)?;
         self.next_token()?; // -> expr
         let exprs = self.parse_exprs(&vec!["|>", ";"], true, true)?;
         operator.push_node_vec("exprs", exprs);
