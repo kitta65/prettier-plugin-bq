@@ -720,6 +720,58 @@ right:
 ",
             0,
         )),
+        Box::new(SuccessTestCase::new(
+            "\
+FROM t
+|>
+  AGGREGATE COUNT(*)
+  GROUP AND ORDER BY col1 AS col_a DESC NULLS LAST, col2,;
+",
+            "\
+self: |> (PipeStatement)
+left:
+  self: FROM (FromStatement)
+  expr:
+    self: t (Identifier)
+right:
+  self: AGGREGATE (AggregatePipeOperator)
+  exprs:
+  - self: ( (CallingFunction)
+    args:
+    - self: * (Asterisk)
+    func:
+      self: COUNT (Identifier)
+    rparen:
+      self: ) (Symbol)
+  group_and_order_by:
+    self: GROUP (KeywordSequence)
+    next_keyword:
+      self: AND (KeywordSequence)
+      next_keyword:
+        self: ORDER (KeywordSequence)
+        next_keyword:
+          self: BY (KeywordWithExprs)
+          exprs:
+          - self: col1 (Identifier)
+            alias:
+              self: col_a (Identifier)
+            as:
+              self: AS (Keyword)
+            comma:
+              self: , (Symbol)
+            null_order:
+            - self: NULLS (Keyword)
+            - self: LAST (Keyword)
+            order:
+              self: DESC (Keyword)
+          - self: col2 (Identifier)
+            comma:
+              self: , (Symbol)
+semicolon:
+  self: ; (Symbol)
+",
+            0,
+        )),
         // ----- distinct pipe operator -----
         Box::new(SuccessTestCase::new(
             "\

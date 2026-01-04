@@ -879,6 +879,7 @@ impl Parser {
         }
         Ok(left)
     }
+    // NOTE: if trailing comma is allowed, you have to specify `until` carefully.
     fn parse_exprs(
         &mut self,
         until: &Vec<&str>,
@@ -2454,7 +2455,7 @@ impl Parser {
                 self.next_token()?; // -> BY
                 let mut by = self.construct_node(NodeType::KeywordWithExprs)?;
                 self.next_token()?; // -> exprs
-                by.push_node_vec("exprs", self.parse_exprs(&vec![], true, true)?);
+                by.push_node_vec("exprs", self.parse_exprs(&vec!["|>", ";"], true, true)?);
                 order.push_node("next_keyword", by);
                 and.push_node("next_keyword", order);
                 group.push_node("next_keyword", and);
@@ -2462,7 +2463,7 @@ impl Parser {
                 self.next_token()?; // -> BY
                 let mut by = self.construct_node(NodeType::KeywordWithExprs)?;
                 self.next_token()?; // -> exprs
-                by.push_node_vec("exprs", self.parse_exprs(&vec![], true, true)?);
+                by.push_node_vec("exprs", self.parse_exprs(&vec!["|>", ";"], true, true)?);
                 group.push_node("next_keyword", by);
             }
             operator.push_node("group_and_order_by", group);
