@@ -690,6 +690,8 @@ export const printSQL = (
       return printExportModelStatement(path, options, print, node);
     case "ExtractArgument":
       return printExtractArgument(path, options, print, node);
+    case "ExtendPipeOperator":
+      return printSelectPipeOperator(path, options, print, node);
     case "ForStatement":
       return printForStatement(path, options, print, node);
     case "ForSystemTimeAsOfClause":
@@ -5240,19 +5242,18 @@ const printRepeatStatement: PrintFunc<bq2cst.RepeatStatement> = (
   ];
 };
 
-const printSelectPipeOperator: PrintFunc<bq2cst.SelectPipeOperator> = (
-  path,
-  options,
-  print,
-  node,
-) => {
+const printSelectPipeOperator: PrintFunc<
+  bq2cst.SelectPipeOperator | bq2cst.ExtendPipeOperator
+> = (path, options, print, node) => {
   const p = new Printer(path, options, print, node);
   p.setNotRoot("exprs");
   p.setGroupRecommended("exprs");
   if (node.children.exprs) {
     node.children.exprs.NodeVec[p.len("exprs") - 1].isFinalColumn = true;
   }
-  const docs: { [Key in Docs<bq2cst.SelectPipeOperator>]: Doc } = {
+  const docs: {
+    [Key in Docs<bq2cst.SelectPipeOperator | bq2cst.ExtendPipeOperator>]: Doc;
+  } = {
     leading_comments: printLeadingComments(path, options, print, node),
     self: p.self(),
     trailing_comments: printTrailingComments(path, options, print, node),

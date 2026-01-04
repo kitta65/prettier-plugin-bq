@@ -582,7 +582,7 @@ left:
   expr:
     self: t (Identifier)
 right:
-  self: EXTEND (BasePipeOperator)
+  self: EXTEND (ExtendPipeOperator)
   exprs:
   - self: 1 (NumericLiteral)
     alias:
@@ -615,7 +615,7 @@ left:
   expr:
     self: t (Identifier)
 right:
-  self: EXTEND (BasePipeOperator)
+  self: EXTEND (ExtendPipeOperator)
   exprs:
   - self: 1 (NumericLiteral)
     alias:

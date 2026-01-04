@@ -2424,7 +2424,7 @@ impl Parser {
         Ok(operator)
     }
     fn parse_extend_pipe_operator(&mut self) -> BQ2CSTResult<Node> {
-        let mut operator = self.construct_node(NodeType::BasePipeOperator)?;
+        let mut operator = self.construct_node(NodeType::ExtendPipeOperator)?;
         self.next_token()?; // -> expr
         let exprs = self.parse_exprs(&vec!["|>", ";", "WINDOW"], true, false)?;
         operator.push_node_vec("exprs", exprs);

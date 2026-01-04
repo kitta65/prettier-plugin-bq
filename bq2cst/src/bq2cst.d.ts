@@ -62,6 +62,7 @@ export type UnknownNode =
   | ExecuteStatement
   | ExportDataStatement
   | ExportModelStatement
+  | ExtendPipeOperator
   | ExtractArgument
   | ForStatement
   | ForSystemTimeAsOfClause
@@ -885,6 +886,11 @@ export type ExtractArgument = BaseNode & {
     at_time_zone: NodeVecChild;
     time_zone: NodeChild;
   };
+};
+
+export type ExtendPipeOperator = PipeOperator & {
+  node_type: "ExtendPipeOperator";
+  children: SelectPipeOperator["children"];
 };
 
 export type ForStatement = LabelableStatement & {

@@ -80,6 +80,15 @@ FROM t
     y,
 ;
 
+----- extend pipe operator -----
+FROM t
+|> extend 1 AS one, 2 AS two
+;
+
+FROM t
+|> extend 1 AS one WINDOW a AS (PARTITION BY b)
+;
+
 ----- from statement -----
 FROM
   tabe AS t1
@@ -93,10 +102,6 @@ FROM
 ;
 
 ----- base pipe operator -----
-FROM t
-|> extend 1 AS one, 2 AS two
-;
-
 FROM t
 |> AS u
 ;

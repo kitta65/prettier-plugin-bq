@@ -70,6 +70,7 @@ pub enum NodeType {
     ExecuteStatement, // EXECUTE IMMEDIATE 'SELECT 1;'
     ExportDataStatement,
     ExportModelStatement,
+    ExtendPipeOperator,
     ExtractArgument,         // DAY FROM expr
     ForSystemTimeAsOfClause, // FOR SYSTEM_TIME AS OF ts
     ForStatement,
