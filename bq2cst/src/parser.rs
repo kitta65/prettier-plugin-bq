@@ -2344,9 +2344,10 @@ impl Parser {
         self.next_token()?; // -> SELECT | LIMIT | ...
 
         let operator = match self.get_token(0)?.literal.to_uppercase().as_str() {
-            "EXTEND" | "SET" | "DROP" | "RENAME" | "AS" | "WHERE" | "CALL" => {
+            "SET" | "DROP" | "RENAME" | "AS" | "WHERE" | "CALL" => {
                 self.parse_base_pipe_operator(false)?
             }
+            "EXTEND" => self.parse_extend_pipe_operator()?,
             "ORDER" => self.parse_base_pipe_operator(true)?,
             "SELECT" => self.parse_select_pipe_operator()?,
             "LIMIT" => self.parse_limit_pipe_operator()?,
@@ -2425,7 +2426,7 @@ impl Parser {
     fn parse_limit_pipe_operator(&mut self) -> BQ2CSTResult<Node> {
         let mut operator = self.construct_node(NodeType::LimitPipeOperator)?;
         self.next_token()?; // -> expr
-        let exprs = self.parse_exprs(&vec![";", "OFFSET"], false, true)?; // if alias is true, offset is handled as alias
+        let exprs = self.parse_exprs(&vec!["|>", ";", "OFFSET"], false, true)?; // if alias is true, offset is handled as alias
         operator.push_node_vec("exprs", exprs);
         if self.get_token(1)?.is("OFFSET") {
             self.next_token()?; // -> OFFSET
@@ -2442,7 +2443,7 @@ impl Parser {
     fn parse_aggregate_pipe_operator(&mut self) -> BQ2CSTResult<Node> {
         let mut operator = self.construct_node(NodeType::AggregatePipeOperator)?;
         self.next_token()?; // -> expr
-        let exprs = self.parse_exprs(&vec![";", "GROUP"], true, true)?;
+        let exprs = self.parse_exprs(&vec!["|>", ";", "GROUP"], true, true)?;
         operator.push_node_vec("exprs", exprs);
         if self.get_token(1)?.is("GROUP") {
             self.next_token()?; // expr -> GROUP
@@ -2507,7 +2508,7 @@ impl Parser {
             operator.push_node("corresponding", self.parse_corresponding_clause()?);
         }
         self.next_token()?; // -> expr
-        let exprs = self.parse_exprs(&vec![";"], true, true)?;
+        let exprs = self.parse_exprs(&vec!["|>", ";"], true, true)?;
         operator.push_node_vec("exprs", exprs);
         Ok(operator)
     }
@@ -2603,7 +2604,14 @@ impl Parser {
             operator.push_node("keywords", self.construct_node(NodeType::Keyword)?);
         }
         self.next_token()?; // -> expr
-        let exprs = self.parse_exprs(&vec![";"], true, true)?;
+        let exprs = self.parse_exprs(&vec!["|>", ";"], true, true)?;
+        operator.push_node_vec("exprs", exprs);
+        Ok(operator)
+    }
+    fn parse_extend_pipe_operator(&mut self) -> BQ2CSTResult<Node> {
+        let mut operator = self.construct_node(NodeType::BasePipeOperator)?;
+        self.next_token()?; // -> expr
+        let exprs = self.parse_exprs(&vec!["|>", ";"], true, true)?;
         operator.push_node_vec("exprs", exprs);
         Ok(operator)
     }
