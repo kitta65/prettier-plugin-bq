@@ -642,6 +642,7 @@ export const mlFunctions = [
 
 export const aiFunctions = [
   "CLASSIFY",
+  "DETECT_ANOMALIES",
   "EVALUATE",
   "GENERATE",
   "GENERATE_BOOL",
