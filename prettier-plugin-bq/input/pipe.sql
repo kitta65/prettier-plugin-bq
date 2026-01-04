@@ -55,6 +55,11 @@ from t
     y,
 ;
 
+----- extend pipe operator -----
+from t |> extend 1 as one, 2 as two,;
+
+from t |> extend 1 as one window a as (partition by b);
+
 ----- from statement -----
 from tabe as t1
 join table as p2 using (col);
@@ -65,8 +70,6 @@ join table as p2 using (col);
 |> select *;
 
 ----- base pipe operator -----
-from t |> extend 1 as one, 2 as two,;
-
 from t |> as u;
 
 from t |> call tvf() as u;

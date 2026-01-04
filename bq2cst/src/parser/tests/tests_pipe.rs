@@ -401,38 +401,6 @@ right:
         )),
         // ----- base pipe operator -----
         Box::new(SuccessTestCase::new(
-            "\
-FROM t |> EXTEND 1 AS one, 2 AS two,;
-",
-            "\
-self: |> (PipeStatement)
-left:
-  self: FROM (FromStatement)
-  expr:
-    self: t (Identifier)
-right:
-  self: EXTEND (BasePipeOperator)
-  exprs:
-  - self: 1 (NumericLiteral)
-    alias:
-      self: one (Identifier)
-    as:
-      self: AS (Keyword)
-    comma:
-      self: , (Symbol)
-  - self: 2 (NumericLiteral)
-    alias:
-      self: two (Identifier)
-    as:
-      self: AS (Keyword)
-    comma:
-      self: , (Symbol)
-semicolon:
-  self: ; (Symbol)
-",
-            0,
-        )),
-        Box::new(SuccessTestCase::new(
             // alias is array... but do not mind it!
             "\
 FROM t |> AS u
@@ -599,6 +567,79 @@ right:
           - self: b (Identifier)
         rparen:
           self: ) (Symbol)
+",
+            0,
+        )),
+        // ----- extend pipe operator -----
+        Box::new(SuccessTestCase::new(
+            "\
+FROM t |> EXTEND 1 AS one, 2 AS two,;
+",
+            "\
+self: |> (PipeStatement)
+left:
+  self: FROM (FromStatement)
+  expr:
+    self: t (Identifier)
+right:
+  self: EXTEND (ExtendPipeOperator)
+  exprs:
+  - self: 1 (NumericLiteral)
+    alias:
+      self: one (Identifier)
+    as:
+      self: AS (Keyword)
+    comma:
+      self: , (Symbol)
+  - self: 2 (NumericLiteral)
+    alias:
+      self: two (Identifier)
+    as:
+      self: AS (Keyword)
+    comma:
+      self: , (Symbol)
+semicolon:
+  self: ; (Symbol)
+",
+            0,
+        )),
+        Box::new(SuccessTestCase::new(
+            "\
+FROM t |> EXTEND 1 AS one
+WINDOW a AS (PARTITION BY b);
+",
+            "\
+self: |> (PipeStatement)
+left:
+  self: FROM (FromStatement)
+  expr:
+    self: t (Identifier)
+right:
+  self: EXTEND (ExtendPipeOperator)
+  exprs:
+  - self: 1 (NumericLiteral)
+    alias:
+      self: one (Identifier)
+    as:
+      self: AS (Keyword)
+  window:
+    self: WINDOW (WindowClause)
+    window_exprs:
+    - self: a (WindowExpr)
+      as:
+        self: AS (Keyword)
+      window:
+        self: ( (WindowSpecification)
+        partitionby:
+          self: PARTITION (XXXByExprs)
+          by:
+            self: BY (Keyword)
+          exprs:
+          - self: b (Identifier)
+        rparen:
+          self: ) (Symbol)
+semicolon:
+  self: ; (Symbol)
 ",
             0,
         )),
