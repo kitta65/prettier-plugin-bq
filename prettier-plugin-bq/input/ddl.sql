@@ -107,6 +107,22 @@ create external table tablename
 with connection default
 options (dummy = 'dummy');
 
+-- autonomous embedding generation
+create table datasetname.tablename (
+  col_a string,
+  col_a_embedding
+    struct<result array<float64>, status string>
+    generated always as (
+      ai.embed(
+        col_a,
+        connection_id => 'conneciton_id',
+        endpoint => 'endpoint'
+      )
+    )
+    stored options(asynchronous = true),
+  col_b int64
+);
+
 ----- CREATE VIEW statement -----
 create view view_name
 as

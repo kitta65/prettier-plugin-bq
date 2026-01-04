@@ -1587,6 +1587,8 @@ export type Type = BaseNode & {
     references?: NodeChild;
     enforced?: NodeChild;
     default?: NodeChild;
+    generated_as?: NodeChild;
+    stored_options?: NodeChild;
     options?: NodeChild;
     collate?: NodeChild;
     aggregate?: NodeChild;

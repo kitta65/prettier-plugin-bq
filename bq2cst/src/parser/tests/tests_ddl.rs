@@ -1209,6 +1209,57 @@ with_connection:
 ",
             0,
         )),
+        Box::new(SuccessTestCase::new(
+            "\
+CREATE TABLE tablename (
+  embedding STRING
+  GENERATED ALWAYS AS (expr)
+  STORED OPTIONS (dummy = 'dummy')
+)
+",
+            "\
+self: CREATE (CreateTableStatement)
+column_schema_group:
+  self: ( (GroupedTypeDeclarationOrConstraints)
+  declarations:
+  - self: embedding (TypeDeclaration)
+    type:
+      self: STRING (Type)
+      generated_as:
+        self: GENERATED (KeywordSequence)
+        next_keyword:
+          self: ALWAYS (KeywordSequence)
+          next_keyword:
+            self: AS (KeywordWithExpr)
+            expr:
+              self: ( (GroupedExpr)
+              expr:
+                self: expr (Identifier)
+              rparen:
+                self: ) (Symbol)
+      stored_options:
+        self: STORED (KeywordSequence)
+        next_keyword:
+          self: OPTIONS (KeywordWithGroupedXXX)
+          group:
+            self: ( (GroupedExprs)
+            exprs:
+            - self: = (BinaryOperator)
+              left:
+                self: dummy (Identifier)
+              right:
+                self: 'dummy' (StringLiteral)
+            rparen:
+              self: ) (Symbol)
+  rparen:
+    self: ) (Symbol)
+ident:
+  self: tablename (Identifier)
+what:
+  self: TABLE (Keyword)
+",
+            0,
+        )),
         // ----- CREATE VIEW statement -----
         Box::new(SuccessTestCase::new(
             "\
