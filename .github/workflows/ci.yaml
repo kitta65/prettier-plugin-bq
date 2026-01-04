@@ -3,7 +3,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
 
       # ----- rust -----
       - uses: actions/cache@v4
@@ -59,7 +59,7 @@ jobs:
     if: ${{ github.ref_type == 'tag' }}
     needs: build
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       #  always pass when ref_type == 'branch'
       - uses: kitta65/tag-version-match@main
         with:
