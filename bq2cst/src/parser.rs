@@ -879,6 +879,7 @@ impl Parser {
         }
         Ok(left)
     }
+    // NOTE: if trailing comma is allowed, you have to specify `until` carefully.
     fn parse_exprs(
         &mut self,
         until: &Vec<&str>,
@@ -2445,7 +2446,27 @@ impl Parser {
         operator.push_node_vec("exprs", exprs);
         if self.get_token(1)?.is("GROUP") {
             self.next_token()?; // expr -> GROUP
-            operator.push_node("groupby", self.parse_groupby_exprs(true)?);
+            let mut group = self.construct_node(NodeType::KeywordSequence)?;
+            if self.get_token(1)?.is("AND") {
+                self.next_token()?; // AND
+                let mut and = self.construct_node(NodeType::KeywordSequence)?;
+                self.next_token()?; // -> ORDER
+                let mut order = self.construct_node(NodeType::KeywordSequence)?;
+                self.next_token()?; // -> BY
+                let mut by = self.construct_node(NodeType::KeywordWithExprs)?;
+                self.next_token()?; // -> exprs
+                by.push_node_vec("exprs", self.parse_exprs(&vec!["|>", ";"], true, true)?);
+                order.push_node("next_keyword", by);
+                and.push_node("next_keyword", order);
+                group.push_node("next_keyword", and);
+            } else {
+                self.next_token()?; // -> BY
+                let mut by = self.construct_node(NodeType::KeywordWithExprs)?;
+                self.next_token()?; // -> exprs
+                by.push_node_vec("exprs", self.parse_exprs(&vec!["|>", ";"], true, true)?);
+                group.push_node("next_keyword", by);
+            }
+            operator.push_node("group_and_order_by", group);
         }
         Ok(operator)
     }

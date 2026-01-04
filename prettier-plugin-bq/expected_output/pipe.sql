@@ -141,15 +141,23 @@ FROM t
 
 ----- aggregate pipe operator -----
 FROM t
-|> aggregate COUNT(*) AS cnt DESC NULLS LAST
+|> AGGREGATE COUNT(*) AS cnt DESC NULLS LAST
 ;
 
 FROM t
 |>
-  aggregate COUNT(*)
+  AGGREGATE COUNT(*)
   GROUP BY
     col1 AS col_a DESC NULLS LAST,
     col2
+;
+
+FROM t
+|>
+  AGGREGATE COUNT(*)
+  GROUP AND ORDER BY
+    col1 AS col_a DESC NULLS LAST,
+    col2,
 ;
 
 ----- distinct pipe operator -----

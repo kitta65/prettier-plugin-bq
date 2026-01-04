@@ -99,6 +99,11 @@ from t
   aggregate count(*)
   group by col1 as col_a desc nulls last, col2;
 
+from t
+|>
+  aggregate count(*)
+  group and order by col1 as col_a desc nulls last, col2,;
+
 ----- distinct pipe operator -----
 from t |> distinct;
 

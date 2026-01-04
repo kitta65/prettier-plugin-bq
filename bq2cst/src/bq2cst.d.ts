@@ -267,7 +267,7 @@ export type AddConstraintClause = BaseNode & {
 export type AggregatePipeOperator = PipeOperator & {
   node_type: "AggregatePipeOperator";
   children: {
-    groupby?: NodeChild;
+    group_and_order_by?: NodeChild;
   };
 };
 
@@ -1114,7 +1114,12 @@ export type KeywordSequence = BaseNode & {
   node_type: "KeywordSequence";
   children: {
     next_keyword: {
-      Node: Keyword | KeywordSequence | KeywordWithExpr | KeywordWithGroupedXXX;
+      Node:
+        | Keyword
+        | KeywordSequence
+        | KeywordWithExpr
+        | KeywordWithExprs
+        | KeywordWithGroupedXXX;
     };
   };
 };
