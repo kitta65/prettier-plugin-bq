@@ -5475,6 +5475,7 @@ const printStandAloneExpr: PrintFunc<bq2cst.StandAloneExpr> = (
   node,
 ) => {
   const p = new Printer(path, options, print, node);
+  p.setNotRoot("expr");
   const docs: { [Key in Docs<bq2cst.StandAloneExpr>]: Doc } = {
     self: "", // eslint-disable-line unicorn/no-unused-properties
     expr: p.child("expr"),
