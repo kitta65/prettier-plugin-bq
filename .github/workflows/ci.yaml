@@ -95,4 +95,4 @@ jobs:
     steps:
       - id: deployment
         if: ${{ github.ref_type == 'tag' }}
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5
