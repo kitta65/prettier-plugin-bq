@@ -35,7 +35,7 @@ jobs:
       # see https://github.com/actions/starter-workflows/blob/main/pages/static.yml
       # see https://docs.github.com/en/pages/getting-started-with-github-pages/using-custom-workflows-with-github-pages
       - uses: actions/configure-pages@v5
-      - uses: actions/upload-pages-artifact@v4
+      - uses: actions/upload-pages-artifact@v5
         with:
           path: "./web/dist"
       - uses: actions/upload-artifact@v6
