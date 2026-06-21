@@ -4,6 +4,8 @@ updates:
     directory: "/"
     schedule:
       interval: "monthly"
+    cooldown:
+      default-days: 30
     versioning-strategy: "widen"
     open-pull-requests-limit: 50
     groups:
@@ -19,6 +21,8 @@ updates:
     directory: "/bq2cst"
     schedule:
       interval: "monthly"
+    cooldown:
+      default-days: 30
     groups:
       minor-and-patch:
         applies-to: version-updates
@@ -32,6 +36,8 @@ updates:
     directory: "/"
     schedule:
       interval: "monthly"
+    cooldown:
+      default-days: 30
     open-pull-requests-limit: 50
     groups:
       minor-and-patch:
