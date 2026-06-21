@@ -3,10 +3,10 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
 
       # ----- rust -----
-      - uses: actions/cache@v5
+      - uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
         with:
           key: ${{ hashFiles('./bq2cst/Cargo.lock') }}
           # https://doc.rust-lang.org/cargo/guide/cargo-home.html#caching-the-cargo-home-in-ci
@@ -23,7 +23,7 @@ jobs:
       - run: mkdir -p bq2cst/{cjs,esm}
       - run: npm install -g pnpm
       - &setup-node
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
         with:
           node-version: "20.x"
           registry-url: "https://registry.npmjs.org"
@@ -34,19 +34,19 @@ jobs:
       # ----- upload -----
       # see https://github.com/actions/starter-workflows/blob/main/pages/static.yml
       # see https://docs.github.com/en/pages/getting-started-with-github-pages/using-custom-workflows-with-github-pages
-      - uses: actions/configure-pages@v5
-      - uses: actions/upload-pages-artifact@v4
+      - uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b # v5.0.0
+      - uses: actions/upload-pages-artifact@7b1f4a764d45c48632c6b24a0339c27f5614fb0b # v4.0.0
         with:
           path: "./web/dist"
-      - uses: actions/upload-artifact@v6
+      - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
         with: &artifact-bq2cst-cjs
           name: bq2cst-cjs
           path: ./bq2cst/cjs
-      - uses: actions/upload-artifact@v6
+      - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
         with: &artifact-bq2cst-esm
           name: bq2cst-esm
           path: ./bq2cst/esm
-      - uses: actions/upload-artifact@v6
+      - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
         with: &artifact-prettier-plugin-bq
           name: prettier-plugin-bq
           path: ./prettier-plugin-bq/dist
@@ -59,7 +59,7 @@ jobs:
     if: ${{ github.ref_type == 'tag' }}
     needs: build
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
       #  always pass when ref_type == 'branch'
       - uses: kitta65/tag-version-match@main
         with:
@@ -73,11 +73,11 @@ jobs:
           pattern: '^([0-9]+\.[0-9]+\.[0-9]+)$'
       - run: npm install -g pnpm
       - *setup-node
-      - uses: actions/download-artifact@v7
+      - uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
         with: *artifact-bq2cst-cjs
-      - uses: actions/download-artifact@v7
+      - uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
         with: *artifact-bq2cst-esm
-      - uses: actions/download-artifact@v7
+      - uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
         with: *artifact-prettier-plugin-bq
       # needed to resolve workspace protocol of dependency "bq2cst"
       - run: pnpm install
@@ -95,4 +95,4 @@ jobs:
     steps:
       - id: deployment
         if: ${{ github.ref_type == 'tag' }}
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e # v4.0.5
